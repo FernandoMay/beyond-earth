@@ -65,3 +65,6 @@ contracts/deployments/*.local.json
 
 # Next.js agent files
 AGENTS.md
+
+# Next.js generated files
+next-env.d.ts
