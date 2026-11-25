@@ -46,7 +46,6 @@ pub enum Error {
     AlreadyAuthorized = 8,
 }
 
-
 /// Emitted when an investor's eligibility record changes.
 #[contractevent]
 pub struct InvestorUpdated {

@@ -54,7 +54,6 @@ pub enum Error {
     NotSeller = 11,
 }
 
-
 /// Emitted when a seller lists tokenized units.
 #[contractevent]
 pub struct ListingCreated {

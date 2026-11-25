@@ -54,7 +54,6 @@ pub enum Error {
     InvalidParties = 9,
 }
 
-
 /// Emitted when a lease schedule is created.
 #[contractevent]
 pub struct LeaseCreated {

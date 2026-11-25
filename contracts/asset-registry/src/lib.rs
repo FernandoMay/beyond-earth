@@ -67,7 +67,6 @@ pub enum Error {
     AlreadyAuthorized = 9,
 }
 
-
 /// Emitted when an issuer registers an asset.
 #[contractevent]
 pub struct AssetRegistered {
