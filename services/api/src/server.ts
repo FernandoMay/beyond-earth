@@ -46,23 +46,6 @@ function safeEqual(left: string, right: string): boolean {
   return timingSafeEqual(a, b);
 }
 
-function requireApiKey(request: FastifyRequest, apiKey: string | undefined, demoMode: boolean) {
-  if (demoMode) {
-    throw new HttpError(
-      409,
-      'DEMO_MODE',
-      'Write operations are disabled in demo mode. Configure a non-demo API and API_KEY to exercise them.',
-    );
-  }
-  if (!apiKey) {
-    throw new HttpError(503, 'NOT_CONFIGURED', 'Write API is not configured with an API key.');
-  }
-  const provided = request.headers['x-api-key'];
-  if (typeof provided !== 'string' || !safeEqual(provided, apiKey)) {
-    throw new HttpError(401, 'UNAUTHORIZED', 'A valid x-api-key header is required.');
-  }
-}
-
 export async function buildServer(options: ServerOptions): Promise<FastifyInstance> {
   const demoMode = options.demoMode ?? true;
   const challenges = new Map<string, { nonce: string; expires: number }>();
@@ -85,6 +68,31 @@ export async function buildServer(options: ServerOptions): Promise<FastifyInstan
   function hasRole(wallet: string, role: string): boolean {
     if (role === 'admin') return adminWallets.includes(wallet);
     return false;
+  }
+
+  function requireApiKey(request: FastifyRequest, apiKey: string | undefined, demoMode: boolean) {
+    if (demoMode) {
+      throw new HttpError(
+        409,
+        'DEMO_MODE',
+        'Write operations are disabled in demo mode. Configure a non-demo API and API_KEY to exercise them.',
+      );
+    }
+    const auth = request.headers.authorization;
+    const token = typeof auth === 'string' && auth.startsWith('Bearer ') ? auth.slice(7) : undefined;
+    if (token) {
+      const session = sessions.get(token);
+      if (session && session.expires >= Date.now()) {
+        return;
+      }
+    }
+    if (!apiKey) {
+      throw new HttpError(503, 'NOT_CONFIGURED', 'Write API is not configured with an API key.');
+    }
+    const provided = request.headers['x-api-key'];
+    if (typeof provided !== 'string' || !safeEqual(provided, apiKey)) {
+      throw new HttpError(401, 'UNAUTHORIZED', 'A valid x-api-key or session token is required.');
+    }
   }
 
   const allowedOrigins = options.corsOrigins ?? [
