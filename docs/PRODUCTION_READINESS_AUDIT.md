@@ -36,13 +36,13 @@ The reviewed repository is organized into the following major areas:
 
 ### Applications
 
-| Application | Responsibility |
-| --- | --- |
-| `apps/web` | Public platform, marketplace, asset pages, protocol/compliance content |
-| `apps/investor-portal` | Investor onboarding, opportunities, portfolio and distributions |
-| `apps/issuer-portal` | Asset onboarding, evidence and offerings |
-| `apps/admin-portal` | Registry review, compliance and administrative workflows |
-| `apps/operations-portal` | Leasing, maintenance, insurance, oracles and operational tasks |
+| Application              | Responsibility                                                         |
+| ------------------------ | ---------------------------------------------------------------------- |
+| `apps/web`               | Public platform, marketplace, asset pages, protocol/compliance content |
+| `apps/investor-portal`   | Investor onboarding, opportunities, portfolio and distributions        |
+| `apps/issuer-portal`     | Asset onboarding, evidence and offerings                               |
+| `apps/admin-portal`      | Registry review, compliance and administrative workflows               |
+| `apps/operations-portal` | Leasing, maintenance, insurance, oracles and operational tasks         |
 
 ### Shared packages
 
@@ -201,17 +201,17 @@ The reviewed Netlify configuration builds the public `apps/web` application. It 
 
 **Required remediation:** deploy each application and service deliberately, with independent health checks and environment configuration. Suggested topology:
 
-| Component | Deployment responsibility |
-| --- | --- |
-| Public web / marketplace | Next.js hosting |
-| Investor portal | Separate protected application deployment |
-| Issuer portal | Separate protected application deployment |
-| Admin portal | Private/restricted deployment, strong authentication |
-| Operations portal | Private/restricted deployment, strong authentication |
-| Fastify API | Persistent server/container with TLS and health checks |
-| PostgreSQL | Managed database, backups and restore testing |
-| Indexer / notifications | Persistent worker process with monitoring |
-| Soroban RPC | Configured provider with timeouts, retries and observability |
+| Component                | Deployment responsibility                                    |
+| ------------------------ | ------------------------------------------------------------ |
+| Public web / marketplace | Next.js hosting                                              |
+| Investor portal          | Separate protected application deployment                    |
+| Issuer portal            | Separate protected application deployment                    |
+| Admin portal             | Private/restricted deployment, strong authentication         |
+| Operations portal        | Private/restricted deployment, strong authentication         |
+| Fastify API              | Persistent server/container with TLS and health checks       |
+| PostgreSQL               | Managed database, backups and restore testing                |
+| Indexer / notifications  | Persistent worker process with monitoring                    |
+| Soroban RPC              | Configured provider with timeouts, retries and observability |
 
 Configure production CORS with the exact deployed origins. The reviewed server configuration was limited to local origins while an environment variable for CORS origins was documented but not consistently applied. Ensure the API binds to the production interface (not loopback-only) behind the hosting platform's network controls.
 
@@ -282,13 +282,13 @@ The API must not hold or expose a general-purpose user signing key. Any exceptio
 
 **Do not remove fixtures from the repository. Deprecate implicit demo behavior in live environments.**
 
-| Environment | Demo fixtures | Live API | Writes |
-| --- | --- | --- | --- |
-| Unit/integration tests | Allowed and deterministic | Optional/mocked by test design | Test-only |
-| Local development | Allowed when explicitly enabled | Optional | Clearly labelled local/demo |
-| Showcase/demo deployment | Allowed only with visible demo labels | Optional | No claim of real investment |
-| Staging/Testnet | Disabled by default; explicit fixture use only for isolated tests | Required | Real wallet signature and Testnet confirmation |
-| Production/Mainnet | Forbidden | Required | Authenticated, authorized and confirmed on-chain workflow |
+| Environment              | Demo fixtures                                                     | Live API                       | Writes                                                    |
+| ------------------------ | ----------------------------------------------------------------- | ------------------------------ | --------------------------------------------------------- |
+| Unit/integration tests   | Allowed and deterministic                                         | Optional/mocked by test design | Test-only                                                 |
+| Local development        | Allowed when explicitly enabled                                   | Optional                       | Clearly labelled local/demo                               |
+| Showcase/demo deployment | Allowed only with visible demo labels                             | Optional                       | No claim of real investment                               |
+| Staging/Testnet          | Disabled by default; explicit fixture use only for isolated tests | Required                       | Real wallet signature and Testnet confirmation            |
+| Production/Mainnet       | Forbidden                                                         | Required                       | Authenticated, authorized and confirmed on-chain workflow |
 
 Acceptance rules:
 
