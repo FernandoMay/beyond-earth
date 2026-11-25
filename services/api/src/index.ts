@@ -24,8 +24,19 @@ async function createRepository(
 }
 
 function parseDemoMode(value: string | undefined): boolean {
-  if (value === undefined || value === '') return true;
-  if (value === 'true') return true;
+  const production = process.env.NODE_ENV === 'production';
+  if (value === undefined || value === '') {
+    if (production) {
+      throw new Error('DEMO_MODE must be explicitly set in production.');
+    }
+    return true;
+  }
+  if (value === 'true') {
+    if (production) {
+      throw new Error('DEMO_MODE=true is not allowed in production.');
+    }
+    return true;
+  }
   if (value === 'false') return false;
   throw new Error(`DEMO_MODE must be "true" or "false", received "${value}".`);
 }
