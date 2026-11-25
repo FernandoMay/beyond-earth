@@ -4,6 +4,7 @@ import type {
   ComplianceCase,
   Distribution,
   InvestorProfile,
+  Offering,
   OperationsTask,
 } from '@aerospace/shared-types';
 import type { AssetDraft, AssetQuery, ComplianceDecision } from '@aerospace/validation';
@@ -182,6 +183,22 @@ export class PostgresRepository implements AerospaceRepository {
       [asset.id, asset.slug, asset.registryId, asset.vertical, asset.status, asset],
     );
     return asset;
+  }
+
+  async listOfferings(): Promise<Offering[]> {
+    const result = await this.client.query<PayloadRow<Offering>>(
+      'select payload from offerings order by created_at desc',
+    );
+    return mapPayload(result.rows);
+  }
+
+  async createOffering(offering: Offering): Promise<Offering> {
+    await this.client.query(
+      `insert into offerings (id, asset_id, status, payload, updated_at)
+       values ($1, $2, $3, $4, now())`,
+      [offering.id, offering.assetId, offering.status, offering],
+    );
+    return offering;
   }
 
   async createSubscription(input: {

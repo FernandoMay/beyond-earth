@@ -3,6 +3,7 @@ import type {
   ComplianceCase,
   Distribution,
   InvestorProfile,
+  Offering,
   OperationsTask,
   AerospaceSnapshot,
 } from '@aerospace/shared-types';
@@ -31,6 +32,8 @@ export interface AerospaceRepository {
   decideCompliance(decision: ComplianceDecision): Promise<ComplianceCase | null>;
   listOperationsTasks(): Promise<OperationsTask[]>;
   createAssetDraft(draft: AssetDraft & { actor: string }): Promise<Asset>;
+  listOfferings(): Promise<Offering[]>;
+  createOffering(offering: Offering): Promise<Offering>;
   createSubscription(input: {
     offeringId: string;
     wallet: string;
@@ -139,6 +142,7 @@ export class InMemoryRepository implements AerospaceRepository {
   readonly kind = 'demo' as const;
 
   private readonly assets: Asset[];
+  private readonly offerings: Offering[] = [];
   private readonly compliance: ComplianceCase[];
   private readonly subscriptions = new Map<string, SubscriptionRecord>();
 
@@ -218,6 +222,15 @@ export class InMemoryRepository implements AerospaceRepository {
     };
     this.subscriptions.set(input.idempotencyKey, record);
     return record;
+  }
+
+  async listOfferings() {
+    return this.offerings;
+  }
+
+  async createOffering(offering: Offering) {
+    this.offerings.push(offering);
+    return offering;
   }
 
   async findSubscriptionByIdempotencyKey(key: string) {

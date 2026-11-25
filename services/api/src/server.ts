@@ -379,6 +379,16 @@ export async function buildServer(options: ServerOptions): Promise<FastifyInstan
     return reply.code(200).send({ wallet, roles });
   });
 
+
+  app.get('/v1/offerings', async () => ({ items: await options.repository.listOfferings() }));
+
+  app.post('/v1/offerings', async (request, reply) => {
+    requireApiKey(request, options.apiKey, demoMode);
+    const offering = request.body as Record<string, unknown>;
+    const created = await options.repository.createOffering(offering as never);
+    return reply.code(201).send({ mode: demoMode ? 'demo' : 'live', offering: created });
+  });
+
   app.setNotFoundHandler((request: FastifyRequest, reply: FastifyReply) =>
     reply.code(404).send({
       error: 'Route not found',
