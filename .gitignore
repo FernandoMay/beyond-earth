@@ -62,3 +62,6 @@ Thumbs.db
 
 # Generated protocol deployment output (never commit funded keys)
 contracts/deployments/*.local.json
+
+# Next.js agent files
+AGENTS.md
