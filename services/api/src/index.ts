@@ -41,11 +41,16 @@ async function main() {
   }
 
   const repository: Repository = await createRepository(demoMode);
+  const corsOrigins = (process.env.API_CORS_ORIGINS ?? '')
+    .split(',')
+    .map((value) => value.trim())
+    .filter(Boolean);
   const app = await buildServer({
     repository,
     demoMode,
     apiKey: process.env.API_KEY,
     logger: process.env.NODE_ENV !== 'test',
+    corsOrigins: corsOrigins.length ? corsOrigins : undefined,
   });
 
   const shutdown = async (signal: string) => {

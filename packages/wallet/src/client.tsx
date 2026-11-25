@@ -58,7 +58,7 @@ function normalizeNetwork(
 }
 
 export function networkMatches(passphrase: string | undefined, expected: string): boolean {
-  if (!passphrase) return true;
+  if (!passphrase) return false;
   const normalized = passphrase.toUpperCase();
   const target = expected.toUpperCase().replace(/[^A-Z]/g, '');
   if (target.includes('TESTNET')) return normalized.includes('TEST SDF NETWORK');
