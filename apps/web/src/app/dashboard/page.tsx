@@ -7,6 +7,10 @@ const ASSET_REGISTRY = 'CDMDH2NKJJMWNNFE7J3RFHW4JT4MWED7YE5JNHLP5RKXEUCOSF6EL3CB
 
 export default function DashboardPage() {
   const wallet = useFreighterWallet('TESTNET');
+  const [token, setToken] = useState<string | null>(null);
+  const [roles, setRoles] = useState<string[]>([]);
+  const [authError, setAuthError] = useState<string | null>(null);
+  const [authLoading, setAuthLoading] = useState(false);
   const [balance, setBalance] = useState<string | null>(null);
   const [assetCount, setAssetCount] = useState<number | null>(null);
   const baseUrl = process.env.NEXT_PUBLIC_API_URL ?? '';
@@ -14,12 +18,56 @@ export default function DashboardPage() {
   useEffect(() => {
     if (wallet.state.status !== 'connected' || !wallet.state.address) return;
     let active = true;
+    async function authenticate() {
+      setAuthLoading(true);
+      setAuthError(null);
+      try {
+        const challengeRes = await fetch(`${baseUrl}/v1/auth/challenge`, {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ wallet: wallet.state.address }),
+        });
+        const challenge = await challengeRes.json();
+        if (!challengeRes.ok) throw new Error(challenge.error ?? 'Challenge failed');
+        const signature = await wallet.signMessage(challenge.message);
+        const verifyRes = await fetch(`${baseUrl}/v1/auth/verify`, {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({
+            wallet: wallet.state.address,
+            message: challenge.message,
+            signature,
+          }),
+        });
+        const verified = await verifyRes.json();
+        if (!verifyRes.ok) throw new Error(verified.error ?? 'Verification failed');
+        if (!active) return;
+        setToken(verified.token);
+        // fetch session
+        const meRes = await fetch(`${baseUrl}/v1/auth/me`, {
+          headers: { authorization: `Bearer ${verified.token}` },
+        });
+        const me = await meRes.json();
+        if (meRes.ok && active) setRoles(me.roles ?? []);
+      } catch (err) {
+        if (active) setAuthError(err instanceof Error ? err.message : 'Auth failed');
+      } finally {
+        if (active) setAuthLoading(false);
+      }
+    }
+    void authenticate();
+    return () => {
+      active = false;
+    };
+  }, [wallet.state.address, wallet.state.status, baseUrl, wallet]);
+
+  useEffect(() => {
+    if (wallet.state.status !== 'connected' || !wallet.state.address) return;
+    let active = true;
     async function load() {
       try {
-        const [accRes, countRes] = await Promise.all([
-          fetch(`${baseUrl}/v1/stellar/accounts/${wallet.state.address}`),
-          fetch(`${baseUrl}/v1/stellar/soroban/${ASSET_REGISTRY}/asset_count`),
-        ]);
+        const accRes = await fetch(`${baseUrl}/v1/stellar/accounts/${wallet.state.address}`);
+        const countRes = await fetch(`${baseUrl}/v1/stellar/soroban/${ASSET_REGISTRY}/asset_count`);
         const accBody = await accRes.json();
         const countBody = await countRes.json();
         if (!active) return;
@@ -43,7 +91,7 @@ export default function DashboardPage() {
       >
         <h1>Dashboard</h1>
         <p style={{ marginTop: '1rem', color: '#cbd5e1' }}>
-          Connect your Freighter wallet on Stellar Testnet to access the dashboard.
+          Connect your Freighter wallet on Stellar Testnet.
         </p>
         <button
           type="button"
@@ -61,9 +109,9 @@ export default function DashboardPage() {
         >
           {wallet.state.status === 'connecting' ? 'Connecting…' : 'Connect Wallet'}
         </button>
-        {wallet.state.error ? (
+        {wallet.state.error && (
           <p style={{ color: 'crimson', marginTop: '1rem' }}>{wallet.state.error}</p>
-        ) : null}
+        )}
       </main>
     );
   }
@@ -72,6 +120,13 @@ export default function DashboardPage() {
     <main style={{ maxWidth: 960, margin: '0 auto', padding: '3rem 1.5rem' }}>
       <h1>Dashboard</h1>
       <p style={{ color: '#cbd5e1', marginTop: '0.5rem' }}>Connected: {wallet.state.address}</p>
+      {authLoading && <p style={{ color: '#94a3b8', marginTop: '0.5rem' }}>Authenticating…</p>}
+      {authError && <p style={{ color: 'crimson', marginTop: '0.5rem' }}>{authError}</p>}
+      {token && (
+        <p style={{ color: '#22d3ee', marginTop: '0.5rem' }}>
+          Session active · roles: {roles.join(', ') || 'investor'}
+        </p>
+      )}
 
       <div
         style={{
