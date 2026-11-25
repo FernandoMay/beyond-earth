@@ -12,7 +12,7 @@ if ! command -v stellar >/dev/null 2>&1; then
 fi
 
 echo "[contracts:build] building workspace"
-cargo build --workspace --release --target wasm32v1-none --manifest-path "$MANIFEST"
+stellar contract build --manifest-path "$MANIFEST"
 
 echo "[contracts:build] artifacts:"
 find "$OUT_DIR" -maxdepth 1 -name '*.wasm' -print | sort
