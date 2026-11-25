@@ -1,5 +1,7 @@
 'use client';
 
+import { useFreighterWallet } from '@aerospace/wallet';
+
 import { useEffect, useState } from 'react';
 
 const CONTRACTS: { name: string; id: string }[] = [
@@ -22,6 +24,7 @@ export default function Home() {
   const [admin, setAdmin] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const baseUrl = process.env.NEXT_PUBLIC_API_URL ?? '';
+  const wallet = useFreighterWallet('TESTNET');
 
   useEffect(() => {
     let active = true;
@@ -66,14 +69,30 @@ export default function Home() {
           investment and revenue distribution. No mocks. Live contract data below.
         </p>
         <div className="be-actions">
-          <a className="be-btn be-btn--primary" href="/stellar-payment">
-            Open Testnet Console
+          {wallet.state.status !== 'connected' ? (
+            <button
+              type="button"
+              className="be-btn be-btn--primary"
+              onClick={() => void wallet.connect()}
+              disabled={wallet.state.status === 'connecting'}
+            >
+              {wallet.state.status === 'connecting' ? 'Connecting…' : 'Connect Freighter Wallet'}
+            </button>
+          ) : (
+            <>
+              <a className="be-btn be-btn--primary" href="/dashboard">
+                Enter Dashboard
+              </a>
+              <span className="be-btn be-btn--ghost" style={{ cursor: 'default' }}>
+                {wallet.state.address?.slice(0, 6)}…{wallet.state.address?.slice(-4)}
+              </span>
+            </>
+          )}
+          <a className="be-btn be-btn--ghost" href="/stellar-payment">
+            Testnet Console
           </a>
           <a className="be-btn be-btn--ghost" href="/protocol">
-            Explore Protocol
-          </a>
-          <a className="be-btn be-btn--ghost" href="/marketplace">
-            Marketplace
+            Protocol
           </a>
         </div>
       </section>
