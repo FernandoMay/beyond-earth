@@ -4,7 +4,7 @@ test.describe('public reference site', () => {
   test('home presents the network and the demo disclosure', async ({ page }) => {
     await page.goto('/');
     await expect(page.getByRole('heading', { level: 1 })).toContainText(
-      'Financing the infrastructure beyond Earth',
+      'Beyond Earth',
     );
     await expect(page.getByText(/all assets and returns illustrative/i).first()).toBeVisible();
     await expect(page.getByText(/no offer of securities/i).first()).toBeVisible();
