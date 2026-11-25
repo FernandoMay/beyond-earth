@@ -278,6 +278,61 @@ impl RevenueDistribution {
         Ok(remaining)
     }
 
+    /// Claims all provided distributions for an investor in one transaction.
+    pub fn reclamar_todo(
+        env: Env,
+        investor: Address,
+        distribution_ids: soroban_sdk::Vec<String>,
+    ) -> i128 {
+        investor.require_auth();
+        let payment = token::Client::new(&env, &Self::token(env.clone()).unwrap());
+        let mut total_claimed: i128 = 0;
+        for id in distribution_ids.iter() {
+            let mut distribution = match get_distribution_or_error(&env, &id) {
+                Ok(d) => d,
+                Err(_) => continue,
+            };
+            if distribution.status != DistributionStatus::Funded {
+                continue;
+            }
+            let claim_key = DataKey::Claimed(id.clone(), investor.clone());
+            if env
+                .storage()
+                .persistent()
+                .get::<_, bool>(&claim_key)
+                .unwrap_or(false)
+            {
+                continue;
+            }
+            let units: i128 = env
+                .storage()
+                .persistent()
+                .get(&DataKey::Allocation(id.clone(), investor.clone()))
+                .unwrap_or(0);
+            if units <= 0 {
+                continue;
+            }
+            let entitlement = distribution.total_amount * units / distribution.total_units;
+            if entitlement <= 0 {
+                continue;
+            }
+            payment.transfer(&env.current_contract_address(), &investor, &entitlement);
+            env.storage().persistent().set(&claim_key, &true);
+            distribution.claimed_amount += entitlement;
+            env.storage()
+                .persistent()
+                .set(&DataKey::Distribution(id.clone()), &distribution);
+            DistributionClaimed {
+                distribution_id: id.clone(),
+                investor: investor.clone(),
+                amount: entitlement,
+            }
+            .publish(&env);
+            total_claimed += entitlement;
+        }
+        total_claimed
+    }
+
     pub fn get_distribution(env: Env, id: String) -> Result<Distribution, Error> {
         get_distribution_or_error(&env, &id)
     }

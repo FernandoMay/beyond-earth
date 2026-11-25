@@ -217,3 +217,15 @@ fn rejects_invalid_distribution_parameters() {
         Err(Ok(Error::InvalidDeadline))
     );
 }
+
+
+#[test]
+fn reclamar_todo_claims_all() {
+    let fixture = setup();
+    create(&fixture);
+    fixture.client.allocate(&fixture.issuer, &String::from_str(&fixture.env, "dist_001"), &fixture.alice, &50);
+    let ids = soroban_sdk::vec![&fixture.env, String::from_str(&fixture.env, "dist_001")];
+    let total = fixture.client.reclamar_todo(&fixture.alice, &ids);
+    assert_eq!(total, 5_000);
+    assert_eq!(fixture.payment.balance(&fixture.alice), 5_000);
+}
