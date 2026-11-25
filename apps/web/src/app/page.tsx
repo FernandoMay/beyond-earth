@@ -155,11 +155,11 @@ export default function HomePage() {
               STELLAR + SOROBAN · REFERENCE IMPLEMENTATION
             </div>
             <h1>
-              Financing the
+              Financing the{' '}
               <br />
               <span>infrastructure</span>
               <br />
-              beyond Earth.
+              {' '}beyond Earth.
             </h1>
             <p className="w-hero__lede">
               A financial network for aerospace assets — evidence-linked registry, regulated

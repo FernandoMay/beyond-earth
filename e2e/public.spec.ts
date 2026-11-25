@@ -12,7 +12,7 @@ test.describe('public reference site', () => {
 
   test('marketplace labels every structure as illustrative', async ({ page }) => {
     await page.goto('/marketplace');
-    await expect(page.getByRole('heading', { level: 1 })).toContainText('Marketplace');
+    await expect(page.getByRole('heading', { level: 1 })).toContainText('Verified structures');
     await expect(page.getByText(/illustrative/i).first()).toBeVisible();
     await expect(page.getByText('Reference Turbofan Engine Lease').first()).toBeVisible();
   });

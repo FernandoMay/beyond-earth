@@ -77,7 +77,7 @@ export default function ProtocolPage() {
               <h1>
                 Enforcement at the
                 <br />
-                <span className="w-silver">protocol boundary.</span>
+                <span className="w-silver">Protocol boundary.</span>
               </h1>
               <p>
                 Nine Soroban modules establish asset identity, investor eligibility, controlled
