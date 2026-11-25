@@ -10,6 +10,7 @@ import {
 
 import {
   assertNetworkIsTestnet,
+  isValidAccountAddress,
   resolveStellarConfig,
   transactionExplorerUrl,
   type StellarNetworkConfig,
@@ -49,6 +50,10 @@ export async function sendStellarPayment(
 
   if (!input.sourceSecretKey.startsWith('S')) {
     throw new Error('A Stellar secret key (S...) is required to send a payment.');
+  }
+
+  if (!isValidAccountAddress(input.destination)) {
+    throw new Error('Destination must be a valid Stellar account address.');
   }
 
   const sourceKeypair = Keypair.fromSecret(input.sourceSecretKey);

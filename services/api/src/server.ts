@@ -10,6 +10,9 @@ import {
 import { DEMO_SUBSCRIPTION_MESSAGE, VERSION } from './constants';
 import {
   CHALLENGE_PAYMENT_MEMO,
+  fetchStellarAccount,
+  fetchStellarTransaction,
+  isValidAccountAddress,
   sendStellarPayment,
 } from '@aerospace/stellar-sdk';
 import { z } from 'zod';
@@ -280,6 +283,20 @@ export async function buildServer(options: ServerOptions): Promise<FastifyInstan
     });
 
     return reply.code(201).send({ mode: 'testnet', ...result });
+  });
+
+
+  app.get<{ Params: { address: string } }>('/v1/stellar/accounts/:address', async (request, reply) => {
+    if (!isValidAccountAddress(request.params.address)) {
+      throw new HttpError(400, 'INVALID_ADDRESS', 'A valid Stellar account address is required.');
+    }
+    const account = await fetchStellarAccount(request.params.address);
+    return account;
+  });
+
+  app.get<{ Params: { hash: string } }>('/v1/stellar/transactions/:hash', async (request) => {
+    const transaction = await fetchStellarTransaction(request.params.hash);
+    return transaction;
   });
 
   app.setNotFoundHandler((request: FastifyRequest, reply: FastifyReply) =>
