@@ -104,6 +104,39 @@ impl Withdrawals {
             .unwrap_or(0)
     }
 
+    /// Transfers `amount` from one user's balance to another's.
+    pub fn transferir(env: Env, from: Address, to: Address, amount: i128) -> i128 {
+        from.require_auth();
+        if amount <= 0 {
+            panic!("amount must be positive");
+        }
+        if from == to {
+            panic!("cannot transfer to self");
+        }
+        let from_balance: i128 = env
+            .storage()
+            .persistent()
+            .get(&DataKey::Balance(from.clone()))
+            .unwrap_or(0);
+        if from_balance < amount {
+            panic!("insufficient balance");
+        }
+        let to_balance: i128 = env
+            .storage()
+            .persistent()
+            .get(&DataKey::Balance(to.clone()))
+            .unwrap_or(0);
+
+        env.storage()
+            .persistent()
+            .set(&DataKey::Balance(from.clone()), &(from_balance - amount));
+        env.storage()
+            .persistent()
+            .set(&DataKey::Balance(to), &(to_balance + amount));
+
+        from_balance - amount
+    }
+
     pub fn bonus_total(env: Env) -> i128 {
         env.storage()
             .persistent()
@@ -128,6 +161,21 @@ mod test {
     use super::*;
     use soroban_sdk::testutils::Address as _;
     use soroban_sdk::Env;
+
+    #[test]
+    fn transferir_moves_balance_between_users() {
+        let env = Env::default();
+        env.mock_all_auths();
+        let contract_id = env.register(Withdrawals, ());
+        let client = WithdrawalsClient::new(&env, &contract_id);
+        let alice = Address::generate(&env);
+        let bob = Address::generate(&env);
+
+        client.depositar(&alice, &100);
+        assert_eq!(client.transferir(&alice, &bob, &40), 80);
+        assert_eq!(client.saldo(&alice), 80);
+        assert_eq!(client.saldo(&bob), 40);
+    }
 
     #[test]
     fn depositar_grants_bonus_and_updates_balance() {
