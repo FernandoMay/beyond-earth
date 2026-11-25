@@ -187,7 +187,10 @@ export async function buildServer(options: ServerOptions): Promise<FastifyInstan
     return reply.code(201).send({ mode: 'live', asset });
   });
 
-  app.get('/v1/investor', async () => options.repository.getInvestor());
+  app.get('/v1/investor', async (request) => {
+    const wallet = (request.query as { wallet?: string } | undefined)?.wallet;
+    return options.repository.getInvestor(wallet);
+  });
 
   app.get('/v1/distributions', async () => ({
     items: await options.repository.listDistributions(),

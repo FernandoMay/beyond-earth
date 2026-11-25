@@ -115,7 +115,14 @@ export class PostgresRepository implements AerospaceRepository {
     return result.rows[0]?.payload ?? null;
   }
 
-  async getInvestor(): Promise<InvestorProfile> {
+  async getInvestor(wallet?: string): Promise<InvestorProfile> {
+    if (wallet) {
+      const result = await this.client.query<PayloadRow<InvestorProfile>>(
+        'select payload from investors where payload->>\'wallet\' = $1 limit 1',
+        [wallet],
+      );
+      if (result.rows[0]) return result.rows[0].payload;
+    }
     const result = await this.client.query<PayloadRow<InvestorProfile>>(
       'select payload from investors order by created_at asc limit 1',
     );

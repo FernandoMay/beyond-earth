@@ -25,7 +25,7 @@ export interface AerospaceRepository {
   getSnapshot(): Promise<AerospaceSnapshot>;
   listAssets(query: AssetQuery): Promise<{ items: Asset[]; total: number }>;
   getAsset(idOrSlug: string): Promise<Asset | null>;
-  getInvestor(): Promise<InvestorProfile>;
+  getInvestor(wallet?: string): Promise<InvestorProfile>;
   listDistributions(): Promise<Distribution[]>;
   listComplianceCases(): Promise<ComplianceCase[]>;
   decideCompliance(decision: ComplianceDecision): Promise<ComplianceCase | null>;
@@ -163,7 +163,8 @@ export class InMemoryRepository implements AerospaceRepository {
     return this.assets.find((asset) => asset.id === idOrSlug || asset.slug === idOrSlug) ?? null;
   }
 
-  async getInvestor() {
+  async getInvestor(_wallet?: string) {
+    void _wallet;
     return demoSnapshot.investor;
   }
 
