@@ -14,7 +14,7 @@
   },
   "dependencies": {
     "@aerospace/shared-types": "0.1.0",
-    "zod": "3.25.76"
+    "zod": "4.6.7"
   },
   "devDependencies": {
     "typescript": "5.9.3",
