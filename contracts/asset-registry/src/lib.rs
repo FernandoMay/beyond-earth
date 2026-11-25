@@ -50,6 +50,7 @@ pub enum DataKey {
     Issuer(Address),
     Asset(String),
     AssetIds,
+    ReactivationCount,
 }
 
 #[contracterror]
@@ -268,6 +269,41 @@ impl AssetRegistry {
         .publish(&env);
         env.storage().persistent().set(&DataKey::Asset(id), &record);
         Ok(record)
+    }
+
+    /// Reactivates a suspended asset, returning it to active status.
+    pub fn reactivar_activo(env: Env, caller: Address, id: String) -> Result<AssetRecord, Error> {
+        caller.require_auth();
+        require_admin(&env, &caller)?;
+        let mut record = get_asset_or_error(&env, &id)?;
+        if record.status != AssetStatus::Suspended {
+            return Err(Error::InvalidTransition);
+        }
+        record.status = AssetStatus::Active;
+        AssetStatusChanged {
+            asset_id: id.clone(),
+            status: AssetStatus::Active as u32,
+        }
+        .publish(&env);
+        env.storage().persistent().set(&DataKey::Asset(id), &record);
+
+        let count: u32 = env
+            .storage()
+            .instance()
+            .get(&DataKey::ReactivationCount)
+            .unwrap_or(0);
+        env.storage()
+            .instance()
+            .set(&DataKey::ReactivationCount, &(count + 1));
+
+        Ok(record)
+    }
+
+    pub fn reactivations(env: Env) -> u32 {
+        env.storage()
+            .instance()
+            .get(&DataKey::ReactivationCount)
+            .unwrap_or(0)
     }
 
     pub fn get_asset(env: Env, id: String) -> Result<AssetRecord, Error> {
