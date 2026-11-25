@@ -246,6 +246,27 @@ impl Leasing {
         Ok(lease)
     }
 
+    /// Extends a lease by the given number of periods.
+    pub fn extender_lease(
+        env: Env,
+        caller: Address,
+        id: String,
+        periods: u32,
+    ) -> Result<Lease, Error> {
+        caller.require_auth();
+        let mut lease = get_lease_or_error(&env, &id)?;
+        require_lessor_or_admin(&env, &caller, &lease)?;
+        if lease.status == LeaseStatus::Closed || lease.status == LeaseStatus::Defaulted {
+            return Err(Error::InvalidStatus);
+        }
+        if periods == 0 {
+            return Err(Error::InvalidLease);
+        }
+        lease.next_due_at += lease.interval_seconds * periods as u64;
+        env.storage().persistent().set(&DataKey::Lease(id), &lease);
+        Ok(lease)
+    }
+
     pub fn get_lease(env: Env, id: String) -> Result<Lease, Error> {
         get_lease_or_error(&env, &id)
     }
