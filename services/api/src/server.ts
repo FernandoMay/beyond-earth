@@ -67,6 +67,25 @@ export async function buildServer(options: ServerOptions): Promise<FastifyInstan
   const demoMode = options.demoMode ?? true;
   const challenges = new Map<string, { nonce: string; expires: number }>();
   const sessions = new Map<string, { wallet: string; expires: number }>();
+  const adminWallets = (process.env.ADMIN_WALLETS ?? '')
+    .split(',')
+    .map((v) => v.trim())
+    .filter(Boolean);
+
+
+  function sessionWallet(request: FastifyRequest): string | null {
+    const auth = request.headers.authorization;
+    const token = typeof auth === 'string' && auth.startsWith('Bearer ') ? auth.slice(7) : undefined;
+    if (!token) return null;
+    const session = sessions.get(token);
+    if (!session || session.expires < Date.now()) return null;
+    return session.wallet;
+  }
+
+  function hasRole(wallet: string, role: string): boolean {
+    if (role === 'admin') return adminWallets.includes(wallet);
+    return false;
+  }
 
   const allowedOrigins = options.corsOrigins ?? [
     'http://localhost:3000',
@@ -350,6 +369,14 @@ export async function buildServer(options: ServerOptions): Promise<FastifyInstan
       throw new HttpError(401, 'SESSION_EXPIRED', 'Session is invalid or expired.');
     }
     return { wallet: session.wallet };
+  });
+
+
+  app.get('/v1/auth/me', async (request, reply) => {
+    const wallet = sessionWallet(request);
+    if (!wallet) throw new HttpError(401, 'UNAUTHORIZED', 'Valid session required.');
+    const roles = adminWallets.includes(wallet) ? ['admin'] : ['investor'];
+    return reply.code(200).send({ wallet, roles });
   });
 
   app.setNotFoundHandler((request: FastifyRequest, reply: FastifyReply) =>
