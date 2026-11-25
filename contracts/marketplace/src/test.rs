@@ -199,3 +199,19 @@ fn rejects_invalid_fees_and_listing_parameters() {
         Err(Ok(Error::InvalidListing))
     );
 }
+
+
+#[test]
+fn registrar_compra_grants_rewards() {
+    let env = Env::default();
+    env.mock_all_auths();
+    let admin = Address::generate(&env);
+    let contract_id = env.register(Marketplace, ());
+    let client = MarketplaceClient::new(&env, &contract_id);
+    client.initialize(&admin, &Address::generate(&env), &Address::generate(&env), &100);
+    let buyer = Address::generate(&env);
+    assert_eq!(client.registrar_compra(&buyer, &String::from_str(&env, "lst_001")), 1);
+    assert_eq!(client.registrar_compra(&buyer, &String::from_str(&env, "lst_002")), 2);
+    assert_eq!(client.compras_de(&buyer), 2);
+    assert_eq!(client.recompensa_de(&buyer), 30);
+}

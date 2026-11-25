@@ -35,6 +35,8 @@ pub enum DataKey {
     FeeRecipient,
     FeeBps,
     Listing(String),
+    PurchaseCount(Address),
+    RewardBalance(Address),
 }
 
 #[contracterror]
@@ -242,6 +244,43 @@ impl Marketplace {
             .persistent()
             .set(&DataKey::Listing(id), &listing);
         Ok(listing)
+    }
+
+    /// Registers a purchase and grants a reward: 20 for the first, 10 afterwards.
+    pub fn registrar_compra(env: Env, buyer: Address, listing_id: String) -> u32 {
+        buyer.require_auth();
+        let count: u32 = env
+            .storage()
+            .persistent()
+            .get(&DataKey::PurchaseCount(buyer.clone()))
+            .unwrap_or(0);
+        let reward: i128 = if count == 0 { 20 } else { 10 };
+        let balance: i128 = env
+            .storage()
+            .persistent()
+            .get(&DataKey::RewardBalance(buyer.clone()))
+            .unwrap_or(0);
+        env.storage()
+            .persistent()
+            .set(&DataKey::RewardBalance(buyer.clone()), &(balance + reward));
+        env.storage()
+            .persistent()
+            .set(&DataKey::PurchaseCount(buyer), &(count + 1));
+        count + 1
+    }
+
+    pub fn compras_de(env: Env, buyer: Address) -> u32 {
+        env.storage()
+            .persistent()
+            .get(&DataKey::PurchaseCount(buyer))
+            .unwrap_or(0)
+    }
+
+    pub fn recompensa_de(env: Env, buyer: Address) -> i128 {
+        env.storage()
+            .persistent()
+            .get(&DataKey::RewardBalance(buyer))
+            .unwrap_or(0)
     }
 
     pub fn get_listing(env: Env, id: String) -> Result<Listing, Error> {
