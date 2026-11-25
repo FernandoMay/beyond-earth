@@ -77,7 +77,6 @@ pub enum Error {
     NothingToRefund = 13,
 }
 
-
 /// Emitted when an issuer opens an offering.
 #[contractevent]
 pub struct OfferingCreated {

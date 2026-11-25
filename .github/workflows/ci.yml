@@ -41,10 +41,12 @@ jobs:
       - uses: Swatinem/rust-cache@v2
         with:
           workspaces: contracts
+      - name: Install Stellar CLI
+        run: cargo install stellar-cli --locked --version 30.0.1
       - run: cargo fmt --manifest-path contracts/Cargo.toml --all -- --check
       - run: cargo clippy --workspace --manifest-path contracts/Cargo.toml --all-targets -- -D warnings
       - run: cargo test --workspace --manifest-path contracts/Cargo.toml
-      - run: cargo build --workspace --release --target wasm32v1-none --manifest-path contracts/Cargo.toml
+      - run: stellar contract build --manifest-path contracts/Cargo.toml
 
   formatting:
     name: Formatting

@@ -34,7 +34,6 @@ pub enum Error {
     CannotRevokeOwner = 4,
 }
 
-
 /// Emitted when an admin grants a role.
 #[contractevent]
 pub struct RoleGranted {

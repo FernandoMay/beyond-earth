@@ -49,7 +49,6 @@ pub enum Error {
     InvalidParties = 8,
 }
 
-
 /// Emitted when a buyer funds an escrow.
 #[contractevent]
 pub struct EscrowCreated {

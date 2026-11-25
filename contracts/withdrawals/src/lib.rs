@@ -36,11 +36,7 @@ impl Withdrawals {
             .persistent()
             .set(&DataKey::Count(user), &(count + 1));
 
-        let total: i128 = env
-            .storage()
-            .persistent()
-            .get(&DataKey::Total)
-            .unwrap_or(0);
+        let total: i128 = env.storage().persistent().get(&DataKey::Total).unwrap_or(0);
         env.storage()
             .persistent()
             .set(&DataKey::Total, &(total + amount));
@@ -49,10 +45,7 @@ impl Withdrawals {
     }
 
     pub fn total_retirado(env: Env) -> i128 {
-        env.storage()
-            .persistent()
-            .get(&DataKey::Total)
-            .unwrap_or(0)
+        env.storage().persistent().get(&DataKey::Total).unwrap_or(0)
     }
 
     pub fn retiros_de(env: Env, user: Address) -> u32 {

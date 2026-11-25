@@ -53,7 +53,6 @@ pub enum Error {
     InvalidDecimals = 9,
 }
 
-
 /// Emitted when tokenized rights are minted.
 #[contractevent]
 pub struct TokenMinted {

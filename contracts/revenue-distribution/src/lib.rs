@@ -55,7 +55,6 @@ pub enum Error {
     TooEarly = 12,
 }
 
-
 /// Emitted when an issuer funds a distribution.
 #[contractevent]
 pub struct DistributionPublished {
@@ -182,9 +181,10 @@ impl RevenueDistribution {
         }
         distribution.allocated_units += units;
         env.storage().persistent().set(&key, &(current + units));
-        env.storage()
-            .persistent()
-            .set(&DataKey::Distribution(distribution_id.clone()), &distribution);
+        env.storage().persistent().set(
+            &DataKey::Distribution(distribution_id.clone()),
+            &distribution,
+        );
         UnitsAllocated {
             distribution_id,
             investor,
@@ -231,9 +231,10 @@ impl RevenueDistribution {
         payment.transfer(&env.current_contract_address(), &investor, &entitlement);
         env.storage().persistent().set(&claim_key, &true);
         distribution.claimed_amount += entitlement;
-        env.storage()
-            .persistent()
-            .set(&DataKey::Distribution(distribution_id.clone()), &distribution);
+        env.storage().persistent().set(
+            &DataKey::Distribution(distribution_id.clone()),
+            &distribution,
+        );
         DistributionClaimed {
             distribution_id,
             investor,
@@ -265,9 +266,10 @@ impl RevenueDistribution {
             );
         }
         distribution.status = DistributionStatus::Closed;
-        env.storage()
-            .persistent()
-            .set(&DataKey::Distribution(distribution_id.clone()), &distribution);
+        env.storage().persistent().set(
+            &DataKey::Distribution(distribution_id.clone()),
+            &distribution,
+        );
         DistributionClosed {
             distribution_id,
             remaining,
