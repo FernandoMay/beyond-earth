@@ -1,6 +1,7 @@
 'use client';
 
 import { useFreighterWallet } from '@aerospace/wallet';
+import { BASE_FEE, Contract, rpc, TransactionBuilder, scValToNative } from '@stellar/stellar-sdk';
 
 import { useEffect, useState } from 'react';
 
@@ -23,22 +24,40 @@ export default function Home() {
   const [assetCount, setAssetCount] = useState<number | null>(null);
   const [admin, setAdmin] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const baseUrl = process.env.NEXT_PUBLIC_API_URL ?? '';
   const wallet = useFreighterWallet('TESTNET');
 
   useEffect(() => {
     let active = true;
     async function load() {
       try {
-        const [countRes, adminRes] = await Promise.all([
-          fetch(`${baseUrl}/v1/stellar/soroban/${ASSET_REGISTRY}/asset_count`),
-          fetch(`${baseUrl}/v1/stellar/soroban/${ASSET_REGISTRY}/admin`),
+        const server = new rpc.Server('https://soroban-testnet.stellar.org');
+        const source = 'GBXM3X7CKJNCIOXQAJ5Y6MN3EWVEOPEIEI6AWOUNZWL5BHLDL625N6US';
+        const account = await server.getAccount(source);
+        const contract = new Contract(ASSET_REGISTRY);
+        const countTx = new TransactionBuilder(account, {
+          fee: BASE_FEE,
+          networkPassphrase: 'Test SDF Network ; September 2015',
+        })
+          .addOperation(contract.call('asset_count'))
+          .setTimeout(30)
+          .build();
+        const adminTx = new TransactionBuilder(account, {
+          fee: BASE_FEE,
+          networkPassphrase: 'Test SDF Network ; September 2015',
+        })
+          .addOperation(contract.call('admin'))
+          .setTimeout(30)
+          .build();
+        const [countSim, adminSim] = await Promise.all([
+          server.simulateTransaction(countTx),
+          server.simulateTransaction(adminTx),
         ]);
-        const countBody = await countRes.json();
-        const adminBody = await adminRes.json();
         if (!active) return;
-        setAssetCount(typeof countBody.result === 'number' ? countBody.result : null);
-        setAdmin(typeof adminBody.result === 'string' ? adminBody.result : null);
+        const countVal = (countSim as { result?: { retval?: unknown } }).result?.retval;
+        const adminVal = (adminSim as { result?: { retval?: unknown } }).result?.retval;
+        // scValToNative
+        setAssetCount(countVal ? (scValToNative(countVal as never) as number) : null);
+        setAdmin(adminVal ? (scValToNative(adminVal as never) as string) : null);
       } catch {
         // ignore
       } finally {
@@ -49,7 +68,7 @@ export default function Home() {
     return () => {
       active = false;
     };
-  }, [baseUrl]);
+  }, []);
 
   return (
     <div className="be-landing">
