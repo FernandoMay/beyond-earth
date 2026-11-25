@@ -300,6 +300,41 @@ impl Governance {
         Ok(proposal)
     }
 
+    /// Reopens a rejected proposal with a fresh voting window.
+    pub fn reabrir_propuesta(
+        env: Env,
+        caller: Address,
+        id: String,
+    ) -> Result<Proposal, Error> {
+        caller.require_auth();
+        require_admin(&env, &caller)?;
+        let mut proposal = get_proposal_or_error(&env, &id)?;
+        if proposal.status != ProposalStatus::Rejected {
+            return Err(Error::ProposalNotActive);
+        }
+        let voting_period: u64 = env
+            .storage()
+            .instance()
+            .get(&DataKey::VotingPeriod)
+            .ok_or(Error::NotInitialized)?;
+        let timelock: u64 = env
+            .storage()
+            .instance()
+            .get(&DataKey::Timelock)
+            .unwrap_or(0);
+        let now = env.ledger().timestamp();
+        proposal.status = ProposalStatus::Active;
+        proposal.yes_votes = 0;
+        proposal.no_votes = 0;
+        proposal.created_at = now;
+        proposal.voting_ends_at = now + voting_period;
+        proposal.executable_at = proposal.voting_ends_at + timelock;
+        env.storage()
+            .persistent()
+            .set(&DataKey::Proposal(id), &proposal);
+        Ok(proposal)
+    }
+
     pub fn get_proposal(env: Env, id: String) -> Result<Proposal, Error> {
         get_proposal_or_error(&env, &id)
     }

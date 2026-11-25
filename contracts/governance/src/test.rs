@@ -228,3 +228,26 @@ fn non_members_cannot_propose() {
         Err(Ok(Error::NotMember))
     );
 }
+
+
+#[test]
+fn reopens_a_rejected_proposal() {
+    let fixture = setup();
+    propose(&fixture);
+    fixture.client.vote(
+        &fixture.alice,
+        &String::from_str(&fixture.env, "prop_001"),
+        &true,
+    );
+    fixture.env.ledger().set_timestamp(NOW + VOTING_PERIOD);
+    let rejected = fixture
+        .client
+        .finalize(&String::from_str(&fixture.env, "prop_001"));
+    assert_eq!(rejected.status, ProposalStatus::Rejected);
+
+    let reopened = fixture
+        .client
+        .reabrir_propuesta(&fixture.admin, &String::from_str(&fixture.env, "prop_001"));
+    assert_eq!(reopened.status, ProposalStatus::Active);
+    assert_eq!(reopened.yes_votes, 0);
+}
