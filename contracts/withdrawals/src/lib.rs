@@ -137,6 +137,42 @@ impl Withdrawals {
         from_balance - amount
     }
 
+    /// Rewards a user: 20 the first time, 10 afterwards.
+    pub fn recompensar(env: Env, user: Address) -> i128 {
+        user.require_auth();
+        let count: u32 = env
+            .storage()
+            .persistent()
+            .get(&DataKey::Count(user.clone()))
+            .unwrap_or(0);
+        let reward: i128 = if count == 0 { 20 } else { 10 };
+
+        let balance: i128 = env
+            .storage()
+            .persistent()
+            .get(&DataKey::Balance(user.clone()))
+            .unwrap_or(0);
+        let new_balance = balance + reward;
+        env.storage()
+            .persistent()
+            .set(&DataKey::Balance(user.clone()), &new_balance);
+
+        env.storage()
+            .persistent()
+            .set(&DataKey::Count(user), &(count + 1));
+
+        let bonus_total: i128 = env
+            .storage()
+            .persistent()
+            .get(&DataKey::BonusTotal)
+            .unwrap_or(0);
+        env.storage()
+            .persistent()
+            .set(&DataKey::BonusTotal, &(bonus_total + reward));
+
+        reward
+    }
+
     pub fn bonus_total(env: Env) -> i128 {
         env.storage()
             .persistent()
@@ -161,6 +197,19 @@ mod test {
     use super::*;
     use soroban_sdk::testutils::Address as _;
     use soroban_sdk::Env;
+
+    #[test]
+    fn recompensar_grants_decreasing_rewards() {
+        let env = Env::default();
+        env.mock_all_auths();
+        let contract_id = env.register(Withdrawals, ());
+        let client = WithdrawalsClient::new(&env, &contract_id);
+        let user = Address::generate(&env);
+
+        assert_eq!(client.recompensar(&user), 20);
+        assert_eq!(client.recompensar(&user), 10);
+        assert_eq!(client.saldo(&user), 30);
+    }
 
     #[test]
     fn transferir_moves_balance_between_users() {
