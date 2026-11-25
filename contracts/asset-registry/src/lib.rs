@@ -306,6 +306,24 @@ impl AssetRegistry {
             .unwrap_or(0)
     }
 
+    /// Suspends an active asset.
+    pub fn suspender_activo(env: Env, caller: Address, id: String) -> Result<AssetRecord, Error> {
+        caller.require_auth();
+        require_admin(&env, &caller)?;
+        let mut record = get_asset_or_error(&env, &id)?;
+        if record.status != AssetStatus::Active {
+            return Err(Error::InvalidTransition);
+        }
+        record.status = AssetStatus::Suspended;
+        AssetStatusChanged {
+            asset_id: id.clone(),
+            status: AssetStatus::Suspended as u32,
+        }
+        .publish(&env);
+        env.storage().persistent().set(&DataKey::Asset(id), &record);
+        Ok(record)
+    }
+
     pub fn get_asset(env: Env, id: String) -> Result<AssetRecord, Error> {
         get_asset_or_error(&env, &id)
     }
