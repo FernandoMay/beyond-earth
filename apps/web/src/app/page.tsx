@@ -1,5 +1,7 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
+
 import { useFreighterWallet } from '@aerospace/wallet';
 import { BASE_FEE, Contract, rpc, TransactionBuilder, scValToNative } from '@stellar/stellar-sdk';
 
@@ -25,6 +27,7 @@ export default function Home() {
   const [admin, setAdmin] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const wallet = useFreighterWallet('TESTNET');
+  const router = useRouter();
 
   useEffect(() => {
     let active = true;
@@ -69,6 +72,12 @@ export default function Home() {
       active = false;
     };
   }, []);
+
+  useEffect(() => {
+    if (wallet.state.status === 'connected') {
+      router.push('/dashboard');
+    }
+  }, [wallet.state.status, router]);
 
   return (
     <div className="be-landing">
