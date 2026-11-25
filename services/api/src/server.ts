@@ -395,6 +395,20 @@ export async function buildServer(options: ServerOptions): Promise<FastifyInstan
     return reply.code(201).send({ mode: demoMode ? 'demo' : 'live', offering: created });
   });
 
+
+  app.get('/v1/reconciliation', async () => {
+    const assets = await options.repository.listAssets({ limit: 1000, offset: 0 });
+    const chain = await readSorobanContract({
+      contractId: 'CDMDH2NKJJMWNNFE7J3RFHW4JT4MWED7YE5JNHLP5RKXEUCOSF6EL3CB',
+      method: 'asset_count',
+    });
+    return {
+      databaseAssets: assets.total,
+      contractAssets: chain.result,
+      match: assets.total === chain.result,
+    };
+  });
+
   app.setNotFoundHandler((request: FastifyRequest, reply: FastifyReply) =>
     reply.code(404).send({
       error: 'Route not found',
