@@ -30,7 +30,16 @@ export default function RegistryPage() {
               <div className="p-card__head">
                 <div>
                   <div style={{ display: 'flex', gap: 7, alignItems: 'center', flexWrap: 'wrap' }}>
-                    <Badge tone={asset.status === 'active' ? 'green' : asset.status === 'evidence_review' ? 'amber' : 'blue'} dot>
+                    <Badge
+                      tone={
+                        asset.status === 'active'
+                          ? 'green'
+                          : asset.status === 'evidence_review'
+                            ? 'amber'
+                            : 'blue'
+                      }
+                      dot
+                    >
                       {asset.status.replace('_', ' ')}
                     </Badge>
                     <Badge tone="silver">{asset.vertical}</Badge>
@@ -39,14 +48,28 @@ export default function RegistryPage() {
                     </span>
                   </div>
                   <h3 style={{ marginTop: 9, fontSize: 17 }}>{asset.name}</h3>
-                  <p>{asset.ownerEntity} · {asset.operator}</p>
+                  <p>
+                    {asset.ownerEntity} · {asset.operator}
+                  </p>
                 </div>
-                <ButtonLink href={`http://localhost:3000/assets/${asset.slug}`} variant="secondary" size="sm">
+                <ButtonLink
+                  href={`http://localhost:3000/assets/${asset.slug}`}
+                  variant="secondary"
+                  size="sm"
+                >
                   Public record <ArrowUpRight size={11} />
                 </ButtonLink>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 1, background: 'var(--ar-line)', border: '1px solid var(--ar-line)' }}>
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(4, 1fr)',
+                  gap: 1,
+                  background: 'var(--ar-line)',
+                  border: '1px solid var(--ar-line)',
+                }}
+              >
                 {[
                   ['Jurisdiction', asset.jurisdiction],
                   ['Reference value', formatMoney(asset.valuation.value, true)],
@@ -54,21 +77,51 @@ export default function RegistryPage() {
                   ['Last verified', asset.lastVerifiedAt.slice(0, 10)],
                 ].map(([label, value]) => (
                   <div key={label} style={{ padding: 12, background: '#08111f' }}>
-                    <span style={{ color: 'var(--ar-faint)', fontSize: 6.5, letterSpacing: '0.07em', textTransform: 'uppercase' }}>
+                    <span
+                      style={{
+                        color: 'var(--ar-faint)',
+                        fontSize: 6.5,
+                        letterSpacing: '0.07em',
+                        textTransform: 'uppercase',
+                      }}
+                    >
                       {label}
                     </span>
-                    <strong style={{ display: 'block', marginTop: 5, color: 'var(--ar-silver)', fontSize: 9, fontWeight: 500 }}>
+                    <strong
+                      style={{
+                        display: 'block',
+                        marginTop: 5,
+                        color: 'var(--ar-silver)',
+                        fontSize: 9,
+                        fontWeight: 500,
+                      }}
+                    >
                       {value}
                     </strong>
                   </div>
                 ))}
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginTop: 16 }}>
-                <ProgressBar value={asset.evidenceCompleteness} label="Evidence completeness" tone={asset.evidenceCompleteness >= 90 ? 'green' : 'amber'} />
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--ar-faint)', fontSize: 8 }}>
+              <div
+                style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginTop: 16 }}
+              >
+                <ProgressBar
+                  value={asset.evidenceCompleteness}
+                  label="Evidence completeness"
+                  tone={asset.evidenceCompleteness >= 90 ? 'green' : 'amber'}
+                />
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 8,
+                    color: 'var(--ar-faint)',
+                    fontSize: 8,
+                  }}
+                >
                   <ShieldCheck size={12} style={{ color: 'var(--ar-cyan)' }} />
-                  {asset.documents.length} document digests · {asset.risks.length} risk factors · {asset.milestones.length} milestones
+                  {asset.documents.length} document digests · {asset.risks.length} risk factors ·{' '}
+                  {asset.milestones.length} milestones
                 </div>
               </div>
             </section>

@@ -15,7 +15,10 @@ export function ClaimPanel({ distributions }: { distributions: Distribution[] })
     <section className="i-claim">
       <div className="p-card__head" style={{ marginBottom: 0 }}>
         <div>
-          <span className="ar-mono" style={{ color: 'var(--ar-faint)', fontSize: 7, letterSpacing: '0.1em' }}>
+          <span
+            className="ar-mono"
+            style={{ color: 'var(--ar-faint)', fontSize: 7, letterSpacing: '0.1em' }}
+          >
             AVAILABLE TO CLAIM (DEMO)
           </span>
           <h3 style={{ marginTop: 6 }}>Distribution claim</h3>

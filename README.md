@@ -10,18 +10,18 @@ Aerospace RWA is a reference implementation of an institutional-grade financial 
 
 ## What is in this repository
 
-| Layer | Implementation |
-| --- | --- |
-| Public platform | Next.js marketplace, asset pages, protocol and compliance documentation |
-| Investor portal | Portfolio, holdings, distributions, eligibility and opportunity discovery |
-| Issuer portal | Asset onboarding, offering pipeline, capital and distribution administration |
-| Admin portal | Issuer reviews, verification queue, protocol health and risk |
-| Operations portal | Leases, maintenance, insurance, valuations and oracle freshness |
-| Protocol | 10 Soroban contracts in Rust covering registry, compliance, regulated token, investment, escrow, revenue, leasing, marketplace and governance |
-| Services | API, event indexer, valuation engine, oracle adapters, document verification and notifications |
-| Data | PostgreSQL schema, migrations, seed and repository adapters |
-| Standards | SEP-0057-aligned regulated token design, ERC-3643 conceptual model, Stellar assets/SAC and USDC settlement |
-| Delivery | CI, contract tests, unit tests, API integration tests, E2E scaffolding, security policy, ADRs and deployment runbook |
+| Layer             | Implementation                                                                                                                                |
+| ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| Public platform   | Next.js marketplace, asset pages, protocol and compliance documentation                                                                       |
+| Investor portal   | Portfolio, holdings, distributions, eligibility and opportunity discovery                                                                     |
+| Issuer portal     | Asset onboarding, offering pipeline, capital and distribution administration                                                                  |
+| Admin portal      | Issuer reviews, verification queue, protocol health and risk                                                                                  |
+| Operations portal | Leases, maintenance, insurance, valuations and oracle freshness                                                                               |
+| Protocol          | 10 Soroban contracts in Rust covering registry, compliance, regulated token, investment, escrow, revenue, leasing, marketplace and governance |
+| Services          | API, event indexer, valuation engine, oracle adapters, document verification and notifications                                                |
+| Data              | PostgreSQL schema, migrations, seed and repository adapters                                                                                   |
+| Standards         | SEP-0057-aligned regulated token design, ERC-3643 conceptual model, Stellar assets/SAC and USDC settlement                                    |
+| Delivery          | CI, contract tests, unit tests, API integration tests, E2E scaffolding, security policy, ADRs and deployment runbook                          |
 
 The protocol is designed for five verticals from day one:
 
@@ -77,14 +77,14 @@ npm install
 npm run dev
 ```
 
-| Surface | URL |
-| --- | --- |
-| Public platform | http://localhost:3000 |
-| Investor portal | http://localhost:3001 |
-| Issuer portal | http://localhost:3002 |
-| Admin portal | http://localhost:3003 |
+| Surface           | URL                   |
+| ----------------- | --------------------- |
+| Public platform   | http://localhost:3000 |
+| Investor portal   | http://localhost:3001 |
+| Issuer portal     | http://localhost:3002 |
+| Admin portal      | http://localhost:3003 |
 | Operations portal | http://localhost:3004 |
-| API | http://localhost:4000 |
+| API               | http://localhost:4000 |
 
 No database is required to explore the interface. The API and all apps run against a typed, deterministic demo repository. Set `NEXT_PUBLIC_API_URL=http://localhost:4000` to use the HTTP API adapter.
 
@@ -173,17 +173,17 @@ aerospace-rwa/
 
 ## Protocol modules
 
-| Contract | Responsibility | Key invariant |
-| --- | --- | --- |
-| `asset-registry` | Evidence-linked identity, category, ownership and lifecycle | An asset cannot become `Verified` without a document digest and an issuer |
-| `compliance` | Investor verification, tier, jurisdiction and expiry | No transfer or subscription to an ineligible wallet |
-| `rwa-token` | Regulated token balances, allowances, freezes and pauses | Every mint/transfer checks compliance and token state |
-| `investment` | Offering terms, subscriptions, caps and refunds | Funds cannot be withdrawn unless the offering is funded and closed |
-| `escrow` | Buyer/seller/arbiter conditional settlement | Release requires the configured authorisation and funded balance |
-| `revenue-distribution` | Epoch-based distributions and claims | A wallet can claim an epoch once and only its recorded allocation |
-| `leasing` | Rent schedule, payment and default state | Rent is only accepted for an active lease and moves the due date |
-| `marketplace` | Allowance-based secondary listings | Settlement is atomic; cancellation leaves custody with the seller |
-| `governance` | Council proposals and voting | Voting is one member, one vote, with quorum and timelock |
+| Contract               | Responsibility                                              | Key invariant                                                             |
+| ---------------------- | ----------------------------------------------------------- | ------------------------------------------------------------------------- |
+| `asset-registry`       | Evidence-linked identity, category, ownership and lifecycle | An asset cannot become `Verified` without a document digest and an issuer |
+| `compliance`           | Investor verification, tier, jurisdiction and expiry        | No transfer or subscription to an ineligible wallet                       |
+| `rwa-token`            | Regulated token balances, allowances, freezes and pauses    | Every mint/transfer checks compliance and token state                     |
+| `investment`           | Offering terms, subscriptions, caps and refunds             | Funds cannot be withdrawn unless the offering is funded and closed        |
+| `escrow`               | Buyer/seller/arbiter conditional settlement                 | Release requires the configured authorisation and funded balance          |
+| `revenue-distribution` | Epoch-based distributions and claims                        | A wallet can claim an epoch once and only its recorded allocation         |
+| `leasing`              | Rent schedule, payment and default state                    | Rent is only accepted for an active lease and moves the due date          |
+| `marketplace`          | Allowance-based secondary listings                          | Settlement is atomic; cancellation leaves custody with the seller         |
+| `governance`           | Council proposals and voting                                | Voting is one member, one vote, with quorum and timelock                  |
 
 All contracts use explicit storage keys, checked arithmetic and role-gated administration. They are independently tested and integration-tested against Stellar asset contracts. Contract event publication is a documented production gap; see `docs/PROTOCOL.md`.
 
@@ -218,13 +218,13 @@ See [`docs/COMPLIANCE.md`](docs/COMPLIANCE.md), [`docs/DEMO_MODE.md`](docs/DEMO_
 
 ## Roadmap
 
-| Phase | Outcome |
-| --- | --- |
-| **01 — Foundation** | Repository, brand, architecture, data model, threat model, docs |
-| **02 — Core protocol** | Registry, compliance, token, investment, escrow, revenue, roles |
-| **03 — Marketplace** | Issuer onboarding, marketplace, wallet connection, portfolios |
-| **04 — Operations** | Leasing, maintenance, insurance, valuations, oracle adapters |
-| **05 — Multi-vertical** | Aviation, space, manufacturing, drones, cross-vertical listings |
+| Phase                             | Outcome                                                          |
+| --------------------------------- | ---------------------------------------------------------------- |
+| **01 — Foundation**               | Repository, brand, architecture, data model, threat model, docs  |
+| **02 — Core protocol**            | Registry, compliance, token, investment, escrow, revenue, roles  |
+| **03 — Marketplace**              | Issuer onboarding, marketplace, wallet connection, portfolios    |
+| **04 — Operations**               | Leasing, maintenance, insurance, valuations, oracle adapters     |
+| **05 — Multi-vertical**           | Aviation, space, manufacturing, drones, cross-vertical listings  |
 | **06 — Institutional production** | Audits, legal review, custody, monitoring, mainnet, pilot issuer |
 
 The current repository implements the foundation, protocol reference, application surfaces and operations scaffolding. Production readiness requires the independent controls listed above. See [`docs/ROADMAP.md`](docs/ROADMAP.md), [`docs/API.md`](docs/API.md), [`docs/OPERATIONS.md`](docs/OPERATIONS.md) and [`docs/TESTING.md`](docs/TESTING.md).
@@ -241,4 +241,4 @@ Apache License 2.0. See [`LICENSE`](LICENSE).
 
 ---
 
-**AEROSPACE RWA** — *Financing the infrastructure beyond Earth.*
+**AEROSPACE RWA** — _Financing the infrastructure beyond Earth._

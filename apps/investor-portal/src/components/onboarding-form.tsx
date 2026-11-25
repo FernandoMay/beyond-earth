@@ -20,11 +20,16 @@ export function OnboardingForm() {
       <div className="i-form">
         <div className="p-card__head" style={{ marginBottom: 0 }}>
           <div>
-            <span className="ar-mono" style={{ color: 'var(--ar-faint)', fontSize: 7, letterSpacing: '0.1em' }}>
+            <span
+              className="ar-mono"
+              style={{ color: 'var(--ar-faint)', fontSize: 7, letterSpacing: '0.1em' }}
+            >
               DEMO ELIGIBILITY REVIEW
             </span>
             <h3 style={{ marginTop: 6, fontSize: 18 }}>{STEPS[step]}</h3>
-            <p>Step {step + 1} of {STEPS.length} · no real identity data is collected.</p>
+            <p>
+              Step {step + 1} of {STEPS.length} · no real identity data is collected.
+            </p>
           </div>
           <Badge tone="amber">Synthetic</Badge>
         </div>
@@ -49,7 +54,10 @@ export function OnboardingForm() {
             </div>
             <label>
               <span>Illustrative jurisdiction</span>
-              <select value={jurisdiction} onChange={(event) => setJurisdiction(event.target.value)}>
+              <select
+                value={jurisdiction}
+                onChange={(event) => setJurisdiction(event.target.value)}
+              >
                 <option>Illustrative EU jurisdiction</option>
                 <option>Illustrative UK jurisdiction</option>
                 <option>Illustrative Singapore jurisdiction</option>
@@ -183,7 +191,11 @@ export function OnboardingForm() {
             Back
           </Button>
           {step < STEPS.length - 1 ? (
-            <Button type="button" size="sm" onClick={() => setStep((value) => Math.min(STEPS.length - 1, value + 1))}>
+            <Button
+              type="button"
+              size="sm"
+              onClick={() => setStep((value) => Math.min(STEPS.length - 1, value + 1))}
+            >
               Continue
             </Button>
           ) : (
@@ -204,10 +216,19 @@ export function OnboardingForm() {
           </div>
           <div className="p-list">
             {[
-              ['Regulated KYC/AML provider', 'Identity document, liveness and beneficial ownership checks.'],
-              ['Compliance officer decision', 'Tier, jurisdiction, restrictions and expiry are recorded.'],
+              [
+                'Regulated KYC/AML provider',
+                'Identity document, liveness and beneficial ownership checks.',
+              ],
+              [
+                'Compliance officer decision',
+                'Tier, jurisdiction, restrictions and expiry are recorded.',
+              ],
               ['Source-of-funds review', 'Evidence retained and periodically refreshed.'],
-              ['On-chain eligibility record', 'The compliance contract stores the wallet authorisation.'],
+              [
+                'On-chain eligibility record',
+                'The compliance contract stores the wallet authorisation.',
+              ],
             ].map(([title, detail]) => (
               <div className="p-list__item" key={title}>
                 <span className="p-list__icon">

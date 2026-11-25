@@ -66,7 +66,13 @@ export function DonutChart({
   return (
     <div className="ar-donut">
       <div className="ar-donut__visual" style={{ width: size, height: size }}>
-        <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} role="img" aria-label="Allocation chart">
+        <svg
+          width={size}
+          height={size}
+          viewBox={`0 0 ${size} ${size}`}
+          role="img"
+          aria-label="Allocation chart"
+        >
           <circle
             cx={size / 2}
             cy={size / 2}
@@ -105,7 +111,9 @@ export function DonutChart({
       <ul className="ar-donut__legend">
         {data.map((item, index) => (
           <li key={item.label}>
-            <i style={{ background: item.color ?? DEFAULT_COLORS[index % DEFAULT_COLORS.length] }} />
+            <i
+              style={{ background: item.color ?? DEFAULT_COLORS[index % DEFAULT_COLORS.length] }}
+            />
             <span>{item.label}</span>
             <b>{total > 0 ? `${Math.round((item.value / total) * 100)}%` : '0%'}</b>
           </li>

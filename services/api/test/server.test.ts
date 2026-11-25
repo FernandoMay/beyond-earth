@@ -258,9 +258,7 @@ function sampleDraft() {
     ownerEntity: 'Test Owner Ltd',
     summary: 'Illustrative draft created by the automated test suite only.',
     valuation: { amount: 1_000_000, currency: 'USD' },
-    documentDigests: [
-      'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
-    ],
+    documentDigests: ['aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'],
     acknowledgement: true,
   };
 }

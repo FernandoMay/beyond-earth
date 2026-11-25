@@ -294,8 +294,7 @@
   gap: 11px;
   padding: 14px 16px;
   background:
-    linear-gradient(90deg, rgba(47, 123, 255, 0.055), transparent 60%),
-    rgba(9, 17, 30, 0.6);
+    linear-gradient(90deg, rgba(47, 123, 255, 0.055), transparent 60%), rgba(9, 17, 30, 0.6);
   border: 1px solid rgba(47, 123, 255, 0.16);
   border-radius: 5px;
 }

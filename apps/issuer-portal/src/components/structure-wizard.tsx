@@ -60,7 +60,10 @@ export function StructureWizard() {
             </label>
             <label className="s-wizard__full">
               <span>Jurisdiction</span>
-              <input value={jurisdiction} onChange={(event) => setJurisdiction(event.target.value)} />
+              <input
+                value={jurisdiction}
+                onChange={(event) => setJurisdiction(event.target.value)}
+              />
             </label>
             <label className="s-wizard__full">
               <span>Description</span>
@@ -127,7 +130,11 @@ export function StructureWizard() {
             </label>
             <label className="s-wizard__full">
               <span>Token represents</span>
-              <textarea rows={3} value={tokenRights} onChange={(event) => setTokenRights(event.target.value)} />
+              <textarea
+                rows={3}
+                value={tokenRights}
+                onChange={(event) => setTokenRights(event.target.value)}
+              />
             </label>
             <label>
               <span>Token symbol</span>
@@ -163,13 +170,34 @@ export function StructureWizard() {
         {step === 3 && (
           <div style={{ display: 'grid', gap: 12 }}>
             <div className="s-summary">
-              <div><span>Name</span><b>{name}</b></div>
-              <div><span>Vertical</span><b>{vertical}</b></div>
-              <div><span>Jurisdiction</span><b>{jurisdiction}</b></div>
-              <div><span>Structure</span><b>{structure}</b></div>
-              <div><span>Token rights</span><b>{tokenRights}</b></div>
-              <div><span>Evidence</span><b>2 of 5 demo files attached</b></div>
-              <div><span>Publication</span><b>Blocked · evidence incomplete</b></div>
+              <div>
+                <span>Name</span>
+                <b>{name}</b>
+              </div>
+              <div>
+                <span>Vertical</span>
+                <b>{vertical}</b>
+              </div>
+              <div>
+                <span>Jurisdiction</span>
+                <b>{jurisdiction}</b>
+              </div>
+              <div>
+                <span>Structure</span>
+                <b>{structure}</b>
+              </div>
+              <div>
+                <span>Token rights</span>
+                <b>{tokenRights}</b>
+              </div>
+              <div>
+                <span>Evidence</span>
+                <b>2 of 5 demo files attached</b>
+              </div>
+              <div>
+                <span>Publication</span>
+                <b>Blocked · evidence incomplete</b>
+              </div>
             </div>
             <label className="ar-checkbox">
               <input
@@ -208,7 +236,11 @@ export function StructureWizard() {
             Back
           </Button>
           {step < STEPS.length - 1 ? (
-            <Button type="button" size="sm" onClick={() => setStep((value) => Math.min(STEPS.length - 1, value + 1))}>
+            <Button
+              type="button"
+              size="sm"
+              onClick={() => setStep((value) => Math.min(STEPS.length - 1, value + 1))}
+            >
               Continue
             </Button>
           ) : (
@@ -255,8 +287,8 @@ export function StructureWizard() {
           </div>
           <p style={{ color: 'var(--ar-muted)', fontSize: 9, lineHeight: 1.7 }}>
             The token does not automatically convey title, possession, registration, airworthiness
-            authority, spectrum rights, operational control or any right not expressly granted in the
-            applicable documents. Production structures require jurisdiction-specific counsel.
+            authority, spectrum rights, operational control or any right not expressly granted in
+            the applicable documents. Production structures require jurisdiction-specific counsel.
           </p>
         </section>
       </div>

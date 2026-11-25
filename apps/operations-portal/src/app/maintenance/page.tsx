@@ -1,10 +1,6 @@
 import type { Metadata } from 'next';
 import { Badge, DataTable, type Column } from '@aerospace/design-system';
-import {
-  demoSnapshot,
-  getDemoAssetById,
-  type MaintenanceRecord,
-} from '@aerospace/shared-types';
+import { demoSnapshot, getDemoAssetById, type MaintenanceRecord } from '@aerospace/shared-types';
 import { PortalFrame } from '@/components/portal-frame';
 
 export const metadata: Metadata = { title: 'Maintenance' };
@@ -19,13 +15,19 @@ export default function MaintenancePage() {
           <strong style={{ color: 'var(--ar-ink)', fontSize: 9.5 }}>
             {getDemoAssetById(row.assetId)?.shortName ?? row.assetId}
           </strong>
-          <small style={{ display: 'block', color: 'var(--ar-faint)', fontSize: 7.5 }}>{row.id}</small>
+          <small style={{ display: 'block', color: 'var(--ar-faint)', fontSize: 7.5 }}>
+            {row.id}
+          </small>
         </div>
       ),
     },
     { key: 'component', header: 'Component', render: (row) => row.component },
     { key: 'task', header: 'Task', render: (row) => row.task },
-    { key: 'interval', header: 'Interval', render: (row) => <span className="ar-mono">{row.interval}</span> },
+    {
+      key: 'interval',
+      header: 'Interval',
+      render: (row) => <span className="ar-mono">{row.interval}</span>,
+    },
     {
       key: 'last',
       header: 'Last completed',
@@ -60,7 +62,9 @@ export default function MaintenancePage() {
     >
       <div className="p-page">
         <div className="p-banner">
-          <Badge tone="amber" dot>Illustrative</Badge>
+          <Badge tone="amber" dot>
+            Illustrative
+          </Badge>
           <div>
             <strong>Maintenance records are synthetic.</strong>
             <p>
@@ -73,17 +77,23 @@ export default function MaintenancePage() {
         <div className="o-gauge">
           <div>
             <span>Current</span>
-            <strong>{demoSnapshot.maintenance.filter((item) => item.status === 'current').length}</strong>
+            <strong>
+              {demoSnapshot.maintenance.filter((item) => item.status === 'current').length}
+            </strong>
             <small>Within interval</small>
           </div>
           <div>
             <span>Due soon</span>
-            <strong>{demoSnapshot.maintenance.filter((item) => item.status === 'due_soon').length}</strong>
+            <strong>
+              {demoSnapshot.maintenance.filter((item) => item.status === 'due_soon').length}
+            </strong>
             <small>Review required</small>
           </div>
           <div>
             <span>Overdue</span>
-            <strong>{demoSnapshot.maintenance.filter((item) => item.status === 'overdue').length}</strong>
+            <strong>
+              {demoSnapshot.maintenance.filter((item) => item.status === 'overdue').length}
+            </strong>
             <small>Would block operations</small>
           </div>
         </div>

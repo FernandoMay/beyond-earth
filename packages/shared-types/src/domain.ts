@@ -24,13 +24,7 @@ export type AssetCategory =
   | 'service-contract';
 
 export type AssetStatus =
-  | 'draft'
-  | 'evidence_review'
-  | 'verified'
-  | 'tokenized'
-  | 'active'
-  | 'suspended'
-  | 'retired';
+  'draft' | 'evidence_review' | 'verified' | 'tokenized' | 'active' | 'suspended' | 'retired';
 
 export type OfferingStatus = 'draft' | 'open' | 'closing_soon' | 'closed' | 'funded';
 
@@ -52,12 +46,7 @@ export interface AssetSpecification {
 }
 
 export type DocumentKind =
-  | 'legal'
-  | 'technical'
-  | 'financial'
-  | 'insurance'
-  | 'inspection'
-  | 'valuation';
+  'legal' | 'technical' | 'financial' | 'insurance' | 'inspection' | 'valuation';
 
 export interface AssetDocument {
   id: string;

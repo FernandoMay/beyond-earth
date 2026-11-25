@@ -4,18 +4,18 @@ Ten Soroban contracts implement the reference protocol. They use explicit storag
 keys, checked arithmetic, role-gated administration and typed errors. Contracts
 do not custody legal title; they record and enforce defined economic rights.
 
-| Contract | Crate | Core functions |
-| --- | --- | --- |
-| Access control | `aerospace-access-control` | `initialize`, `grant`, `revoke`, `has_role` |
-| Asset registry | `aerospace-asset-registry` | `register_asset`, `verify_asset`, `mark_tokenized`, `set_status` |
-| Compliance | `aerospace-compliance` | `set_jurisdiction`, `approve_investor`, `suspend_investor`, `is_eligible` |
-| RWA token | `aerospace-rwa-token` | `initialize`, `mint`, `burn`, `transfer`, `transfer_from`, `configure_compliance` |
-| Investment | `aerospace-investment` | `create_offering`, `subscribe`, `settle`, `mark_failed`, `claim_refund` |
-| Escrow | `aerospace-escrow` | `create_escrow`, `dispute`, `release`, `refund` |
-| Revenue distribution | `aerospace-revenue-distribution` | `create_distribution`, `allocate`, `claim`, `close` |
-| Leasing | `aerospace-leasing` | `create_lease`, `pay_rent`, `flag_arrears`, `default_lease` |
-| Marketplace | `aerospace-marketplace` | `create_listing`, `fill`, `cancel` |
-| Governance | `aerospace-governance` | `add_member`, `propose`, `vote`, `finalize`, `execute` |
+| Contract             | Crate                            | Core functions                                                                    |
+| -------------------- | -------------------------------- | --------------------------------------------------------------------------------- |
+| Access control       | `aerospace-access-control`       | `initialize`, `grant`, `revoke`, `has_role`                                       |
+| Asset registry       | `aerospace-asset-registry`       | `register_asset`, `verify_asset`, `mark_tokenized`, `set_status`                  |
+| Compliance           | `aerospace-compliance`           | `set_jurisdiction`, `approve_investor`, `suspend_investor`, `is_eligible`         |
+| RWA token            | `aerospace-rwa-token`            | `initialize`, `mint`, `burn`, `transfer`, `transfer_from`, `configure_compliance` |
+| Investment           | `aerospace-investment`           | `create_offering`, `subscribe`, `settle`, `mark_failed`, `claim_refund`           |
+| Escrow               | `aerospace-escrow`               | `create_escrow`, `dispute`, `release`, `refund`                                   |
+| Revenue distribution | `aerospace-revenue-distribution` | `create_distribution`, `allocate`, `claim`, `close`                               |
+| Leasing              | `aerospace-leasing`              | `create_lease`, `pay_rent`, `flag_arrears`, `default_lease`                       |
+| Marketplace          | `aerospace-marketplace`          | `create_listing`, `fill`, `cancel`                                                |
+| Governance           | `aerospace-governance`           | `add_member`, `propose`, `vote`, `finalize`, `execute`                            |
 
 ## Invariants
 

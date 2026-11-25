@@ -1,12 +1,6 @@
 import type { Metadata } from 'next';
 import { ArrowUpRight, Search, SlidersHorizontal } from 'lucide-react';
-import {
-  AssetCard,
-  ButtonLink,
-  PublicPage,
-  SectionHeading,
-  Badge,
-} from '@aerospace/design-system';
+import { AssetCard, ButtonLink, PublicPage, SectionHeading, Badge } from '@aerospace/design-system';
 import { VERTICALS, demoSnapshot, type Vertical } from '@aerospace/shared-types';
 
 export const metadata: Metadata = {
@@ -71,8 +65,13 @@ export default async function MarketplacePage({ searchParams }: { searchParams: 
               <div>
                 <span className="ar-mono">OPEN STRUCTURES</span>
                 <strong>
-                  {demoSnapshot.assets.filter((asset) => asset.offering?.status === 'open' || asset.offering?.status === 'closing_soon').length
-                    .toString()
+                  {demoSnapshot.assets
+                    .filter(
+                      (asset) =>
+                        asset.offering?.status === 'open' ||
+                        asset.offering?.status === 'closing_soon',
+                    )
+                    .length.toString()
                     .padStart(2, '0')}
                 </strong>
                 <small>demo offerings</small>
@@ -147,8 +146,8 @@ export default async function MarketplacePage({ searchParams }: { searchParams: 
               <span className="ar-mono">HOW TO READ THIS MARKET</span>
               <p>
                 Cards show reference values and target distributions in illustrative terms. They are
-                not offers, projections or commitments. A structure marked &quot;evidence review&quot;
-                cannot be tokenized or subscribed.
+                not offers, projections or commitments. A structure marked &quot;evidence
+                review&quot; cannot be tokenized or subscribed.
               </p>
             </div>
             <div>
@@ -183,10 +182,26 @@ export default async function MarketplacePage({ searchParams }: { searchParams: 
           />
           <div className="w-market__secondary-grid">
             {[
-              ['01', 'Eligible seller', 'Seller authorises the listing and transfers units into escrow.'],
-              ['02', 'Restricted listing', 'Compliance and jurisdiction rules remain active during the sale.'],
-              ['03', 'Atomic settlement', 'Payment and token release occur in the same contract invocation.'],
-              ['04', 'Cancellation path', 'Expired or cancelled listings return the held units to the seller.'],
+              [
+                '01',
+                'Eligible seller',
+                'Seller authorises the listing and transfers units into escrow.',
+              ],
+              [
+                '02',
+                'Restricted listing',
+                'Compliance and jurisdiction rules remain active during the sale.',
+              ],
+              [
+                '03',
+                'Atomic settlement',
+                'Payment and token release occur in the same contract invocation.',
+              ],
+              [
+                '04',
+                'Cancellation path',
+                'Expired or cancelled listings return the held units to the seller.',
+              ],
             ].map(([index, title, text]) => (
               <div key={index}>
                 <span className="ar-mono">{index}</span>

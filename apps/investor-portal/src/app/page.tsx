@@ -47,7 +47,9 @@ export default function InvestorDashboard() {
           <div className="i-holdings__asset">
             <span>
               <strong>{asset?.shortName ?? holding.assetId}</strong>
-              <small>{asset?.registryId ?? 'DEMO'} · {formatUnits(holding.units)} units</small>
+              <small>
+                {asset?.registryId ?? 'DEMO'} · {formatUnits(holding.units)} units
+              </small>
             </span>
           </div>
         );
@@ -158,7 +160,10 @@ export default function InvestorDashboard() {
               Claimable <CalendarClock size={13} />
             </span>
             <span className="ar-kpi__value">
-              {formatMoney({ amount: available.reduce((sum, item) => sum + item.amount.amount, 0), currency: 'USDC' })}
+              {formatMoney({
+                amount: available.reduce((sum, item) => sum + item.amount.amount, 0),
+                currency: 'USDC',
+              })}
             </span>
             <span className="ar-kpi__detail">{available.length} available epoch</span>
           </div>
@@ -177,7 +182,11 @@ export default function InvestorDashboard() {
                 </Link>
               </div>
               <div className="p-table-wrap">
-                <DataTable columns={columns} rows={investor.holdings} getKey={(row) => row.assetId} />
+                <DataTable
+                  columns={columns}
+                  rows={investor.holdings}
+                  getKey={(row) => row.assetId}
+                />
               </div>
             </section>
 
@@ -261,7 +270,12 @@ export default function InvestorDashboard() {
                   </div>
                 ))}
               </div>
-              <ButtonLink href="/onboarding" variant="secondary" size="sm" style={{ marginTop: 14 }}>
+              <ButtonLink
+                href="/onboarding"
+                variant="secondary"
+                size="sm"
+                style={{ marginTop: 14 }}
+              >
                 Review eligibility
               </ButtonLink>
             </section>
@@ -284,7 +298,9 @@ export default function InvestorDashboard() {
                 <div className="i-dist__item" key={distribution.id}>
                   <div>
                     <strong>{getDemoAssetById(distribution.assetId)?.shortName}</strong>
-                    <small>{distribution.epoch} · {distribution.source}</small>
+                    <small>
+                      {distribution.epoch} · {distribution.source}
+                    </small>
                   </div>
                   <div className="i-dist__amount">{formatMoney(distribution.amount)}</div>
                   <div className="i-dist__meta">

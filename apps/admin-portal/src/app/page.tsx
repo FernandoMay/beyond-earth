@@ -44,23 +44,33 @@ export default function AdminDashboard() {
 
         <div className="ar-kpis">
           <div className="ar-kpi">
-            <span className="ar-kpi__label">Assets in registry <Gauge size={13} /></span>
+            <span className="ar-kpi__label">
+              Assets in registry <Gauge size={13} />
+            </span>
             <span className="ar-kpi__value">{metrics.assetsInRegistry}</span>
             <span className="ar-kpi__detail">Synthetic records</span>
           </div>
           <div className="ar-kpi">
-            <span className="ar-kpi__label">Pending reviews <FileWarning size={13} /></span>
+            <span className="ar-kpi__label">
+              Pending reviews <FileWarning size={13} />
+            </span>
             <span className="ar-kpi__value">{metrics.pendingReviews}</span>
             <span className="ar-kpi__detail is-warning">Requires compliance officer</span>
           </div>
           <div className="ar-kpi">
-            <span className="ar-kpi__label">Eligible investors <Users size={13} /></span>
+            <span className="ar-kpi__label">
+              Eligible investors <Users size={13} />
+            </span>
             <span className="ar-kpi__value">{metrics.eligibleInvestors}</span>
             <span className="ar-kpi__detail">Demo verification states</span>
           </div>
           <div className="ar-kpi">
-            <span className="ar-kpi__label">Scheduled distributions <Activity size={13} /></span>
-            <span className="ar-kpi__value">{formatMoney(metrics.distributionsScheduled, true)}</span>
+            <span className="ar-kpi__label">
+              Scheduled distributions <Activity size={13} />
+            </span>
+            <span className="ar-kpi__value">
+              {formatMoney(metrics.distributionsScheduled, true)}
+            </span>
             <span className="ar-kpi__detail">Synthetic amounts</span>
           </div>
         </div>
@@ -82,9 +92,16 @@ export default function AdminDashboard() {
                   <div className="a-case__top">
                     <div>
                       <h3>{item.subject}</h3>
-                      <p>{item.id} · {item.type.toUpperCase()} · {item.jurisdiction}</p>
+                      <p>
+                        {item.id} · {item.type.toUpperCase()} · {item.jurisdiction}
+                      </p>
                     </div>
-                    <Badge tone={item.risk === 'high' ? 'red' : item.risk === 'medium' ? 'amber' : 'green'} dot>
+                    <Badge
+                      tone={
+                        item.risk === 'high' ? 'red' : item.risk === 'medium' ? 'amber' : 'green'
+                      }
+                      dot
+                    >
                       {item.risk} risk
                     </Badge>
                   </div>
@@ -135,7 +152,10 @@ export default function AdminDashboard() {
                 </div>
               </div>
               {[
-                ['Valuation freshness', 'Two reference valuations exceed the design freshness threshold.'],
+                [
+                  'Valuation freshness',
+                  'Two reference valuations exceed the design freshness threshold.',
+                ],
                 ['Evidence renewal', 'Insurance digest review due in 14 days (synthetic).'],
                 ['Distributions', 'One epoch is awaiting reconciliation before claims open.'],
               ].map(([title, detail]) => (

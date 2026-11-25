@@ -61,7 +61,11 @@ export function verifyOracleReading(
 ): OracleVerification {
   const parsed = oracleReadingSchema.safeParse(input);
   if (!parsed.success) {
-    return { ok: false, code: 'INVALID_READING', message: parsed.error.issues[0]?.message ?? 'Invalid reading' };
+    return {
+      ok: false,
+      code: 'INVALID_READING',
+      message: parsed.error.issues[0]?.message ?? 'Invalid reading',
+    };
   }
   const reading = parsed.data;
 

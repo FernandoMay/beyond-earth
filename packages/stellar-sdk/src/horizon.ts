@@ -1,10 +1,6 @@
 import { Horizon } from '@stellar/stellar-sdk';
 
-import {
-  resolveStellarConfig,
-  transactionExplorerUrl,
-  type StellarNetworkConfig,
-} from './index';
+import { resolveStellarConfig, transactionExplorerUrl, type StellarNetworkConfig } from './index';
 
 export interface StellarAccountBalance {
   asset: string;

@@ -103,7 +103,9 @@ async function main() {
     console.log(
       `[db:seed] inserted illustrative demo data: ${demoSnapshot.assets.length} assets, ${demoSnapshot.compliance.length} compliance cases, ${demoSnapshot.tasks.length} operations tasks.`,
     );
-    console.log('[db:seed] Every seeded record is synthetic and must remain labelled as demo data.');
+    console.log(
+      '[db:seed] Every seeded record is synthetic and must remain labelled as demo data.',
+    );
   } catch (error) {
     await client.query('rollback');
     throw error;

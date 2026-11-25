@@ -97,7 +97,10 @@ export default function StellarPaymentPage() {
         body: JSON.stringify({
           contractId: ASSET_REGISTRY_CONTRACT_ID,
           method: 'authorize_issuer',
-          args: ['GBXM3X7CKJNCIOXQAJ5Y6MN3EWVEOPEIEI6AWOUNZWL5BHLDL625N6US', destination || 'GAXVYEE6OLC4NFB3HGJ6X464XUEOZK2IT3C6CHB3MI5NJQ2V3RIL7G6U'],
+          args: [
+            'GBXM3X7CKJNCIOXQAJ5Y6MN3EWVEOPEIEI6AWOUNZWL5BHLDL625N6US',
+            destination || 'GAXVYEE6OLC4NFB3HGJ6X464XUEOZK2IT3C6CHB3MI5NJQ2V3RIL7G6U',
+          ],
         }),
       });
       const body = (await response.json()) as ContractInvokeResult & { error?: string };
@@ -113,7 +116,10 @@ export default function StellarPaymentPage() {
   return (
     <main style={{ maxWidth: 840, margin: '0 auto', padding: '3rem 1.5rem' }}>
       <h1>Stellar Testnet Integration</h1>
-      <p>Send a native XLM payment and interact with a deployed Soroban asset registry on Stellar Testnet.</p>
+      <p>
+        Send a native XLM payment and interact with a deployed Soroban asset registry on Stellar
+        Testnet.
+      </p>
 
       <section style={{ marginTop: '2rem' }}>
         <h2>Testnet payment</h2>
@@ -142,14 +148,23 @@ export default function StellarPaymentPage() {
             style={{ width: '100%', marginTop: '0.5rem' }}
           />
         </label>
-        <button type="button" onClick={() => void sendPayment()} disabled={paymentLoading || !destination} style={{ marginTop: '1.5rem' }}>
+        <button
+          type="button"
+          onClick={() => void sendPayment()}
+          disabled={paymentLoading || !destination}
+          style={{ marginTop: '1.5rem' }}
+        >
           {paymentLoading ? 'Sending…' : 'Send testnet payment'}
         </button>
-        {paymentError ? <p style={{ color: 'crimson', marginTop: '1rem' }}>{paymentError}</p> : null}
+        {paymentError ? (
+          <p style={{ color: 'crimson', marginTop: '1rem' }}>{paymentError}</p>
+        ) : null}
         {paymentResult ? (
           <div style={{ marginTop: '1rem' }}>
             <p>Transaction hash: {paymentResult.hash}</p>
-            <p><a href={paymentResult.explorerUrl}>View on stellar.expert</a></p>
+            <p>
+              <a href={paymentResult.explorerUrl}>View on stellar.expert</a>
+            </p>
           </div>
         ) : null}
       </section>
@@ -157,19 +172,35 @@ export default function StellarPaymentPage() {
       <section style={{ marginTop: '2.5rem' }}>
         <h2>Soroban asset registry</h2>
         <p>Contract: {ASSET_REGISTRY_CONTRACT_ID}</p>
-        <button type="button" onClick={() => void readContract()} disabled={contractLoading} style={{ marginTop: '1rem' }}>
+        <button
+          type="button"
+          onClick={() => void readContract()}
+          disabled={contractLoading}
+          style={{ marginTop: '1rem' }}
+        >
           {contractLoading ? 'Reading…' : 'Read asset count'}
         </button>
-        <button type="button" onClick={() => void authorizeIssuer()} disabled={invokeLoading} style={{ marginTop: '1rem', marginLeft: '1rem' }}>
+        <button
+          type="button"
+          onClick={() => void authorizeIssuer()}
+          disabled={invokeLoading}
+          style={{ marginTop: '1rem', marginLeft: '1rem' }}
+        >
           {invokeLoading ? 'Invoking…' : 'Authorize demo issuer'}
         </button>
-        {contractError ? <p style={{ color: 'crimson', marginTop: '1rem' }}>{contractError}</p> : null}
-        {contractResult ? <p style={{ marginTop: '1rem' }}>Asset count: {String(contractResult.result)}</p> : null}
+        {contractError ? (
+          <p style={{ color: 'crimson', marginTop: '1rem' }}>{contractError}</p>
+        ) : null}
+        {contractResult ? (
+          <p style={{ marginTop: '1rem' }}>Asset count: {String(contractResult.result)}</p>
+        ) : null}
         {invokeError ? <p style={{ color: 'crimson', marginTop: '1rem' }}>{invokeError}</p> : null}
         {invokeResult ? (
           <div style={{ marginTop: '1rem' }}>
             <p>Invocation hash: {invokeResult.hash}</p>
-            <p><a href={invokeResult.explorerUrl}>View on stellar.expert</a></p>
+            <p>
+              <a href={invokeResult.explorerUrl}>View on stellar.expert</a>
+            </p>
           </div>
         ) : null}
       </section>

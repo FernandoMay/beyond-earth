@@ -46,11 +46,31 @@ export default function CompliancePage() {
             </span>
             <div style={{ display: 'grid', gap: 9, marginTop: 14 }}>
               {[
-                ['Verified', demoSnapshot.compliance.filter((item) => item.status === 'verified').length, 'green'],
-                ['Pending', demoSnapshot.compliance.filter((item) => item.status === 'pending').length, 'amber'],
-                ['Rejected', demoSnapshot.compliance.filter((item) => item.status === 'rejected').length, 'red'],
+                [
+                  'Verified',
+                  demoSnapshot.compliance.filter((item) => item.status === 'verified').length,
+                  'green',
+                ],
+                [
+                  'Pending',
+                  demoSnapshot.compliance.filter((item) => item.status === 'pending').length,
+                  'amber',
+                ],
+                [
+                  'Rejected',
+                  demoSnapshot.compliance.filter((item) => item.status === 'rejected').length,
+                  'red',
+                ],
               ].map(([label, count, tone]) => (
-                <div key={label as string} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+                <div
+                  key={label as string}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    gap: 12,
+                  }}
+                >
                   <span style={{ color: 'var(--ar-muted)', fontSize: 9 }}>{label as string}</span>
                   <Badge tone={tone as 'green' | 'amber' | 'red'}>{String(count)}</Badge>
                 </div>
@@ -87,10 +107,18 @@ export default function CompliancePage() {
                     </span>
                   </div>
                   <h3 style={{ marginTop: 9, fontSize: 17 }}>{item.subject}</h3>
-                  <p>{item.jurisdiction} · submitted {item.submittedAt} · expires {item.expiresAt}</p>
+                  <p>
+                    {item.jurisdiction} · submitted {item.submittedAt} · expires {item.expiresAt}
+                  </p>
                 </div>
                 <Badge
-                  tone={item.status === 'verified' ? 'green' : item.status === 'pending' ? 'amber' : 'red'}
+                  tone={
+                    item.status === 'verified'
+                      ? 'green'
+                      : item.status === 'pending'
+                        ? 'amber'
+                        : 'red'
+                  }
                   dot
                 >
                   {item.status}

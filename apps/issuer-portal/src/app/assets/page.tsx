@@ -41,7 +41,10 @@ export default function IssuerAssetsPage() {
         <div className="p-toolbar">
           <div className="p-search">
             <Search size={13} />
-            <input placeholder="Search structures, registry IDs or tokens" aria-label="Search pipeline" />
+            <input
+              placeholder="Search structures, registry IDs or tokens"
+              aria-label="Search pipeline"
+            />
           </div>
           <Badge tone="silver">{assets.length} registry records</Badge>
           <Badge tone="amber">
@@ -71,10 +74,26 @@ export default function IssuerAssetsPage() {
                   <span>{asset.jurisdiction}</span>
                   <span>{asset.tokenization.tokenSymbol}</span>
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginTop: 15 }}>
-                  <ProgressBar value={asset.evidenceCompleteness} label="Evidence" tone={asset.evidenceCompleteness >= 90 ? 'green' : 'amber'} />
+                <div
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: '1fr 1fr',
+                    gap: 14,
+                    marginTop: 15,
+                  }}
+                >
                   <ProgressBar
-                    value={asset.offering ? (asset.offering.committed.amount / asset.offering.targetRaise.amount) * 100 : 0}
+                    value={asset.evidenceCompleteness}
+                    label="Evidence"
+                    tone={asset.evidenceCompleteness >= 90 ? 'green' : 'amber'}
+                  />
+                  <ProgressBar
+                    value={
+                      asset.offering
+                        ? (asset.offering.committed.amount / asset.offering.targetRaise.amount) *
+                          100
+                        : 0
+                    }
                     label="Offering commitments"
                     tone="blue"
                   />
@@ -97,7 +116,11 @@ export default function IssuerAssetsPage() {
                   <span>Contract</span>
                   <b>{asset.tokenization.contractState}</b>
                 </div>
-                <ButtonLink href={`http://localhost:3000/assets/${asset.slug}`} variant="secondary" size="sm">
+                <ButtonLink
+                  href={`http://localhost:3000/assets/${asset.slug}`}
+                  variant="secondary"
+                  size="sm"
+                >
                   Review record <ArrowUpRight size={11} />
                 </ButtonLink>
               </div>

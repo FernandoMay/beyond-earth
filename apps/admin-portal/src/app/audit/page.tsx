@@ -40,7 +40,11 @@ export default function AuditPage() {
       header: 'Severity',
       align: 'right',
       render: (row) => (
-        <Badge tone={row.severity === 'success' ? 'green' : row.severity === 'warning' ? 'amber' : 'blue'}>
+        <Badge
+          tone={
+            row.severity === 'success' ? 'green' : row.severity === 'warning' ? 'amber' : 'blue'
+          }
+        >
           {row.severity}
         </Badge>
       ),
@@ -66,12 +70,16 @@ export default function AuditPage() {
 
         <div className="ar-kpis">
           <div className="ar-kpi">
-            <span className="ar-kpi__label">Events <Activity size={13} /></span>
+            <span className="ar-kpi__label">
+              Events <Activity size={13} />
+            </span>
             <span className="ar-kpi__value">{demoSnapshot.activity.length}</span>
             <span className="ar-kpi__detail">Synthetic entries</span>
           </div>
           <div className="ar-kpi">
-            <span className="ar-kpi__label">Success <BadgeCheck size={13} /></span>
+            <span className="ar-kpi__label">
+              Success <BadgeCheck size={13} />
+            </span>
             <span className="ar-kpi__value">
               {demoSnapshot.activity.filter((item) => item.severity === 'success').length}
             </span>

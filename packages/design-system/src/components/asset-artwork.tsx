@@ -37,8 +37,24 @@ function kindFor(category: AssetCategory): ArtworkKind {
 function Turbine({ accent }: { accent: string }) {
   return (
     <g>
-      <circle cx="300" cy="132" r="60" fill="none" stroke={accent} strokeWidth="1.4" opacity="0.9" />
-      <circle cx="300" cy="132" r="43" fill="none" stroke="currentColor" strokeWidth="1" opacity="0.4" />
+      <circle
+        cx="300"
+        cy="132"
+        r="60"
+        fill="none"
+        stroke={accent}
+        strokeWidth="1.4"
+        opacity="0.9"
+      />
+      <circle
+        cx="300"
+        cy="132"
+        r="43"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1"
+        opacity="0.4"
+      />
       <circle cx="300" cy="132" r="12" fill="none" stroke={accent} strokeWidth="1.5" />
       {Array.from({ length: 14 }).map((_, i) => {
         const angle = (i * Math.PI * 2) / 14;
@@ -57,7 +73,12 @@ function Turbine({ accent }: { accent: string }) {
         );
       })}
       <path d="M198 154 118 184l18-38 62 8Z" fill={accent} opacity="0.12" />
-      <path d="M214 111h-55m55 21h-79m79 21h-48" stroke="currentColor" strokeWidth="1" opacity="0.25" />
+      <path
+        d="M214 111h-55m55 21h-79m79 21h-48"
+        stroke="currentColor"
+        strokeWidth="1"
+        opacity="0.25"
+      />
       <path d="M360 132h40" stroke={accent} strokeWidth="1" opacity="0.5" />
     </g>
   );
@@ -76,7 +97,12 @@ function Aircraft({ accent }: { accent: string }) {
       <path d="M184 165h76m-104 4h17m135-4h33" stroke={accent} strokeWidth="1.2" opacity="0.7" />
       <circle cx="264" cy="116" r="3.4" fill={accent} />
       <path d="M89 197h306" stroke="currentColor" strokeWidth="0.8" opacity="0.18" />
-      <path d="m118 175 15 23m218-23-17 23" stroke="currentColor" strokeWidth="0.8" opacity="0.25" />
+      <path
+        d="m118 175 15 23m218-23-17 23"
+        stroke="currentColor"
+        strokeWidth="0.8"
+        opacity="0.25"
+      />
     </g>
   );
 }
@@ -84,13 +110,38 @@ function Aircraft({ accent }: { accent: string }) {
 function Satellite({ accent }: { accent: string }) {
   return (
     <g>
-      <rect x="211" y="101" width="60" height="72" rx="5" fill={accent} fillOpacity="0.08" stroke="currentColor" />
+      <rect
+        x="211"
+        y="101"
+        width="60"
+        height="72"
+        rx="5"
+        fill={accent}
+        fillOpacity="0.08"
+        stroke="currentColor"
+      />
       <path d="M225 117h32m-32 16h32m-32 16h20" stroke={accent} strokeWidth="1.1" opacity="0.7" />
-      <path d="M211 124h-74v38h74m60-38h74v38h-74" fill={accent} fillOpacity="0.04" stroke="currentColor" />
-      <path d="M137 124v38m16-38v38m19-38v38m-35 0h35m36-38v38m16-38v38m19-38v38m-35 0h35" stroke="currentColor" strokeWidth="0.7" opacity="0.35" />
+      <path
+        d="M211 124h-74v38h74m60-38h74v38h-74"
+        fill={accent}
+        fillOpacity="0.04"
+        stroke="currentColor"
+      />
+      <path
+        d="M137 124v38m16-38v38m19-38v38m-35 0h35m36-38v38m16-38v38m19-38v38m-35 0h35"
+        stroke="currentColor"
+        strokeWidth="0.7"
+        opacity="0.35"
+      />
       <path d="M241 101V76m0 0-11-13m11 13 11-13" stroke={accent} strokeWidth="1.2" />
       <ellipse cx="241" cy="76" rx="14" ry="5" fill="none" stroke={accent} strokeWidth="1" />
-      <path d="M160 208c38 12 122 12 160 0" stroke={accent} strokeWidth="1" opacity="0.4" strokeDasharray="4 7" />
+      <path
+        d="M160 208c38 12 122 12 160 0"
+        stroke={accent}
+        strokeWidth="1"
+        opacity="0.4"
+        strokeDasharray="4 7"
+      />
     </g>
   );
 }
@@ -98,8 +149,27 @@ function Satellite({ accent }: { accent: string }) {
 function Tooling({ accent }: { accent: string }) {
   return (
     <g>
-      <rect x="161" y="82" width="170" height="118" rx="3" fill={accent} fillOpacity="0.04" stroke="currentColor" />
-      <rect x="178" y="99" width="80" height="55" rx="2" fill="none" stroke={accent} strokeWidth="1.1" opacity="0.7" />
+      <rect
+        x="161"
+        y="82"
+        width="170"
+        height="118"
+        rx="3"
+        fill={accent}
+        fillOpacity="0.04"
+        stroke="currentColor"
+      />
+      <rect
+        x="178"
+        y="99"
+        width="80"
+        height="55"
+        rx="2"
+        fill="none"
+        stroke={accent}
+        strokeWidth="1.1"
+        opacity="0.7"
+      />
       <path d="M218 99v55m-40-27h80" stroke="currentColor" strokeWidth="0.8" opacity="0.3" />
       <path d="M290 99v55h24v-55" fill="none" stroke="currentColor" />
       <circle cx="302" cy="126" r="7" fill="none" stroke={accent} />
@@ -115,7 +185,12 @@ function Drone({ accent }: { accent: string }) {
   return (
     <g>
       <path d="M203 139h74l16 28h-106Z" fill={accent} fillOpacity="0.09" stroke="currentColor" />
-      <path d="M217 139 186 101m65 38 31-38M217 167l-35 27m66-27 35 27" stroke={accent} strokeWidth="1.2" opacity="0.7" />
+      <path
+        d="M217 139 186 101m65 38 31-38M217 167l-35 27m66-27 35 27"
+        stroke={accent}
+        strokeWidth="1.2"
+        opacity="0.7"
+      />
       <ellipse cx="181" cy="96" rx="33" ry="5" fill="none" stroke="currentColor" opacity="0.45" />
       <ellipse cx="299" cy="96" rx="33" ry="5" fill="none" stroke="currentColor" opacity="0.45" />
       <ellipse cx="177" cy="198" rx="26" ry="4" fill="none" stroke="currentColor" opacity="0.35" />
@@ -130,11 +205,26 @@ function Drone({ accent }: { accent: string }) {
 function Ground({ accent }: { accent: string }) {
   return (
     <g>
-      <path d="M328 183c-14-49-49-77-89-77s-75 28-89 77" fill="none" stroke="currentColor" strokeWidth="1.4" />
-      <path d="M306 183c-10-35-35-55-67-55s-57 20-67 55" fill="none" stroke={accent} strokeWidth="1" opacity="0.6" />
+      <path
+        d="M328 183c-14-49-49-77-89-77s-75 28-89 77"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.4"
+      />
+      <path
+        d="M306 183c-10-35-35-55-67-55s-57 20-67 55"
+        fill="none"
+        stroke={accent}
+        strokeWidth="1"
+        opacity="0.6"
+      />
       <path d="M240 183v-47m0 0-13-21m13 21 13-21" stroke={accent} strokeWidth="1.4" />
       <circle cx="240" cy="136" r="5" fill={accent} />
-      <path d="M240 111c-25 9-30 34-21 51m21-51c25 9 30 34 21 51" stroke="currentColor" strokeWidth="1.2" />
+      <path
+        d="M240 111c-25 9-30 34-21 51m21-51c25 9 30 34 21 51"
+        stroke="currentColor"
+        strokeWidth="1.2"
+      />
       <path d="M172 190h136l-12 18H184Z" fill={accent} fillOpacity="0.07" stroke="currentColor" />
       <path d="M205 199h70m-60 0v9m50-9v9" stroke="currentColor" opacity="0.3" />
       <path d="M112 221h268" stroke="currentColor" opacity="0.16" />
@@ -146,8 +236,27 @@ function Service({ accent }: { accent: string }) {
   return (
     <g>
       <circle cx="240" cy="142" r="58" fill="none" stroke="currentColor" opacity="0.25" />
-      <ellipse cx="240" cy="142" rx="58" ry="21" transform="rotate(-24 240 142)" fill="none" stroke={accent} strokeWidth="1.2" />
-      <ellipse cx="240" cy="142" rx="86" ry="31" transform="rotate(-24 240 142)" fill="none" stroke="currentColor" opacity="0.15" strokeDasharray="4 6" />
+      <ellipse
+        cx="240"
+        cy="142"
+        rx="58"
+        ry="21"
+        transform="rotate(-24 240 142)"
+        fill="none"
+        stroke={accent}
+        strokeWidth="1.2"
+      />
+      <ellipse
+        cx="240"
+        cy="142"
+        rx="86"
+        ry="31"
+        transform="rotate(-24 240 142)"
+        fill="none"
+        stroke="currentColor"
+        opacity="0.15"
+        strokeDasharray="4 6"
+      />
       <circle cx="240" cy="142" r="9" fill={accent} fillOpacity="0.2" stroke={accent} />
       {[
         [154, 102],
@@ -160,7 +269,12 @@ function Service({ accent }: { accent: string }) {
           <circle cx={cx} cy={cy} r="10" fill="none" stroke={accent} opacity="0.3" />
         </g>
       ))}
-      <path d="M154 102c24-30 83-38 133-12M330 129c10 23-9 45-28 64M200 205c-30-9-45-34-46-63" fill="none" stroke="currentColor" opacity="0.2" />
+      <path
+        d="M154 102c24-30 83-38 133-12M330 129c10 23-9 45-28 64M200 205c-30-9-45-34-46-63"
+        fill="none"
+        stroke="currentColor"
+        opacity="0.2"
+      />
     </g>
   );
 }
@@ -201,7 +315,11 @@ function Inventory({ accent }: { accent: string }) {
               stroke="currentColor"
               opacity={0.75}
             />
-            <path d={`M182 ${128 + row * 52}h24M182 ${136 + row * 52}h16`} stroke={accent} opacity="0.6" />
+            <path
+              d={`M182 ${128 + row * 52}h24M182 ${136 + row * 52}h16`}
+              stroke={accent}
+              opacity="0.6"
+            />
           </g>
         )),
       )}
@@ -259,10 +377,21 @@ export function AssetArtwork({
         {kind === 'component' && <Component accent={accent} />}
         {kind === 'inventory' && <Inventory accent={accent} />}
       </g>
-      <g fill="#8fa3bf" fontSize="8" fontFamily="var(--ar-font-mono, monospace)" letterSpacing="1.4">
-        <text x="20" y="26">ARWA / {kind.toUpperCase()}</text>
-        <text x="20" y="262">ILLUSTRATIVE ASSET VIEW</text>
-        <text x="394" y="262">REF. 01</text>
+      <g
+        fill="#8fa3bf"
+        fontSize="8"
+        fontFamily="var(--ar-font-mono, monospace)"
+        letterSpacing="1.4"
+      >
+        <text x="20" y="26">
+          ARWA / {kind.toUpperCase()}
+        </text>
+        <text x="20" y="262">
+          ILLUSTRATIVE ASSET VIEW
+        </text>
+        <text x="394" y="262">
+          REF. 01
+        </text>
       </g>
       <path d="M16 44h22M16 44v22M464 236h-22m22 0v-22" stroke="#7ba6d8" strokeOpacity="0.25" />
     </svg>

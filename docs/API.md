@@ -4,20 +4,20 @@ Base URL: `http://localhost:4000`
 
 ## Endpoints
 
-| Method | Path | Auth | Purpose |
-| --- | --- | --- | --- |
-| GET | `/health` | none | Service, mode, repository and network |
-| GET | `/metrics` | none | Prometheus text metrics |
-| GET | `/v1/snapshot` | none | Full demo/operational snapshot |
-| GET | `/v1/assets` | none | Filter by `vertical`, `status`, `q`, `limit`, `offset` |
-| GET | `/v1/assets/:id` | none | Asset by id or slug |
-| POST | `/v1/assets` | API key | Create an illustrative draft asset |
-| GET | `/v1/investor` | none | Demo investor profile |
-| GET | `/v1/distributions` | none | Distribution register |
-| GET | `/v1/compliance/cases` | none | Compliance queue |
-| POST | `/v1/compliance/decisions` | API key | Record a review decision |
-| GET | `/v1/operations/tasks` | none | Operations task queue |
-| POST | `/v1/subscriptions` | API key in live mode | Idempotent subscription intent |
+| Method | Path                       | Auth                 | Purpose                                                |
+| ------ | -------------------------- | -------------------- | ------------------------------------------------------ |
+| GET    | `/health`                  | none                 | Service, mode, repository and network                  |
+| GET    | `/metrics`                 | none                 | Prometheus text metrics                                |
+| GET    | `/v1/snapshot`             | none                 | Full demo/operational snapshot                         |
+| GET    | `/v1/assets`               | none                 | Filter by `vertical`, `status`, `q`, `limit`, `offset` |
+| GET    | `/v1/assets/:id`           | none                 | Asset by id or slug                                    |
+| POST   | `/v1/assets`               | API key              | Create an illustrative draft asset                     |
+| GET    | `/v1/investor`             | none                 | Demo investor profile                                  |
+| GET    | `/v1/distributions`        | none                 | Distribution register                                  |
+| GET    | `/v1/compliance/cases`     | none                 | Compliance queue                                       |
+| POST   | `/v1/compliance/decisions` | API key              | Record a review decision                               |
+| GET    | `/v1/operations/tasks`     | none                 | Operations task queue                                  |
+| POST   | `/v1/subscriptions`        | API key in live mode | Idempotent subscription intent                         |
 
 Write requests require `x-api-key`. Subscriptions also accept `idempotency-key`;
 the header takes precedence over the body when it is at least eight characters.
@@ -43,16 +43,16 @@ Issuer writes may send `x-actor` for the audit label.
 }
 ```
 
-| Code | Meaning |
-| --- | --- |
-| `VALIDATION_ERROR` | Zod rejected the request |
-| `DEMO_MODE` | Write attempted in demo mode |
-| `UNAUTHORIZED` | Missing or invalid API key |
-| `NOT_CONFIGURED` | Live mode without an API key |
-| `ASSET_NOT_FOUND` | Unknown asset id or slug |
-| `CASE_NOT_FOUND` | Unknown compliance case |
-| `ROUTE_NOT_FOUND` | Unknown route |
-| `INTERNAL_ERROR` | Unhandled server error |
+| Code               | Meaning                      |
+| ------------------ | ---------------------------- |
+| `VALIDATION_ERROR` | Zod rejected the request     |
+| `DEMO_MODE`        | Write attempted in demo mode |
+| `UNAUTHORIZED`     | Missing or invalid API key   |
+| `NOT_CONFIGURED`   | Live mode without an API key |
+| `ASSET_NOT_FOUND`  | Unknown asset id or slug     |
+| `CASE_NOT_FOUND`   | Unknown compliance case      |
+| `ROUTE_NOT_FOUND`  | Unknown route                |
+| `INTERNAL_ERROR`   | Unhandled server error       |
 
 ## Example
 

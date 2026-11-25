@@ -49,10 +49,7 @@ export function DataTable<T>({
             rows.map((row) => (
               <tr key={getKey(row)}>
                 {columns.map((column) => (
-                  <td
-                    key={column.key}
-                    className={column.align ? `is-${column.align}` : undefined}
-                  >
+                  <td key={column.key} className={column.align ? `is-${column.align}` : undefined}>
                     {column.render(row)}
                   </td>
                 ))}

@@ -36,7 +36,10 @@ function toScVal(value: unknown) {
   if (value && typeof value === 'object' && 'switch' in (value as object)) {
     return value as ReturnType<typeof nativeToScVal>;
   }
-  if (typeof value === 'string' && (isValidAccountAddress(value) || isValidContractAddress(value))) {
+  if (
+    typeof value === 'string' &&
+    (isValidAccountAddress(value) || isValidContractAddress(value))
+  ) {
     return nativeToScVal(value, { type: 'address' });
   }
   return nativeToScVal(value as Parameters<typeof nativeToScVal>[0]);

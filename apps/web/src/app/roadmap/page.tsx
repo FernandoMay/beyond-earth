@@ -163,10 +163,7 @@ export default function RoadmapPage() {
           />
           <div className="w-roadmap">
             {phases.map((phase) => (
-              <article
-                key={phase.phase}
-                className={`w-roadmap__item is-${phase.status}`}
-              >
+              <article key={phase.phase} className={`w-roadmap__item is-${phase.status}`}>
                 <div className="w-roadmap__rail">
                   <span className="w-roadmap__marker">
                     {phase.status === 'complete' ? (
@@ -241,8 +238,8 @@ export default function RoadmapPage() {
                 <span className="w-silver">because it has a UI.</span>
               </h2>
               <p>
-                The project succeeds only when a real issuer, a valid legal structure and a real asset
-                complete an end-to-end cycle with verifiable evidence, controlled transfer and
+                The project succeeds only when a real issuer, a valid legal structure and a real
+                asset complete an end-to-end cycle with verifiable evidence, controlled transfer and
                 reconciled settlement.
               </p>
             </div>

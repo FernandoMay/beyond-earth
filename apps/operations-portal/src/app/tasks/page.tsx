@@ -1,10 +1,6 @@
 import type { Metadata } from 'next';
 import { Badge, DataTable, type Column } from '@aerospace/design-system';
-import {
-  demoSnapshot,
-  getDemoAssetById,
-  type OperationsTask,
-} from '@aerospace/shared-types';
+import { demoSnapshot, getDemoAssetById, type OperationsTask } from '@aerospace/shared-types';
 import { PortalFrame } from '@/components/portal-frame';
 
 export const metadata: Metadata = { title: 'Task queue' };
@@ -36,7 +32,10 @@ export default function TasksPage() {
       header: 'Priority',
       align: 'right',
       render: (row) => (
-        <Badge tone={row.priority === 'high' ? 'red' : row.priority === 'medium' ? 'amber' : 'green'} dot>
+        <Badge
+          tone={row.priority === 'high' ? 'red' : row.priority === 'medium' ? 'amber' : 'green'}
+          dot
+        >
           {row.priority}
         </Badge>
       ),
@@ -60,7 +59,9 @@ export default function TasksPage() {
     >
       <div className="p-page">
         <div className="p-banner">
-          <Badge tone="amber" dot>Illustrative</Badge>
+          <Badge tone="amber" dot>
+            Illustrative
+          </Badge>
           <div>
             <strong>Task data is generated.</strong>
             <p>
@@ -78,7 +79,9 @@ export default function TasksPage() {
           </div>
           <div>
             <span>In progress</span>
-            <strong>{demoSnapshot.tasks.filter((task) => task.status === 'in_progress').length}</strong>
+            <strong>
+              {demoSnapshot.tasks.filter((task) => task.status === 'in_progress').length}
+            </strong>
             <small>Assigned</small>
           </div>
           <div>

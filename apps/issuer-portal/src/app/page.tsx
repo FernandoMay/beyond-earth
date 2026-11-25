@@ -34,7 +34,10 @@ export default function IssuerDashboard() {
       <div className="p-page">
         <section className="s-hero">
           <div>
-            <span className="ar-mono" style={{ color: 'var(--ar-cyan)', fontSize: 7.5, letterSpacing: '0.1em' }}>
+            <span
+              className="ar-mono"
+              style={{ color: 'var(--ar-cyan)', fontSize: 7.5, letterSpacing: '0.1em' }}
+            >
               ISSUER · REFERENCE ORGANISATION
             </span>
             <h2>From technical evidence to an eligible, controlled offering.</h2>
@@ -70,25 +73,40 @@ export default function IssuerDashboard() {
 
         <div className="ar-kpis">
           <div className="ar-kpi">
-            <span className="ar-kpi__label">Structures <Layers3 size={13} /></span>
+            <span className="ar-kpi__label">
+              Structures <Layers3 size={13} />
+            </span>
             <span className="ar-kpi__value">{assets.length}</span>
             <span className="ar-kpi__detail">Synthetic registry records</span>
           </div>
           <div className="ar-kpi">
-            <span className="ar-kpi__label">Verified evidence <FileCheck2 size={13} /></span>
+            <span className="ar-kpi__label">
+              Verified evidence <FileCheck2 size={13} />
+            </span>
             <span className="ar-kpi__value">{avgEvidence}%</span>
             <span className="ar-kpi__detail is-warning">2 packages need review</span>
           </div>
           <div className="ar-kpi">
-            <span className="ar-kpi__label">Open offerings <Gauge size={13} /></span>
+            <span className="ar-kpi__label">
+              Open offerings <Gauge size={13} />
+            </span>
             <span className="ar-kpi__value">
-              {assets.filter((asset) => asset.offering?.status === 'open' || asset.offering?.status === 'closing_soon').length}
+              {
+                assets.filter(
+                  (asset) =>
+                    asset.offering?.status === 'open' || asset.offering?.status === 'closing_soon',
+                ).length
+              }
             </span>
             <span className="ar-kpi__detail">Demo commitments only</span>
           </div>
           <div className="ar-kpi">
-            <span className="ar-kpi__label">Committed (demo) <ShieldCheck size={13} /></span>
-            <span className="ar-kpi__value">{formatMoney(demoSnapshot.metrics.illustrativeCapitalCommitted, true)}</span>
+            <span className="ar-kpi__label">
+              Committed (demo) <ShieldCheck size={13} />
+            </span>
+            <span className="ar-kpi__value">
+              {formatMoney(demoSnapshot.metrics.illustrativeCapitalCommitted, true)}
+            </span>
             <span className="ar-kpi__detail">No funds received</span>
           </div>
         </div>
@@ -132,7 +150,16 @@ export default function IssuerDashboard() {
                   <div key={asset.id} className="s-asset">
                     <div>
                       <div className="s-asset__top">
-                        <Badge tone={asset.status === 'active' ? 'green' : asset.status === 'evidence_review' ? 'amber' : 'blue'} dot>
+                        <Badge
+                          tone={
+                            asset.status === 'active'
+                              ? 'green'
+                              : asset.status === 'evidence_review'
+                                ? 'amber'
+                                : 'blue'
+                          }
+                          dot
+                        >
                           {asset.status.replace('_', ' ')}
                         </Badge>
                         <Badge tone="silver">{asset.vertical}</Badge>
@@ -147,7 +174,11 @@ export default function IssuerDashboard() {
                         <span>{formatMoney(asset.valuation.value, true)}</span>
                         <span>{asset.documents.length} evidence files</span>
                       </div>
-                      <ProgressBar value={asset.evidenceCompleteness} label="Evidence completeness" tone={asset.evidenceCompleteness > 90 ? 'green' : 'amber'} />
+                      <ProgressBar
+                        value={asset.evidenceCompleteness}
+                        label="Evidence completeness"
+                        tone={asset.evidenceCompleteness > 90 ? 'green' : 'amber'}
+                      />
                     </div>
                     <div className="s-asset__side">
                       <div>
@@ -162,7 +193,11 @@ export default function IssuerDashboard() {
                         <span>Last verified</span>
                         <b>{asset.lastVerifiedAt.slice(0, 10)}</b>
                       </div>
-                      <ButtonLink href={`http://localhost:3000/assets/${asset.slug}`} variant="secondary" size="sm">
+                      <ButtonLink
+                        href={`http://localhost:3000/assets/${asset.slug}`}
+                        variant="secondary"
+                        size="sm"
+                      >
                         Public view <ArrowUpRight size={11} />
                       </ButtonLink>
                     </div>
@@ -182,10 +217,26 @@ export default function IssuerDashboard() {
               </div>
               <div className="p-list">
                 {[
-                  ['Asset evidence', 'Ownership, registration, inspection and insurance digests required.', 'pass'],
-                  ['Legal structure', 'SPV documents and rights description must be attached.', 'pending'],
-                  ['Compliance review', 'Offering eligibility and jurisdictions require approval.', 'pending'],
-                  ['Technical review', 'Contract parameters and transfer rules must match the documents.', 'pass'],
+                  [
+                    'Asset evidence',
+                    'Ownership, registration, inspection and insurance digests required.',
+                    'pass',
+                  ],
+                  [
+                    'Legal structure',
+                    'SPV documents and rights description must be attached.',
+                    'pending',
+                  ],
+                  [
+                    'Compliance review',
+                    'Offering eligibility and jurisdictions require approval.',
+                    'pending',
+                  ],
+                  [
+                    'Technical review',
+                    'Contract parameters and transfer rules must match the documents.',
+                    'pass',
+                  ],
                 ].map(([title, detail, state]) => (
                   <div className="p-list__item" key={title}>
                     <span className="p-list__icon">
@@ -212,8 +263,8 @@ export default function IssuerDashboard() {
                 <TriangleAlert size={13} />
                 <span>
                   An issuer may not describe a token as ownership of an aerospace asset unless the
-                  legal documents expressly grant that right and counsel has approved the disclosure.
-                  This demo makes no such claim.
+                  legal documents expressly grant that right and counsel has approved the
+                  disclosure. This demo makes no such claim.
                 </span>
               </div>
               <div style={{ marginTop: 14 }}>

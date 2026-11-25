@@ -39,7 +39,9 @@ export default function OfferingsPage() {
               <section className="p-card" key={asset.id}>
                 <div className="p-card__head">
                   <div>
-                    <div style={{ display: 'flex', gap: 7, alignItems: 'center', flexWrap: 'wrap' }}>
+                    <div
+                      style={{ display: 'flex', gap: 7, alignItems: 'center', flexWrap: 'wrap' }}
+                    >
                       <Badge tone={offering.status === 'closing_soon' ? 'amber' : 'blue'} dot>
                         {offering.status.replace('_', ' ')}
                       </Badge>
@@ -51,12 +53,24 @@ export default function OfferingsPage() {
                     <h3 style={{ marginTop: 9, fontSize: 18 }}>{asset.name}</h3>
                     <p>{offering.eligibility}</p>
                   </div>
-                  <ButtonLink href={`http://localhost:3000/assets/${asset.slug}`} variant="secondary" size="sm">
+                  <ButtonLink
+                    href={`http://localhost:3000/assets/${asset.slug}`}
+                    variant="secondary"
+                    size="sm"
+                  >
                     Preview <ArrowUpRight size={11} />
                   </ButtonLink>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 1, background: 'var(--ar-line)', border: '1px solid var(--ar-line)' }}>
+                <div
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(5, 1fr)',
+                    gap: 1,
+                    background: 'var(--ar-line)',
+                    border: '1px solid var(--ar-line)',
+                  }}
+                >
                   {[
                     ['Target raise', formatMoney(offering.targetRaise)],
                     ['Committed (demo)', formatMoney(offering.committed)],
@@ -65,17 +79,40 @@ export default function OfferingsPage() {
                     ['Distribution', offering.distributionFrequency],
                   ].map(([label, value]) => (
                     <div key={label} style={{ padding: 13, background: '#08111f' }}>
-                      <span style={{ color: 'var(--ar-faint)', fontSize: 6.5, letterSpacing: '0.07em', textTransform: 'uppercase' }}>
+                      <span
+                        style={{
+                          color: 'var(--ar-faint)',
+                          fontSize: 6.5,
+                          letterSpacing: '0.07em',
+                          textTransform: 'uppercase',
+                        }}
+                      >
                         {label}
                       </span>
-                      <strong style={{ display: 'block', marginTop: 5, color: 'var(--ar-silver)', fontSize: 9.5, fontWeight: 500 }}>
+                      <strong
+                        style={{
+                          display: 'block',
+                          marginTop: 5,
+                          color: 'var(--ar-silver)',
+                          fontSize: 9.5,
+                          fontWeight: 500,
+                        }}
+                      >
                         {value}
                       </strong>
                     </div>
                   ))}
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: 24, marginTop: 18, alignItems: 'center' }}>
+                <div
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: '1fr 320px',
+                    gap: 24,
+                    marginTop: 18,
+                    alignItems: 'center',
+                  }}
+                >
                   <ProgressBar value={pct} label="Illustrative commitment progress" />
                   <div style={{ display: 'flex', gap: 14, color: 'var(--ar-faint)', fontSize: 8 }}>
                     <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
@@ -100,8 +137,8 @@ export default function OfferingsPage() {
           <ShieldCheck size={13} />
           <span>
             A production issuer must not publish an offering until evidence, legal documents,
-            compliance approval and technical review are complete. {getDemoAssetById('ast_eng_001')?.registryId} is
-            synthetic.
+            compliance approval and technical review are complete.{' '}
+            {getDemoAssetById('ast_eng_001')?.registryId} is synthetic.
           </span>
         </div>
       </div>

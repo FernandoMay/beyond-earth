@@ -29,15 +29,15 @@ describe('Stellar utilities', () => {
   });
 
   it('validates account and contract addresses', () => {
-    expect(
-      isValidAccountAddress('GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWHF'),
-    ).toBe(true);
+    expect(isValidAccountAddress('GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWHF')).toBe(
+      true,
+    );
     expect(isValidAccountAddress('CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABSC4')).toBe(
       false,
     );
-    expect(
-      isValidContractAddress('CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABSC4'),
-    ).toBe(true);
+    expect(isValidContractAddress('CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABSC4')).toBe(
+      true,
+    );
   });
 
   it('parses token amounts without floating point error', () => {

@@ -31,7 +31,13 @@ export default function InsurancePage() {
                 <div>
                   <div style={{ display: 'flex', gap: 7, alignItems: 'center', flexWrap: 'wrap' }}>
                     <Badge
-                      tone={policy.status === 'active' ? 'green' : policy.status === 'expiring' ? 'amber' : 'red'}
+                      tone={
+                        policy.status === 'active'
+                          ? 'green'
+                          : policy.status === 'expiring'
+                            ? 'amber'
+                            : 'red'
+                      }
                       dot
                     >
                       {policy.status}
@@ -59,17 +65,40 @@ export default function InsurancePage() {
                   </strong>
                 </div>
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 1, background: 'var(--ar-line)', border: '1px solid var(--ar-line)' }}>
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(3, 1fr)',
+                  gap: 1,
+                  background: 'var(--ar-line)',
+                  border: '1px solid var(--ar-line)',
+                }}
+              >
                 {[
                   ['Deductible', formatMoney(policy.deductible)],
                   ['Expires', policy.expiresAt],
                   ['Renewal window', policy.status === 'expiring' ? 'Action required' : 'Monitor'],
                 ].map(([label, value]) => (
                   <div key={label} style={{ padding: 12, background: '#08111f' }}>
-                    <span style={{ color: 'var(--ar-faint)', fontSize: 6.5, letterSpacing: '0.07em', textTransform: 'uppercase' }}>
+                    <span
+                      style={{
+                        color: 'var(--ar-faint)',
+                        fontSize: 6.5,
+                        letterSpacing: '0.07em',
+                        textTransform: 'uppercase',
+                      }}
+                    >
                       {label}
                     </span>
-                    <strong style={{ display: 'block', marginTop: 5, color: 'var(--ar-silver)', fontSize: 9, fontWeight: 500 }}>
+                    <strong
+                      style={{
+                        display: 'block',
+                        marginTop: 5,
+                        color: 'var(--ar-silver)',
+                        fontSize: 9,
+                        fontWeight: 500,
+                      }}
+                    >
                       {value}
                     </strong>
                   </div>

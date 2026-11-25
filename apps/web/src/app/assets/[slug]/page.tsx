@@ -192,8 +192,14 @@ export default async function AssetPage({ params }: { params: Params }) {
               </div>
               <div className="w-asset-econ-card">
                 <span>Annual reference rent</span>
-                <strong>{formatMoney(asset.financials.annualRent ?? { amount: 0, currency: 'USD' }, true)}</strong>
-                <small>{estimatedAnnualIncome ? `${estimatedAnnualIncome.toFixed(1)}% gross reference yield` : '—'}</small>
+                <strong>
+                  {formatMoney(asset.financials.annualRent ?? { amount: 0, currency: 'USD' }, true)}
+                </strong>
+                <small>
+                  {estimatedAnnualIncome
+                    ? `${estimatedAnnualIncome.toFixed(1)}% gross reference yield`
+                    : '—'}
+                </small>
               </div>
               <div className="w-asset-econ-card">
                 <span>Target distribution</span>
@@ -337,7 +343,13 @@ export default async function AssetPage({ params }: { params: Params }) {
                   <div className="w-risk-card__top">
                     <span className="ar-mono">{risk.category}</span>
                     <Badge
-                      tone={risk.severity === 'high' ? 'red' : risk.severity === 'medium' ? 'amber' : 'green'}
+                      tone={
+                        risk.severity === 'high'
+                          ? 'red'
+                          : risk.severity === 'medium'
+                            ? 'amber'
+                            : 'green'
+                      }
                     >
                       {risk.severity}
                     </Badge>
@@ -433,8 +445,8 @@ export default async function AssetPage({ params }: { params: Params }) {
               <Badge tone="amber">Not deployed</Badge>
             </div>
             <p>
-              This page shows an implementation state, not a live issuance. Contract source is in the
-              repository.
+              This page shows an implementation state, not a live issuance. Contract source is in
+              the repository.
             </p>
             <ButtonLink href="/protocol" variant="secondary" size="sm">
               Review protocol

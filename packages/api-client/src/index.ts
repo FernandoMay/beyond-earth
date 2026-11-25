@@ -154,9 +154,10 @@ export class LiveApi implements AerospaceApi {
       cache: 'no-store',
     });
     if (!response.ok) {
-      const body = (await response.json().catch(() => null)) as
-        | { error?: string; code?: string }
-        | null;
+      const body = (await response.json().catch(() => null)) as {
+        error?: string;
+        code?: string;
+      } | null;
       throw new ApiError(
         body?.error ?? `API request failed with ${response.status}`,
         response.status,

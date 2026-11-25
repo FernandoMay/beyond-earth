@@ -12,7 +12,13 @@ const { publicKey, privateKey } = generateKeyPairSync('ed25519');
 const publicKeyPem = publicKey.export({ type: 'spki', format: 'pem' }).toString();
 
 function signedReading(
-  overrides: Partial<{ assetId: string; source: string; value: number; currency: 'USD' | 'USDC' | 'EUR'; observedAt: Date }> = {},
+  overrides: Partial<{
+    assetId: string;
+    source: string;
+    value: number;
+    currency: 'USD' | 'USDC' | 'EUR';
+    observedAt: Date;
+  }> = {},
 ) {
   const unsigned = {
     assetId: 'ast_eng_001',
@@ -47,7 +53,9 @@ describe('canonicalReading', () => {
         currency: 'USD',
         observedAt: new Date('2026-06-01T12:00:00Z'),
       }),
-    ).toBe('aerospace-oracle-v1|ast_eng_001|meridian-lease-index|412500.100000|USD|2026-06-01T12:00:00.000Z');
+    ).toBe(
+      'aerospace-oracle-v1|ast_eng_001|meridian-lease-index|412500.100000|USD|2026-06-01T12:00:00.000Z',
+    );
   });
 });
 
@@ -76,9 +84,11 @@ describe('verifyOracleReading', () => {
       currency: 'USD' as const,
       observedAt: new Date('2026-06-01T12:00:00Z'),
     };
-    const signature = sign(null, Buffer.from(canonicalReading(unsigned)), other.privateKey).toString(
-      'base64',
-    );
+    const signature = sign(
+      null,
+      Buffer.from(canonicalReading(unsigned)),
+      other.privateKey,
+    ).toString('base64');
     const result = verifyOracleReading({ ...unsigned, signature }, policy, now);
     expect(result).toMatchObject({ ok: false, code: 'INVALID_SIGNATURE' });
   });
@@ -126,10 +136,7 @@ describe('verifyOracleReading', () => {
 describe('OracleAdapter', () => {
   it('verifies batches and exposes the feed name', () => {
     const adapter = new OracleAdapter('engine-lease-index', policy);
-    const results = adapter.verifyAll(
-      [signedReading(), { assetId: 'broken' }],
-      now,
-    );
+    const results = adapter.verifyAll([signedReading(), { assetId: 'broken' }], now);
     expect(adapter.feed).toBe('engine-lease-index');
     expect(results.map((result) => result.ok)).toEqual([true, false]);
   });

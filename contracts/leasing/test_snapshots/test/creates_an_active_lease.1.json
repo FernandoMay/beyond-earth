@@ -562,5 +562,51 @@
       }
     ]
   },
-  "events": []
+  "events": [
+    {
+      "event": {
+        "ext": "v0",
+        "contract_id": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAK3IM",
+        "type": "contract",
+        "body": {
+          "v0": {
+            "topics": [
+              {
+                "symbol": "lease_created"
+              }
+            ],
+            "data": {
+              "map": [
+                {
+                  "key": {
+                    "symbol": "interval_seconds"
+                  },
+                  "val": {
+                    "u64": "2592000"
+                  }
+                },
+                {
+                  "key": {
+                    "symbol": "lease_id"
+                  },
+                  "val": {
+                    "string": "lease_001"
+                  }
+                },
+                {
+                  "key": {
+                    "symbol": "rent_amount"
+                  },
+                  "val": {
+                    "i128": "5000"
+                  }
+                }
+              ]
+            }
+          }
+        }
+      },
+      "failed_call": false
+    }
+  ]
 }

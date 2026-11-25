@@ -87,10 +87,7 @@ export async function buildServer(options: ServerOptions): Promise<FastifyInstan
     if (request.method === 'OPTIONS') {
       reply
         .header('access-control-allow-methods', 'GET, POST, OPTIONS')
-        .header(
-          'access-control-allow-headers',
-          'content-type, x-api-key, idempotency-key, x-actor',
-        )
+        .header('access-control-allow-headers', 'content-type, x-api-key, idempotency-key, x-actor')
         .code(204)
         .send();
     }
@@ -250,10 +247,12 @@ export async function buildServer(options: ServerOptions): Promise<FastifyInstan
     });
   });
 
-
   const paymentBodySchema = z.object({
     destination: z.string().min(55).max(56).optional(),
-    amount: z.string().regex(/^\d+(\.\d+)?$/).optional(),
+    amount: z
+      .string()
+      .regex(/^\d+(\.\d+)?$/)
+      .optional(),
     memo: z.string().min(1).max(28).optional(),
   });
 
@@ -268,8 +267,7 @@ export async function buildServer(options: ServerOptions): Promise<FastifyInstan
         'Set STELLAR_PAYMENT_SECRET_KEY to a funded Stellar testnet secret key.',
       );
     }
-    const destination =
-      parsed.destination ?? process.env.STELLAR_PAYMENT_DESTINATION;
+    const destination = parsed.destination ?? process.env.STELLAR_PAYMENT_DESTINATION;
     if (!destination) {
       throw new HttpError(
         400,
@@ -288,26 +286,31 @@ export async function buildServer(options: ServerOptions): Promise<FastifyInstan
     return reply.code(201).send({ mode: 'testnet', ...result });
   });
 
-
-  app.get<{ Params: { address: string } }>('/v1/stellar/accounts/:address', async (request, reply) => {
-    if (!isValidAccountAddress(request.params.address)) {
-      throw new HttpError(400, 'INVALID_ADDRESS', 'A valid Stellar account address is required.');
-    }
-    const account = await fetchStellarAccount(request.params.address);
-    return account;
-  });
+  app.get<{ Params: { address: string } }>(
+    '/v1/stellar/accounts/:address',
+    async (request, reply) => {
+      if (!isValidAccountAddress(request.params.address)) {
+        throw new HttpError(400, 'INVALID_ADDRESS', 'A valid Stellar account address is required.');
+      }
+      const account = await fetchStellarAccount(request.params.address);
+      return account;
+    },
+  );
 
   app.get<{ Params: { hash: string } }>('/v1/stellar/transactions/:hash', async (request) => {
     const transaction = await fetchStellarTransaction(request.params.hash);
     return transaction;
   });
 
-
   app.get<{ Params: { contractId: string; method: string } }>(
     '/v1/stellar/soroban/:contractId/:method',
     async (request) => {
       if (!isValidContractAddress(request.params.contractId)) {
-        throw new HttpError(400, 'INVALID_CONTRACT', 'A valid Soroban contract address is required.');
+        throw new HttpError(
+          400,
+          'INVALID_CONTRACT',
+          'A valid Soroban contract address is required.',
+        );
       }
       return readSorobanContract({
         contractId: request.params.contractId,

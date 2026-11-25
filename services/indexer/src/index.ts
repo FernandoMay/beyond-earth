@@ -90,9 +90,7 @@ export class Indexer {
   private async processBatch(events: ChainEvent[]): Promise<ProcessResult> {
     const parsed = events.map((event) => chainEventSchema.parse(event));
     const ordered = [...parsed].sort((left, right) =>
-      left.ledger === right.ledger
-        ? left.id.localeCompare(right.id)
-        : left.ledger - right.ledger,
+      left.ledger === right.ledger ? left.id.localeCompare(right.id) : left.ledger - right.ledger,
     );
 
     const startCursor = await this.store.getCursor(this.stream);

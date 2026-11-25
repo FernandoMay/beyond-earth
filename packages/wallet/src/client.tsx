@@ -4,11 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { isValidAccountAddress, truncateAddress } from '@aerospace/stellar-sdk';
 
 export type WalletConnectionState =
-  | 'unavailable'
-  | 'disconnected'
-  | 'connecting'
-  | 'connected'
-  | 'wrong_network';
+  'unavailable' | 'disconnected' | 'connecting' | 'connected' | 'wrong_network';
 
 export interface WalletNetwork {
   network: string;

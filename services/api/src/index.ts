@@ -5,7 +5,9 @@ import { PostgresRepository } from './postgres-repository';
 
 type Repository = Awaited<ReturnType<typeof createRepository>>;
 
-async function createRepository(demoMode: boolean): Promise<InMemoryRepository | PostgresRepository> {
+async function createRepository(
+  demoMode: boolean,
+): Promise<InMemoryRepository | PostgresRepository> {
   if (demoMode) return new InMemoryRepository();
   const connectionString = process.env.DATABASE_URL;
   if (!connectionString) {

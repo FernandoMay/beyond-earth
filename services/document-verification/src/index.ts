@@ -1,9 +1,6 @@
 import { createHash } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
-import {
-  documentManifestSchema,
-  type DocumentManifest,
-} from '@aerospace/validation';
+import { documentManifestSchema, type DocumentManifest } from '@aerospace/validation';
 import { z } from 'zod';
 
 export interface EvidenceFile {
@@ -121,7 +118,11 @@ export async function verifyManifest(
   for (const entry of manifest.files) {
     const file = byName.get(entry.name);
     if (!file) {
-      issues.push({ file: entry.name, code: 'MISSING', message: 'File is missing from the bundle.' });
+      issues.push({
+        file: entry.name,
+        code: 'MISSING',
+        message: 'File is missing from the bundle.',
+      });
       continue;
     }
     byName.delete(entry.name);

@@ -68,7 +68,9 @@ export default function LeasesPage() {
       align: 'right',
       render: (row) => (
         <Badge
-          tone={row.status === 'performing' ? 'green' : row.status === 'delinquent' ? 'red' : 'amber'}
+          tone={
+            row.status === 'performing' ? 'green' : row.status === 'delinquent' ? 'red' : 'amber'
+          }
           dot
         >
           {row.status.replace('_', ' ')}
@@ -84,7 +86,9 @@ export default function LeasesPage() {
     >
       <div className="p-page">
         <div className="p-banner">
-          <Badge tone="amber" dot>Illustrative</Badge>
+          <Badge tone="amber" dot>
+            Illustrative
+          </Badge>
           <div>
             <strong>Lease records are fabricated.</strong>
             <p>
@@ -99,7 +103,10 @@ export default function LeasesPage() {
             <span>Total monthly rent</span>
             <strong>
               {formatMoney({
-                amount: demoSnapshot.leases.reduce((sum, lease) => sum + lease.monthlyRent.amount, 0),
+                amount: demoSnapshot.leases.reduce(
+                  (sum, lease) => sum + lease.monthlyRent.amount,
+                  0,
+                ),
                 currency: 'USD',
               })}
             </strong>
@@ -107,7 +114,9 @@ export default function LeasesPage() {
           </div>
           <div>
             <span>Performing</span>
-            <strong>{demoSnapshot.leases.filter((lease) => lease.status === 'performing').length}</strong>
+            <strong>
+              {demoSnapshot.leases.filter((lease) => lease.status === 'performing').length}
+            </strong>
             <small>of {demoSnapshot.leases.length} leases</small>
           </div>
           <div>

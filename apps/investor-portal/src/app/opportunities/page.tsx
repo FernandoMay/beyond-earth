@@ -39,7 +39,10 @@ export default function OpportunitiesPage() {
         <div className="p-toolbar">
           <div className="p-search">
             <Filter size={13} />
-            <input placeholder="Filter by vertical, operator or registry ID" aria-label="Filter opportunities" />
+            <input
+              placeholder="Filter by vertical, operator or registry ID"
+              aria-label="Filter opportunities"
+            />
           </div>
           <Badge tone="amber">{assets.length} open or closing structures</Badge>
         </div>
@@ -79,7 +82,15 @@ export default function OpportunitiesPage() {
                   >
                     {asset.name}
                   </h3>
-                  <p style={{ marginTop: 7, color: 'var(--ar-muted)', fontSize: 10, lineHeight: 1.65, maxWidth: 620 }}>
+                  <p
+                    style={{
+                      marginTop: 7,
+                      color: 'var(--ar-muted)',
+                      fontSize: 10,
+                      lineHeight: 1.65,
+                      maxWidth: 620,
+                    }}
+                  >
                     {asset.summary}
                   </p>
                   <dl
@@ -94,24 +105,38 @@ export default function OpportunitiesPage() {
                   >
                     {[
                       ['Reference value', formatMoney(asset.valuation.value, true)],
-                      ['Target distribution', asset.financials.targetDistribution
-                        ? `${formatPercent(asset.financials.targetDistribution.min)}–${formatPercent(asset.financials.targetDistribution.max)}`
-                        : '—'],
+                      [
+                        'Target distribution',
+                        asset.financials.targetDistribution
+                          ? `${formatPercent(asset.financials.targetDistribution.min)}–${formatPercent(asset.financials.targetDistribution.max)}`
+                          : '—',
+                      ],
                       ['Minimum ticket', formatMoney(offering.minTicket)],
                       ['Evidence', `${asset.evidenceCompleteness}%`],
                     ].map(([label, value]) => (
                       <div key={label} style={{ padding: 10, background: '#08111f' }}>
-                        <dt style={{ color: 'var(--ar-faint)', fontSize: 6.5, letterSpacing: '0.07em', textTransform: 'uppercase' }}>
+                        <dt
+                          style={{
+                            color: 'var(--ar-faint)',
+                            fontSize: 6.5,
+                            letterSpacing: '0.07em',
+                            textTransform: 'uppercase',
+                          }}
+                        >
                           {label}
                         </dt>
-                        <dd style={{ marginTop: 4, color: 'var(--ar-silver)', fontSize: 9 }}>{value}</dd>
+                        <dd style={{ marginTop: 4, color: 'var(--ar-silver)', fontSize: 9 }}>
+                          {value}
+                        </dd>
                       </div>
                     ))}
                   </dl>
                 </div>
                 <div style={{ display: 'grid', alignContent: 'start', gap: 12 }}>
                   <div>
-                    <span style={{ color: 'var(--ar-faint)', fontSize: 7.5 }}>Demo commitments</span>
+                    <span style={{ color: 'var(--ar-faint)', fontSize: 7.5 }}>
+                      Demo commitments
+                    </span>
                     <strong
                       style={{
                         display: 'block',

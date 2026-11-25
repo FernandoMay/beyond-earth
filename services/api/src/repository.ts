@@ -40,10 +40,7 @@ export interface AerospaceRepository {
   findSubscriptionByIdempotencyKey(key: string): Promise<SubscriptionRecord | null>;
 }
 
-function filterAssets(
-  assets: Asset[],
-  query: AssetQuery,
-): { items: Asset[]; total: number } {
+function filterAssets(assets: Asset[], query: AssetQuery): { items: Asset[]; total: number } {
   const text = query.q?.trim().toLowerCase();
   const filtered = assets.filter((asset) => {
     if (query.vertical && asset.vertical !== query.vertical) return false;
@@ -65,15 +62,15 @@ function filterAssets(
   };
 }
 
-export function buildDraftAsset(
-  draft: AssetDraft & { actor: string },
-  sequence: number,
-): Asset {
+export function buildDraftAsset(draft: AssetDraft & { actor: string }, sequence: number): Asset {
   const now = new Date().toISOString().slice(0, 10);
   const id = `ast_demo_${String(sequence).padStart(3, '0')}`;
   return {
     id,
-    slug: draft.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''),
+    slug: draft.name
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)/g, ''),
     registryId: `DEMO-DRAFT-${String(sequence).padStart(4, '0')}`,
     name: draft.name,
     shortName: draft.shortName ?? draft.name,
@@ -163,9 +160,7 @@ export class InMemoryRepository implements AerospaceRepository {
   }
 
   async getAsset(idOrSlug: string) {
-    return (
-      this.assets.find((asset) => asset.id === idOrSlug || asset.slug === idOrSlug) ?? null
-    );
+    return this.assets.find((asset) => asset.id === idOrSlug || asset.slug === idOrSlug) ?? null;
   }
 
   async getInvestor() {

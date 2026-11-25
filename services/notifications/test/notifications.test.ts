@@ -107,9 +107,7 @@ describe('NotificationService', () => {
   it('rejects invalid recipients and weak idempotency keys', async () => {
     const { service } = setup();
     await expect(service.send({ ...input, to: 'not-an-email' })).rejects.toThrow(/valid email/);
-    await expect(service.send({ ...input, idempotencyKey: 'short' })).rejects.toThrow(
-      /at least 8/,
-    );
+    await expect(service.send({ ...input, idempotencyKey: 'short' })).rejects.toThrow(/at least 8/);
   });
 
   it('does not record a message when the transport fails', async () => {

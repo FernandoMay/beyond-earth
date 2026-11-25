@@ -1,11 +1,14 @@
 import type { Metadata } from 'next';
-import { ArrowUpRight, BookOpen, Database, FileCode2, FolderTree, ShieldCheck, Terminal } from 'lucide-react';
 import {
-  Badge,
-  ButtonLink,
-  PublicPage,
-  SectionHeading,
-} from '@aerospace/design-system';
+  ArrowUpRight,
+  BookOpen,
+  Database,
+  FileCode2,
+  FolderTree,
+  ShieldCheck,
+  Terminal,
+} from 'lucide-react';
+import { Badge, ButtonLink, PublicPage, SectionHeading } from '@aerospace/design-system';
 
 export const metadata: Metadata = {
   title: 'Documentation',
@@ -115,7 +118,9 @@ npm run build`}</code>
               <div>
                 <FolderTree size={17} />
                 <strong>Monorepo</strong>
-                <p>npm workspaces for apps, packages and services; Cargo workspace for contracts.</p>
+                <p>
+                  npm workspaces for apps, packages and services; Cargo workspace for contracts.
+                </p>
               </div>
               <div>
                 <Database size={17} />
@@ -177,8 +182,9 @@ npm run build`}</code>
               </div>
               <h2 className="w-content-title">Typed endpoints</h2>
               <p className="w-content-lede">
-                The API validates inputs with Zod, separates demo and live repositories, and requires
-                an API key for issuer and administrative writes. Read endpoints are safe in demo mode.
+                The API validates inputs with Zod, separates demo and live repositories, and
+                requires an API key for issuer and administrative writes. Read endpoints are safe in
+                demo mode.
               </p>
               <div className="ar-alert">
                 <ShieldCheck size={14} />
@@ -218,10 +224,26 @@ npm run build`}</code>
             {[
               ['01', 'Build', 'Compile WASM from a tagged commit and record hashes.'],
               ['02', 'Review', 'Complete internal review and independent audit.'],
-              ['03', 'Legal', 'Finalise issuer structure, offering documents and jurisdiction analysis.'],
-              ['04', 'Testnet', 'Deploy, index, reconcile and exercise failure paths with test wallets.'],
-              ['05', 'Pilot', 'Run a controlled issuer pilot with production controls and human oversight.'],
-              ['06', 'Mainnet', 'Deploy behind explicit opt-in, monitoring and rollback procedures.'],
+              [
+                '03',
+                'Legal',
+                'Finalise issuer structure, offering documents and jurisdiction analysis.',
+              ],
+              [
+                '04',
+                'Testnet',
+                'Deploy, index, reconcile and exercise failure paths with test wallets.',
+              ],
+              [
+                '05',
+                'Pilot',
+                'Run a controlled issuer pilot with production controls and human oversight.',
+              ],
+              [
+                '06',
+                'Mainnet',
+                'Deploy behind explicit opt-in, monitoring and rollback procedures.',
+              ],
             ].map(([index, title, text]) => (
               <div key={index}>
                 <span className="ar-mono">{index}</span>

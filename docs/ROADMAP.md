@@ -1,13 +1,13 @@
 # Roadmap
 
-| Phase | Outcome | State in this repository |
-| --- | --- | --- |
-| 01 — Foundation | Brand, domain model, architecture, evidence fixtures, ADRs | Implemented |
-| 02 — Core protocol | Registry, compliance, token, investment, escrow, revenue, roles | Implemented and unit tested |
-| 03 — Marketplace | Issuer onboarding, secondary market, wallet connection, portfolios | Interface and contracts implemented |
-| 04 — Operations | Leasing, maintenance, insurance, valuations, oracle verification | Interface, contracts and libraries implemented |
-| 05 — Multi-vertical | Aviation, space, manufacturing, drones, cross-vertical listings | Demo structures and protocol coverage |
-| 06 — Institutional production | Audits, legal review, custody, monitoring, mainnet, pilot issuer | Not started |
+| Phase                         | Outcome                                                            | State in this repository                       |
+| ----------------------------- | ------------------------------------------------------------------ | ---------------------------------------------- |
+| 01 — Foundation               | Brand, domain model, architecture, evidence fixtures, ADRs         | Implemented                                    |
+| 02 — Core protocol            | Registry, compliance, token, investment, escrow, revenue, roles    | Implemented and unit tested                    |
+| 03 — Marketplace              | Issuer onboarding, secondary market, wallet connection, portfolios | Interface and contracts implemented            |
+| 04 — Operations               | Leasing, maintenance, insurance, valuations, oracle verification   | Interface, contracts and libraries implemented |
+| 05 — Multi-vertical           | Aviation, space, manufacturing, drones, cross-vertical listings    | Demo structures and protocol coverage          |
+| 06 — Institutional production | Audits, legal review, custody, monitoring, mainnet, pilot issuer   | Not started                                    |
 
 ## Deliberate gaps
 

@@ -10,11 +10,7 @@ import {
   Wrench,
 } from 'lucide-react';
 import { Badge, ButtonLink, ProgressBar } from '@aerospace/design-system';
-import {
-  demoSnapshot,
-  formatMoney,
-  getDemoAssetById,
-} from '@aerospace/shared-types';
+import { demoSnapshot, formatMoney, getDemoAssetById } from '@aerospace/shared-types';
 import { PortalFrame } from '@/components/portal-frame';
 
 export const metadata: Metadata = { title: 'Operations overview' };
@@ -37,7 +33,10 @@ export default function OperationsDashboard() {
       <div className="p-page">
         <section className="o-hero">
           <div>
-            <span className="ar-mono" style={{ color: 'var(--ar-cyan)', fontSize: 7.5, letterSpacing: '0.1em' }}>
+            <span
+              className="ar-mono"
+              style={{ color: 'var(--ar-cyan)', fontSize: 7.5, letterSpacing: '0.1em' }}
+            >
               OPERATIONS · SYNTHETIC FLEET
             </span>
             <h2>Operational truth is evidence, not a dashboard assumption.</h2>
@@ -59,8 +58,14 @@ export default function OperationsDashboard() {
             {[
               ['Leases tracked', `${demoSnapshot.leases.length}`],
               ['Performing', `${performingLeases.length}`],
-              ['Maintenance due', `${demoSnapshot.maintenance.filter((item) => item.status !== 'current').length}`],
-              ['Policies expiring', `${demoSnapshot.insurance.filter((item) => item.status !== 'active').length}`],
+              [
+                'Maintenance due',
+                `${demoSnapshot.maintenance.filter((item) => item.status !== 'current').length}`,
+              ],
+              [
+                'Policies expiring',
+                `${demoSnapshot.insurance.filter((item) => item.status !== 'active').length}`,
+              ],
               ['Stale feeds', `${staleOracles.length}`],
             ].map(([label, value]) => (
               <div key={label}>
@@ -73,11 +78,16 @@ export default function OperationsDashboard() {
 
         <div className="ar-kpis">
           <div className="ar-kpi">
-            <span className="ar-kpi__label">Monthly rent <CalendarClock size={13} /></span>
+            <span className="ar-kpi__label">
+              Monthly rent <CalendarClock size={13} />
+            </span>
             <span className="ar-kpi__value">
               {formatMoney(
                 {
-                  amount: demoSnapshot.leases.reduce((sum, lease) => sum + lease.monthlyRent.amount, 0),
+                  amount: demoSnapshot.leases.reduce(
+                    (sum, lease) => sum + lease.monthlyRent.amount,
+                    0,
+                  ),
                   currency: 'USD',
                 },
                 true,
@@ -86,25 +96,35 @@ export default function OperationsDashboard() {
             <span className="ar-kpi__detail">Synthetic lease schedule</span>
           </div>
           <div className="ar-kpi">
-            <span className="ar-kpi__label">Open tasks <Wrench size={13} /></span>
+            <span className="ar-kpi__label">
+              Open tasks <Wrench size={13} />
+            </span>
             <span className="ar-kpi__value">{dueTasks.length}</span>
             <span className="ar-kpi__detail is-warning">
               {dueTasks.filter((task) => task.priority === 'high').length} high priority
             </span>
           </div>
           <div className="ar-kpi">
-            <span className="ar-kpi__label">Oracle coverage <Radar size={13} /></span>
+            <span className="ar-kpi__label">
+              Oracle coverage <Radar size={13} />
+            </span>
             <span className="ar-kpi__value">
-              {demoSnapshot.oracles.filter((oracle) => oracle.signed).length}/{demoSnapshot.oracles.length}
+              {demoSnapshot.oracles.filter((oracle) => oracle.signed).length}/
+              {demoSnapshot.oracles.length}
             </span>
             <span className="ar-kpi__detail is-warning">Signed feeds only</span>
           </div>
           <div className="ar-kpi">
-            <span className="ar-kpi__label">Insurance coverage <Gauge size={13} /></span>
+            <span className="ar-kpi__label">
+              Insurance coverage <Gauge size={13} />
+            </span>
             <span className="ar-kpi__value">
               {formatMoney(
                 {
-                  amount: demoSnapshot.insurance.reduce((sum, policy) => sum + policy.coverage.amount, 0),
+                  amount: demoSnapshot.insurance.reduce(
+                    (sum, policy) => sum + policy.coverage.amount,
+                    0,
+                  ),
                   currency: 'USD',
                 },
                 true,
@@ -131,7 +151,10 @@ export default function OperationsDashboard() {
                   <span className="o-timeline__date">{lease.nextPaymentDate}</span>
                   <div>
                     <strong>{getDemoAssetById(lease.assetId)?.shortName ?? lease.assetId}</strong>
-                    <p>{lease.lessee} · {formatMoney(lease.monthlyRent)}/month · {lease.paymentsMade}/{lease.totalPayments} paid</p>
+                    <p>
+                      {lease.lessee} · {formatMoney(lease.monthlyRent)}/month · {lease.paymentsMade}
+                      /{lease.totalPayments} paid
+                    </p>
                   </div>
                   <Badge
                     tone={
@@ -160,14 +183,31 @@ export default function OperationsDashboard() {
               </div>
               {demoSnapshot.maintenance.slice(0, 4).map((item) => (
                 <div className="o-alert" key={item.id}>
-                  <span className="o-alert__icon" style={{ color: 'var(--ar-cyan)', background: 'rgba(95,213,255,0.06)', borderColor: 'rgba(95,213,255,0.16)' }}>
+                  <span
+                    className="o-alert__icon"
+                    style={{
+                      color: 'var(--ar-cyan)',
+                      background: 'rgba(95,213,255,0.06)',
+                      borderColor: 'rgba(95,213,255,0.16)',
+                    }}
+                  >
                     <Wrench size={13} />
                   </span>
                   <div>
                     <strong>{item.task}</strong>
-                    <p>{item.component} · due {item.nextDue} · {item.provider}</p>
+                    <p>
+                      {item.component} · due {item.nextDue} · {item.provider}
+                    </p>
                   </div>
-                  <Badge tone={item.status === 'overdue' ? 'red' : item.status === 'due_soon' ? 'amber' : 'green'}>
+                  <Badge
+                    tone={
+                      item.status === 'overdue'
+                        ? 'red'
+                        : item.status === 'due_soon'
+                          ? 'amber'
+                          : 'green'
+                    }
+                  >
                     {item.status.replace('_', ' ')}
                   </Badge>
                 </div>
@@ -183,8 +223,14 @@ export default function OperationsDashboard() {
                 <CircleAlert size={15} style={{ color: 'var(--ar-amber)' }} />
               </div>
               {[
-                ['Unsigned oracle feed', 'A valuation snapshot has no verified signature. Do not use for settlement.'],
-                ['Policy renewal', 'One synthetic insurance policy expires inside the renewal window.'],
+                [
+                  'Unsigned oracle feed',
+                  'A valuation snapshot has no verified signature. Do not use for settlement.',
+                ],
+                [
+                  'Policy renewal',
+                  'One synthetic insurance policy expires inside the renewal window.',
+                ],
                 ['Distribution dependency', 'An epoch is blocked until receipts are reconciled.'],
               ].map(([title, detail]) => (
                 <div className="o-alert" key={title}>
@@ -214,7 +260,11 @@ export default function OperationsDashboard() {
               <div key={asset.id}>
                 <span style={{ color: 'var(--ar-silver)', fontSize: 9.5 }}>{asset.shortName}</span>
                 <div style={{ marginTop: 9 }}>
-                  <ProgressBar value={asset.evidenceCompleteness} label={asset.registryId} tone={asset.evidenceCompleteness >= 90 ? 'green' : 'amber'} />
+                  <ProgressBar
+                    value={asset.evidenceCompleteness}
+                    label={asset.registryId}
+                    tone={asset.evidenceCompleteness >= 90 ? 'green' : 'amber'}
+                  />
                 </div>
               </div>
             ))}

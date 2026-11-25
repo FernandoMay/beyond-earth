@@ -125,9 +125,18 @@ export default function DistributionsPage() {
               </div>
               <div className="p-list">
                 {[
-                  ['Epoch recorded', 'The operator records reconciled receipts and publishes an allocation root.'],
-                  ['Allocation proven', 'An investor claim is checked against the published allocation.'],
-                  ['Claimed once', 'The contract marks the epoch as claimed before value leaves the pool.'],
+                  [
+                    'Epoch recorded',
+                    'The operator records reconciled receipts and publishes an allocation root.',
+                  ],
+                  [
+                    'Allocation proven',
+                    'An investor claim is checked against the published allocation.',
+                  ],
+                  [
+                    'Claimed once',
+                    'The contract marks the epoch as claimed before value leaves the pool.',
+                  ],
                   ['Reconciled', 'The indexer maps the event to the operational ledger.'],
                 ].map(([title, detail]) => (
                   <div className="p-list__item" key={title}>

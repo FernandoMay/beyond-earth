@@ -24,8 +24,8 @@ export function SubscribePanel({ asset }: { asset: Asset }) {
           <Badge tone="amber">Not open</Badge>
         </div>
         <p className="w-asset-side__closed">
-          This structure has no open offering. It cannot be subscribed to or tokenized in its current
-          state.
+          This structure has no open offering. It cannot be subscribed to or tokenized in its
+          current state.
         </p>
         <div className="ar-alert ar-alert--amber">
           <Info size={14} />
@@ -145,7 +145,7 @@ export function SubscribePanel({ asset }: { asset: Asset }) {
           type="button"
           className="ar-button ar-button--primary ar-button--md w-asset-side__submit"
           onClick={() => void submit()}
-          disabled={!isOpen || pending || api.mode === 'demo' && !acknowledged}
+          disabled={!isOpen || pending || (api.mode === 'demo' && !acknowledged)}
         >
           {pending ? 'Checking…' : 'Check eligibility & continue'}
         </button>

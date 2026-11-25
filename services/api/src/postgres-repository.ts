@@ -7,11 +7,7 @@ import type {
   OperationsTask,
 } from '@aerospace/shared-types';
 import type { AssetDraft, AssetQuery, ComplianceDecision } from '@aerospace/validation';
-import {
-  buildDraftAsset,
-  type AerospaceRepository,
-  type SubscriptionRecord,
-} from './repository';
+import { buildDraftAsset, type AerospaceRepository, type SubscriptionRecord } from './repository';
 
 /**
  * Minimal query surface so the adapter can run against `pg`, a pool or a test double

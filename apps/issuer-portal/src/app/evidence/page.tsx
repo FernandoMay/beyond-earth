@@ -30,7 +30,8 @@ export default function EvidencePage() {
               <div>
                 <h3>{asset.name}</h3>
                 <p>
-                  {asset.registryId} · {asset.documents.length} demo documents · {asset.evidenceCompleteness}% complete
+                  {asset.registryId} · {asset.documents.length} demo documents ·{' '}
+                  {asset.evidenceCompleteness}% complete
                 </p>
               </div>
               <Badge tone={asset.evidenceCompleteness >= 90 ? 'green' : 'amber'} dot>

@@ -5,7 +5,9 @@
     {
       "type": "timeseries",
       "title": "API requests",
-      "targets": [{ "expr": "rate(aerospace_api_requests_total[5m])", "legendFormat": "requests/s" }],
+      "targets": [
+        { "expr": "rate(aerospace_api_requests_total[5m])", "legendFormat": "requests/s" }
+      ],
       "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 }
     },
     {

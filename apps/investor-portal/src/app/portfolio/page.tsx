@@ -90,17 +90,23 @@ export default function PortfolioPage() {
         <div className="ar-kpis">
           <div className="ar-kpi">
             <span className="ar-kpi__label">Reference value</span>
-            <span className="ar-kpi__value">{formatMoney({ amount: totalValue, currency: 'USD' })}</span>
+            <span className="ar-kpi__value">
+              {formatMoney({ amount: totalValue, currency: 'USD' })}
+            </span>
             <span className="ar-kpi__detail">Synthetic marks · 2026-11-18</span>
           </div>
           <div className="ar-kpi">
             <span className="ar-kpi__label">Cost basis</span>
-            <span className="ar-kpi__value">{formatMoney({ amount: totalCost, currency: 'USD' })}</span>
+            <span className="ar-kpi__value">
+              {formatMoney({ amount: totalCost, currency: 'USD' })}
+            </span>
             <span className="ar-kpi__detail">Illustrative subscription cost</span>
           </div>
           <div className="ar-kpi">
             <span className="ar-kpi__label">Income to date</span>
-            <span className="ar-kpi__value">{formatMoney({ amount: totalIncome, currency: 'USD' })}</span>
+            <span className="ar-kpi__value">
+              {formatMoney({ amount: totalIncome, currency: 'USD' })}
+            </span>
             <span className="ar-kpi__detail is-positive">Synthetic only</span>
           </div>
           <div className="ar-kpi">
@@ -154,7 +160,9 @@ export default function PortfolioPage() {
                 {
                   label: 'Manufacturing',
                   value: investor.holdings
-                    .filter((holding) => getDemoAssetById(holding.assetId)?.vertical === 'manufacturing')
+                    .filter(
+                      (holding) => getDemoAssetById(holding.assetId)?.vertical === 'manufacturing',
+                    )
                     .reduce((sum, holding) => sum + holding.currentValue.amount, 0),
                   color: '#9bb4d6',
                 },

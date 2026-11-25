@@ -155,11 +155,9 @@ export default function HomePage() {
               STELLAR + SOROBAN · REFERENCE IMPLEMENTATION
             </div>
             <h1>
-              Financing the{' '}
-              <br />
+              Financing the <br />
               <span>infrastructure</span>
-              <br />
-              {' '}beyond Earth.
+              <br /> beyond Earth.
             </h1>
             <p className="w-hero__lede">
               A financial network for aerospace assets — evidence-linked registry, regulated
@@ -216,9 +214,30 @@ export default function HomePage() {
                   </pattern>
                 </defs>
                 <rect width="560" height="560" fill="url(#w-orbit-grid)" />
-                <circle cx="280" cy="280" r="210" fill="none" stroke="#7ba6d8" strokeOpacity="0.09" />
-                <circle cx="280" cy="280" r="155" fill="none" stroke="#7ba6d8" strokeOpacity="0.12" />
-                <circle cx="280" cy="280" r="98" fill="none" stroke="#7ba6d8" strokeOpacity="0.14" />
+                <circle
+                  cx="280"
+                  cy="280"
+                  r="210"
+                  fill="none"
+                  stroke="#7ba6d8"
+                  strokeOpacity="0.09"
+                />
+                <circle
+                  cx="280"
+                  cy="280"
+                  r="155"
+                  fill="none"
+                  stroke="#7ba6d8"
+                  strokeOpacity="0.12"
+                />
+                <circle
+                  cx="280"
+                  cy="280"
+                  r="98"
+                  fill="none"
+                  stroke="#7ba6d8"
+                  strokeOpacity="0.14"
+                />
                 <circle cx="280" cy="280" r="248" fill="url(#w-core-glow)" />
                 <g className="w-orbit__ring">
                   <ellipse
@@ -257,7 +276,14 @@ export default function HomePage() {
                   [135, 425, 'MARKETPLACE', 'left'],
                 ].map(([x, y, label, side], index) => (
                   <g key={label as string}>
-                    <circle cx={x as number} cy={y as number} r="14" fill="#07101f" stroke="#2f7bff" strokeOpacity="0.5" />
+                    <circle
+                      cx={x as number}
+                      cy={y as number}
+                      r="14"
+                      fill="#07101f"
+                      stroke="#2f7bff"
+                      strokeOpacity="0.5"
+                    />
                     <circle cx={x as number} cy={y as number} r="4" fill="#5fd5ff" />
                     <text
                       x={side === 'left' ? (x as number) - 22 : (x as number) + 22}
@@ -280,11 +306,42 @@ export default function HomePage() {
                     )}
                   </g>
                 ))}
-                <circle cx="280" cy="280" r="64" fill="url(#w-core-fill)" stroke="#5fd5ff" strokeOpacity="0.45" />
-                <circle cx="280" cy="280" r="48" fill="none" stroke="#7ba6d8" strokeOpacity="0.18" />
-                <ellipse cx="280" cy="280" rx="48" ry="17" transform="rotate(-34 280 280)" fill="none" stroke="#7ba6d8" strokeOpacity="0.35" />
+                <circle
+                  cx="280"
+                  cy="280"
+                  r="64"
+                  fill="url(#w-core-fill)"
+                  stroke="#5fd5ff"
+                  strokeOpacity="0.45"
+                />
+                <circle
+                  cx="280"
+                  cy="280"
+                  r="48"
+                  fill="none"
+                  stroke="#7ba6d8"
+                  strokeOpacity="0.18"
+                />
+                <ellipse
+                  cx="280"
+                  cy="280"
+                  rx="48"
+                  ry="17"
+                  transform="rotate(-34 280 280)"
+                  fill="none"
+                  stroke="#7ba6d8"
+                  strokeOpacity="0.35"
+                />
                 <path d="M280 246 299 292h-11l-4-9h-8l-4 9h-11l19-46h0Z" fill="#eef4ff" />
-                <text x="280" y="374" textAnchor="middle" fill="#5d6b80" fontSize="7" fontFamily="var(--ar-font-mono)" letterSpacing="1.8">
+                <text
+                  x="280"
+                  y="374"
+                  textAnchor="middle"
+                  fill="#5d6b80"
+                  fontSize="7"
+                  fontFamily="var(--ar-font-mono)"
+                  letterSpacing="1.8"
+                >
                   AEROSPACE ASSET NETWORK
                 </text>
               </svg>
@@ -388,7 +445,10 @@ export default function HomePage() {
                       <li key={example}>{example}</li>
                     ))}
                   </ul>
-                  <a href={`/marketplace?vertical=${vertical.id}`} aria-label={`Explore ${vertical.label}`}>
+                  <a
+                    href={`/marketplace?vertical=${vertical.id}`}
+                    aria-label={`Explore ${vertical.label}`}
+                  >
                     Explore market <ArrowUpRight size={12} />
                   </a>
                 </article>
@@ -412,7 +472,8 @@ export default function HomePage() {
             </h2>
             <p>
               The protocol connects the physical and contractual reality of an asset to its digital
-              representation, without collapsing the legal, compliance and technical layers into one.
+              representation, without collapsing the legal, compliance and technical layers into
+              one.
             </p>
             <div className="w-lifecycle__note">
               <Fingerprint size={16} />
@@ -695,8 +756,8 @@ export default function HomePage() {
               </h2>
               <p>
                 The protocol uses the Stellar ecosystem&apos;s regulated-token primitives and keeps
-                the legal boundary explicit. Contracts, services and infrastructure are designed to be
-                independently reviewed before production capital is involved.
+                the legal boundary explicit. Contracts, services and infrastructure are designed to
+                be independently reviewed before production capital is involved.
               </p>
               <div className="w-standards-block__actions">
                 <ButtonLink href="/compliance" variant="secondary">

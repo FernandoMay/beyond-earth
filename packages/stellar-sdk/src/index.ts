@@ -67,11 +67,8 @@ export function resolveStellarConfig(
     horizonUrl:
       env.STELLAR_HORIZON_URL ?? env.NEXT_PUBLIC_STELLAR_HORIZON_URL ?? defaults.horizonUrl,
     passphrase:
-      env.STELLAR_NETWORK_PASSPHRASE ??
-      env.NEXT_PUBLIC_STELLAR_PASSPHRASE ??
-      defaults.passphrase,
-    explorerBaseUrl:
-      env.NEXT_PUBLIC_EXPLORER_BASE_URL ?? defaults.explorerBaseUrl,
+      env.STELLAR_NETWORK_PASSPHRASE ?? env.NEXT_PUBLIC_STELLAR_PASSPHRASE ?? defaults.passphrase,
+    explorerBaseUrl: env.NEXT_PUBLIC_EXPLORER_BASE_URL ?? defaults.explorerBaseUrl,
     isProduction: network === 'mainnet',
   };
 }

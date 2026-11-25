@@ -26,6 +26,8 @@ test.describe('public reference site', () => {
   test('protocol page explains contracts without fake addresses', async ({ page }) => {
     await page.goto('/protocol');
     await expect(page.getByRole('heading', { level: 1 })).toContainText('Protocol');
-    await expect(page.locator('body')).not.toContainText('CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA');
+    await expect(page.locator('body')).not.toContainText(
+      'CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+    );
   });
 });

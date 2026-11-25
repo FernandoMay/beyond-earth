@@ -28,10 +28,11 @@
   --ar-amber: #f0b35a;
   --ar-red: #ff7d7d;
   --ar-violet: #9b8cff;
-  --ar-font-display: 'Space Grotesk Variable', 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
+  --ar-font-display:
+    'Space Grotesk Variable', 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
   --ar-font-body: 'Manrope Variable', 'Manrope', ui-sans-serif, system-ui, sans-serif;
-  --ar-font-mono: 'JetBrains Mono Variable', 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo,
-    monospace;
+  --ar-font-mono:
+    'JetBrains Mono Variable', 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
   --ar-radius-sm: 4px;
   --ar-radius-md: 8px;
   --ar-radius-lg: 14px;
@@ -649,9 +650,7 @@
     margin-top: 120px;
     padding: 72px 0 28px;
     border-top: 1px solid var(--ar-line);
-    background:
-      linear-gradient(180deg, rgba(7, 13, 24, 0.4), transparent 60%),
-      rgba(4, 7, 13, 0.8);
+    background: linear-gradient(180deg, rgba(7, 13, 24, 0.4), transparent 60%), rgba(4, 7, 13, 0.8);
   }
 
   .ar-site-footer__top {
@@ -1027,8 +1026,7 @@
     grid-template-columns: 252px minmax(0, 1fr);
     min-height: 100vh;
     background:
-      radial-gradient(60rem 40rem at 85% 0%, rgba(47, 123, 255, 0.07), transparent 60%),
-      #060b14;
+      radial-gradient(60rem 40rem at 85% 0%, rgba(47, 123, 255, 0.07), transparent 60%), #060b14;
   }
 
   .ar-sidebar {

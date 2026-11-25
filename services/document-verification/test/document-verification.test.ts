@@ -22,7 +22,12 @@ describe('createManifest', () => {
       issuedAt: new Date('2026-06-01T00:00:00Z'),
       files: [
         { name: 'appraisal.md', mediaType: 'text/markdown', bytes: appraisal },
-        { name: 'lease.txt', mediaType: 'text/plain', bytes: hello, ipfsCid: 'bafybeigdyrzt5sfp7udm7hu76uh7y26nf3efuylqabf3oclgtqy55fbzdi' },
+        {
+          name: 'lease.txt',
+          mediaType: 'text/plain',
+          bytes: hello,
+          ipfsCid: 'bafybeigdyrzt5sfp7udm7hu76uh7y26nf3efuylqabf3oclgtqy55fbzdi',
+        },
       ],
     });
 
@@ -147,14 +152,10 @@ describe('verifyManifest', () => {
     ]);
 
     expect(result.ok).toBe(false);
-    expect(result.issues).toContainEqual(
-      expect.objectContaining({ code: 'DUPLICATE_NAME' }),
-    );
+    expect(result.issues).toContainEqual(expect.objectContaining({ code: 'DUPLICATE_NAME' }));
   });
 
   it('rejects an invalid manifest', async () => {
-    await expect(
-      verifyManifest({ assetId: 'short' }, []),
-    ).rejects.toThrow();
+    await expect(verifyManifest({ assetId: 'short' }, [])).rejects.toThrow();
   });
 });

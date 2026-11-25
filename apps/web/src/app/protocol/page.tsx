@@ -15,13 +15,7 @@ import {
   Terminal,
   Wallet,
 } from 'lucide-react';
-import {
-  Badge,
-  ButtonLink,
-  PublicPage,
-  SectionHeading,
-  StatusDot,
-} from '@aerospace/design-system';
+import { Badge, ButtonLink, PublicPage, SectionHeading, StatusDot } from '@aerospace/design-system';
 import { demoProtocolModules, demoSnapshot } from '@aerospace/shared-types';
 
 export const metadata: Metadata = {
@@ -192,10 +186,26 @@ export default function ProtocolPage() {
 
           <div className="w-proto-principles">
             {[
-              [Database, 'Off-chain state is explicit', 'Documents, issuer workflows and reconciliation live in PostgreSQL with audit records.'],
-              [GitBranch, 'Every chain state is derived', 'The indexer consumes Soroban events idempotently and advances a durable cursor.'],
-              [LockKeyhole, 'Fail closed', 'Missing compliance, expired verification, paused contracts or unreleased escrow block movement.'],
-              [Fingerprint, 'Evidence is addressable', 'Files are hashed; manifests bind asset ID, version, issuer and digest list.'],
+              [
+                Database,
+                'Off-chain state is explicit',
+                'Documents, issuer workflows and reconciliation live in PostgreSQL with audit records.',
+              ],
+              [
+                GitBranch,
+                'Every chain state is derived',
+                'The indexer consumes Soroban events idempotently and advances a durable cursor.',
+              ],
+              [
+                LockKeyhole,
+                'Fail closed',
+                'Missing compliance, expired verification, paused contracts or unreleased escrow block movement.',
+              ],
+              [
+                Fingerprint,
+                'Evidence is addressable',
+                'Files are hashed; manifests bind asset ID, version, issuer and digest list.',
+              ],
             ].map(([Icon, title, text]) => {
               const Component = Icon as typeof Database;
               return (
@@ -286,8 +296,8 @@ export default function ProtocolPage() {
             <ShieldCheck size={14} />
             <span>
               The legal structure is not a smart-contract configuration detail. Production issuance
-              requires jurisdiction-specific counsel and a reviewed offering document before any token
-              represents economic rights.
+              requires jurisdiction-specific counsel and a reviewed offering document before any
+              token represents economic rights.
             </span>
           </div>
         </div>
@@ -313,10 +323,22 @@ export default function ProtocolPage() {
               </p>
               <div className="w-standard-list">
                 {[
-                  ['SEP-0057', 'Controlled asset model with identity, transfer rules, freeze and recovery concepts.'],
-                  ['ERC-3643 / T-REX', 'Reference for permissioned token transfer and identity registry patterns.'],
-                  ['Stellar assets + SAC', 'Native settlement assets where issuance does not require custom logic.'],
-                  ['OpenZeppelin Stellar', 'Reusable contract primitives and review conventions where applicable.'],
+                  [
+                    'SEP-0057',
+                    'Controlled asset model with identity, transfer rules, freeze and recovery concepts.',
+                  ],
+                  [
+                    'ERC-3643 / T-REX',
+                    'Reference for permissioned token transfer and identity registry patterns.',
+                  ],
+                  [
+                    'Stellar assets + SAC',
+                    'Native settlement assets where issuance does not require custom logic.',
+                  ],
+                  [
+                    'OpenZeppelin Stellar',
+                    'Reusable contract primitives and review conventions where applicable.',
+                  ],
                   ['USDC', 'Optional settlement asset for subscriptions, rent and distributions.'],
                 ].map(([label, text]) => (
                   <div key={label}>
@@ -374,12 +396,36 @@ export default function ProtocolPage() {
           />
           <div className="w-security-grid">
             {[
-              [Network, 'Threat model', 'Assets, actors, trust boundaries and abuse cases are documented before production.'],
-              [ServerCog, 'Operational controls', 'API keys, role separation, audit events, idempotency keys and reconciliation.'],
-              [Boxes, 'Custody boundary', 'The protocol does not custody private keys. Deployment uses the Stellar CLI keystore.'],
-              [Globe2, 'Deployment gates', 'Mainnet requires explicit opt-in, independent audit and legal sign-off.'],
-              [Wallet, 'Wallet safety', 'No silent signing. Network mismatch blocks the flow. No seed phrase handling.'],
-              [Terminal, 'Reproducible builds', 'WASM is built from tagged source and compared to the deployment manifest.'],
+              [
+                Network,
+                'Threat model',
+                'Assets, actors, trust boundaries and abuse cases are documented before production.',
+              ],
+              [
+                ServerCog,
+                'Operational controls',
+                'API keys, role separation, audit events, idempotency keys and reconciliation.',
+              ],
+              [
+                Boxes,
+                'Custody boundary',
+                'The protocol does not custody private keys. Deployment uses the Stellar CLI keystore.',
+              ],
+              [
+                Globe2,
+                'Deployment gates',
+                'Mainnet requires explicit opt-in, independent audit and legal sign-off.',
+              ],
+              [
+                Wallet,
+                'Wallet safety',
+                'No silent signing. Network mismatch blocks the flow. No seed phrase handling.',
+              ],
+              [
+                Terminal,
+                'Reproducible builds',
+                'WASM is built from tagged source and compared to the deployment manifest.',
+              ],
             ].map(([Icon, title, text]) => {
               const Component = Icon as typeof ShieldCheck;
               return (
@@ -411,8 +457,8 @@ export default function ProtocolPage() {
             </div>
             <h2>Reference protocol · Testnet design · No production deployment.</h2>
             <p>
-              {demoSnapshot.metrics.assetsInRegistry} illustrative assets · {demoProtocolModules.length}{' '}
-              contract modules · one evidence-first design.
+              {demoSnapshot.metrics.assetsInRegistry} illustrative assets ·{' '}
+              {demoProtocolModules.length} contract modules · one evidence-first design.
             </p>
           </div>
           <ButtonLink href="/marketplace" size="lg">

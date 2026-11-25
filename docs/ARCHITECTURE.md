@@ -24,27 +24,27 @@ Soroban contracts ── Stellar accounts, SAC/USDC, settlement
 
 ## Applications
 
-| App | Port | Responsibility |
-| --- | --- | --- |
-| `apps/web` | 3000 | Public marketplace, asset detail, protocol, compliance, docs |
-| `apps/investor-portal` | 3001 | Portfolio, distributions, opportunities, onboarding |
-| `apps/issuer-portal` | 3002 | Asset pipeline, new structures, offerings, evidence |
-| `apps/admin-portal` | 3003 | Compliance queue, registry review, deployments, audit |
-| `apps/operations-portal` | 3004 | Leases, maintenance, insurance, oracles, tasks |
+| App                      | Port | Responsibility                                               |
+| ------------------------ | ---- | ------------------------------------------------------------ |
+| `apps/web`               | 3000 | Public marketplace, asset detail, protocol, compliance, docs |
+| `apps/investor-portal`   | 3001 | Portfolio, distributions, opportunities, onboarding          |
+| `apps/issuer-portal`     | 3002 | Asset pipeline, new structures, offerings, evidence          |
+| `apps/admin-portal`      | 3003 | Compliance queue, registry review, deployments, audit        |
+| `apps/operations-portal` | 3004 | Leases, maintenance, insurance, oracles, tasks               |
 
 Every app is a Next.js App Router application. Shared visual language lives in
 `packages/design-system`; shared domain data lives in `packages/shared-types`.
 
 ## Services
 
-| Service | Output |
-| --- | --- |
-| `services/api` | Fastify HTTP API, in-memory demo repository, PostgreSQL repository |
-| `services/indexer` | Ordered event processor with cursor and processed-id store |
-| `services/oracle-adapters` | Ed25519 verification, source allowlist, freshness and bands |
-| `services/valuation` | Transparent DCF reference engine with haircuts and warnings |
-| `services/document-verification` | Manifest creation and byte-for-byte verification |
-| `services/notifications` | Template rendering, environment labels, idempotent transport |
+| Service                          | Output                                                             |
+| -------------------------------- | ------------------------------------------------------------------ |
+| `services/api`                   | Fastify HTTP API, in-memory demo repository, PostgreSQL repository |
+| `services/indexer`               | Ordered event processor with cursor and processed-id store         |
+| `services/oracle-adapters`       | Ed25519 verification, source allowlist, freshness and bands        |
+| `services/valuation`             | Transparent DCF reference engine with haircuts and warnings        |
+| `services/document-verification` | Manifest creation and byte-for-byte verification                   |
+| `services/notifications`         | Template rendering, environment labels, idempotent transport       |
 
 The indexer, oracle, valuation, document and notification packages are typed
 libraries. A deployment can host them inside the API process, a worker or a

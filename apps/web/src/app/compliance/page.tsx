@@ -16,12 +16,7 @@ import {
   ShieldCheck,
   UserCheck,
 } from 'lucide-react';
-import {
-  Badge,
-  ButtonLink,
-  PublicPage,
-  SectionHeading,
-} from '@aerospace/design-system';
+import { Badge, ButtonLink, PublicPage, SectionHeading } from '@aerospace/design-system';
 import { demoSnapshot } from '@aerospace/shared-types';
 
 export const metadata: Metadata = {
@@ -62,18 +57,48 @@ const controls = [
 ];
 
 const lifecycle = [
-  ['01', 'Onboarding', 'Identity, ownership, sanctions and source-of-funds checks are initiated through a regulated provider.'],
-  ['02', 'Decision', 'A compliance officer records approval, tier, jurisdiction and expiry as an auditable event.'],
-  ['03', 'Subscription', 'The investment contract requires an eligible wallet before accepting value into escrow.'],
+  [
+    '01',
+    'Onboarding',
+    'Identity, ownership, sanctions and source-of-funds checks are initiated through a regulated provider.',
+  ],
+  [
+    '02',
+    'Decision',
+    'A compliance officer records approval, tier, jurisdiction and expiry as an auditable event.',
+  ],
+  [
+    '03',
+    'Subscription',
+    'The investment contract requires an eligible wallet before accepting value into escrow.',
+  ],
   ['04', 'Holding', 'The token contract checks eligibility on both sides of every transfer.'],
-  ['05', 'Renewal', 'Verification expiry blocks new subscriptions and transfers until review is complete.'],
-  ['06', 'Offboarding', 'Revocation, freeze or forced transfer follows documented legal and operational procedures.'],
+  [
+    '05',
+    'Renewal',
+    'Verification expiry blocks new subscriptions and transfers until review is complete.',
+  ],
+  [
+    '06',
+    'Offboarding',
+    'Revocation, freeze or forced transfer follows documented legal and operational procedures.',
+  ],
 ];
 
 const matrix = [
-  ['Illustrative EU jurisdiction', 'Institutional / professional', 'KYC + source of funds', 'Illustrative only'],
+  [
+    'Illustrative EU jurisdiction',
+    'Institutional / professional',
+    'KYC + source of funds',
+    'Illustrative only',
+  ],
   ['Illustrative UK jurisdiction', 'Professional', 'KYC + eligibility', 'Illustrative only'],
-  ['Illustrative US jurisdiction', 'Accredited / institutional', 'KYC + accreditation', 'Illustrative only'],
+  [
+    'Illustrative US jurisdiction',
+    'Accredited / institutional',
+    'KYC + accreditation',
+    'Illustrative only',
+  ],
   ['Illustrative Singapore jurisdiction', 'Institutional', 'KYC + AML', 'Illustrative only'],
   ['Other jurisdictions', 'Not admitted by default', 'Legal review required', 'Fail closed'],
 ];
@@ -230,22 +255,32 @@ export default function CompliancePage() {
             <div>
               <Ban size={16} />
               <strong>No public offering</strong>
-              <p>Nothing in this repository constitutes an offer or solicitation in any jurisdiction.</p>
+              <p>
+                Nothing in this repository constitutes an offer or solicitation in any jurisdiction.
+              </p>
             </div>
             <div>
               <Scale size={16} />
               <strong>Local counsel required</strong>
-              <p>Each issuer structure and distribution model requires jurisdiction-specific legal review.</p>
+              <p>
+                Each issuer structure and distribution model requires jurisdiction-specific legal
+                review.
+              </p>
             </div>
             <div>
               <FileSearch size={16} />
               <strong>Evidence before approval</strong>
-              <p>Asset and issuer approvals require complete evidence, not merely a completed form.</p>
+              <p>
+                Asset and issuer approvals require complete evidence, not merely a completed form.
+              </p>
             </div>
             <div>
               <Landmark size={16} />
               <strong>Regulatory perimeter</strong>
-              <p>Licensing, custody and marketing requirements depend on the activity and jurisdiction.</p>
+              <p>
+                Licensing, custody and marketing requirements depend on the activity and
+                jurisdiction.
+              </p>
             </div>
           </div>
         </div>
@@ -266,12 +301,36 @@ export default function CompliancePage() {
           />
           <div className="w-protection-grid">
             {[
-              [UserCheck, 'Eligibility first', 'No subscription without a verified, unexpired investor record.'],
-              [BookOpenCheck, 'Documented rights', 'Token rights, restrictions and waterfall are stated in offering documents.'],
-              [Radar, 'Risk visibility', 'Counterparty, liquidity, technology and regulatory risks are disclosed per structure.'],
-              [Building2, 'Segregated structure', 'The issuer vehicle is separate from the platform and, where used, bankruptcy-remote.'],
-              [ShieldCheck, 'On-chain restrictions', 'Compliance and transfer controls are enforced by the token contract.'],
-              [Globe2, 'Jurisdiction control', 'The compliance contract checks both wallet and policy before movement.'],
+              [
+                UserCheck,
+                'Eligibility first',
+                'No subscription without a verified, unexpired investor record.',
+              ],
+              [
+                BookOpenCheck,
+                'Documented rights',
+                'Token rights, restrictions and waterfall are stated in offering documents.',
+              ],
+              [
+                Radar,
+                'Risk visibility',
+                'Counterparty, liquidity, technology and regulatory risks are disclosed per structure.',
+              ],
+              [
+                Building2,
+                'Segregated structure',
+                'The issuer vehicle is separate from the platform and, where used, bankruptcy-remote.',
+              ],
+              [
+                ShieldCheck,
+                'On-chain restrictions',
+                'Compliance and transfer controls are enforced by the token contract.',
+              ],
+              [
+                Globe2,
+                'Jurisdiction control',
+                'The compliance contract checks both wallet and policy before movement.',
+              ],
             ].map(([Icon, title, text]) => {
               const Component = Icon as typeof ShieldCheck;
               return (

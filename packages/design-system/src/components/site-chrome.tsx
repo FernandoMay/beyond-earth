@@ -24,7 +24,9 @@ export function SiteHeader() {
           <span>
             <i aria-hidden="true" /> STELLAR TESTNET
           </span>
-          <span className="ar-network-strip__center">REFERENCE IMPLEMENTATION · ILLUSTRATIVE DATA</span>
+          <span className="ar-network-strip__center">
+            REFERENCE IMPLEMENTATION · ILLUSTRATIVE DATA
+          </span>
           <span>PROTOCOL v0.1</span>
         </div>
       </div>

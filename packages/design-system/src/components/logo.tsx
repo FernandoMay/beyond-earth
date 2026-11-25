@@ -2,13 +2,7 @@ import type { SVGProps } from 'react';
 
 export function LogoMark({ className, ...props }: SVGProps<SVGSVGElement>) {
   return (
-    <svg
-      viewBox="0 0 48 48"
-      fill="none"
-      aria-hidden="true"
-      className={className}
-      {...props}
-    >
+    <svg viewBox="0 0 48 48" fill="none" aria-hidden="true" className={className} {...props}>
       <circle cx="24" cy="24" r="21.25" stroke="currentColor" strokeOpacity="0.28" />
       <ellipse
         cx="24"
