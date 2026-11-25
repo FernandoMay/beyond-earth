@@ -1,7 +1,5 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
-
 import { useFreighterWallet } from '@aerospace/wallet';
 import { BASE_FEE, Contract, rpc, TransactionBuilder, scValToNative } from '@stellar/stellar-sdk';
 
@@ -27,7 +25,6 @@ export default function Home() {
   const [admin, setAdmin] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const wallet = useFreighterWallet('TESTNET');
-  const router = useRouter();
 
   useEffect(() => {
     let active = true;
@@ -73,12 +70,6 @@ export default function Home() {
     };
   }, []);
 
-  useEffect(() => {
-    if (wallet.state.status === 'connected') {
-      router.push('/dashboard');
-    }
-  }, [wallet.state.status, router]);
-
   return (
     <div className="be-landing">
       <div className="be-landing__grid" />
@@ -107,14 +98,9 @@ export default function Home() {
               {wallet.state.status === 'connecting' ? 'Connecting…' : 'Connect Freighter Wallet'}
             </button>
           ) : (
-            <>
-              <a className="be-btn be-btn--primary" href="/dashboard">
-                Enter Dashboard
-              </a>
-              <span className="be-btn be-btn--ghost" style={{ cursor: 'default' }}>
-                {wallet.state.address?.slice(0, 6)}…{wallet.state.address?.slice(-4)}
-              </span>
-            </>
+            <a className="be-btn be-btn--primary" href="/dashboard">
+              Ir al Dashboard
+            </a>
           )}
           <a className="be-btn be-btn--ghost" href="/stellar-payment">
             Testnet Console
