@@ -163,3 +163,17 @@ fn unknown_investors_are_not_eligible() {
         .client
         .is_eligible(&unknown, &1, &String::from_str(&env, "US-DE")));
 }
+
+
+#[test]
+fn reactivates_a_suspended_investor() {
+    let env = Env::default();
+    let fixture = setup(&env);
+    let investor = Address::generate(&env);
+    approve(&env, &fixture, &investor);
+    fixture.client.suspend_investor(&fixture.officer, &investor);
+    let record = fixture
+        .client
+        .reactivar_inversor(&fixture.officer, &investor, &(NOW + 172_800));
+    assert_eq!(record.status, InvestorStatus::Approved);
+}

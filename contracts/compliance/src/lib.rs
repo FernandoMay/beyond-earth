@@ -44,6 +44,7 @@ pub enum Error {
     InvestorNotFound = 6,
     InvalidExpiry = 7,
     AlreadyAuthorized = 8,
+    InvalidTransition = 9,
 }
 
 /// Emitted when an investor's eligibility record changes.
@@ -166,6 +167,37 @@ impl Compliance {
             investor: investor.clone(),
             tier: record.tier,
             approved: false,
+        }
+        .publish(&env);
+        env.storage()
+            .persistent()
+            .set(&DataKey::Investor(investor), &record);
+        Ok(record)
+    }
+
+    /// Reactivates a previously suspended investor with a new expiry.
+    pub fn reactivar_inversor(
+        env: Env,
+        officer: Address,
+        investor: Address,
+        expires_at: u64,
+    ) -> Result<InvestorRecord, Error> {
+        officer.require_auth();
+        require_officer(&env, &officer)?;
+        let mut record = get_investor_or_error(&env, &investor)?;
+        if record.status != InvestorStatus::Suspended {
+            return Err(Error::InvalidTransition);
+        }
+        if expires_at <= env.ledger().timestamp() {
+            return Err(Error::InvalidExpiry);
+        }
+        record.status = InvestorStatus::Approved;
+        record.expires_at = expires_at;
+        record.updated_at = env.ledger().timestamp();
+        InvestorUpdated {
+            investor: investor.clone(),
+            tier: record.tier,
+            approved: true,
         }
         .publish(&env);
         env.storage()
