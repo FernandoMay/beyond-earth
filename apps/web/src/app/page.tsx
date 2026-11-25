@@ -169,7 +169,8 @@ export default function Home() {
       </section>
 
       <footer className="be-footer">
-        Aerospace RWA · Stellar Testnet · All assets and returns illustrative · No offer of securities · {new Date().getFullYear()}
+        Aerospace RWA · Stellar Testnet · All assets and returns illustrative · No offer of
+        securities · {new Date().getFullYear()}
       </footer>
     </div>
   );

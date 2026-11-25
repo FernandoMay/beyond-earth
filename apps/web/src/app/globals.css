@@ -3498,3 +3498,306 @@
     grid-column: 2;
   }
 }
+
+/* ── Beyond Earth Landing (vibrant) ─────────────────────────────────── */
+.be-landing {
+  position: relative;
+  overflow: hidden;
+  min-height: 100vh;
+  background:
+    radial-gradient(1200px 800px at 10% 10%, rgba(99, 102, 241, 0.35), transparent 60%),
+    radial-gradient(1000px 700px at 90% 20%, rgba(236, 72, 153, 0.28), transparent 60%),
+    radial-gradient(900px 600px at 50% 100%, rgba(34, 211, 238, 0.25), transparent 60%), #050816;
+  color: #e6edf7;
+}
+
+.be-landing__grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+  background-size: 60px 60px;
+  mask-image: radial-gradient(ellipse 90% 80% at 50% 40%, black, transparent 80%);
+  pointer-events: none;
+  animation: be-grid-drift 20s linear infinite;
+}
+
+@keyframes be-grid-drift {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 60px 60px;
+  }
+}
+
+.be-orb {
+  position: absolute;
+  border-radius: 999px;
+  filter: blur(60px);
+  opacity: 0.55;
+  animation: be-float 8s ease-in-out infinite;
+  pointer-events: none;
+}
+.be-orb--1 {
+  width: 360px;
+  height: 360px;
+  background: #6366f1;
+  top: 8%;
+  left: 5%;
+  animation-delay: 0s;
+}
+.be-orb--2 {
+  width: 420px;
+  height: 420px;
+  background: #ec4899;
+  top: 15%;
+  right: 8%;
+  animation-delay: 2s;
+}
+.be-orb--3 {
+  width: 300px;
+  height: 300px;
+  background: #22d3ee;
+  bottom: 10%;
+  left: 40%;
+  animation-delay: 4s;
+}
+
+@keyframes be-float {
+  0%,
+  100% {
+    transform: translateY(0) translateX(0);
+  }
+  50% {
+    transform: translateY(-30px) translateX(20px);
+  }
+}
+
+.be-hero {
+  position: relative;
+  z-index: 2;
+  padding: 120px 24px 80px;
+  text-align: center;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.be-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.25), rgba(236, 72, 153, 0.25));
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(8px);
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #c7d2fe;
+  margin-bottom: 28px;
+}
+
+.be-title {
+  font-size: clamp(48px, 9vw, 112px);
+  font-weight: 800;
+  line-height: 0.95;
+  letter-spacing: -0.04em;
+  margin: 0;
+  background: linear-gradient(135deg, #ffffff 0%, #a5b4fc 30%, #f472b6 60%, #22d3ee 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: be-shimmer 6s linear infinite;
+  background-size: 200% 200%;
+}
+
+@keyframes be-shimmer {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.be-sub {
+  max-width: 720px;
+  margin: 28px auto 0;
+  font-size: 18px;
+  line-height: 1.6;
+  color: #cbd5e1;
+}
+
+.be-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  justify-content: center;
+  margin-top: 40px;
+}
+
+.be-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 28px;
+  border-radius: 14px;
+  font-weight: 600;
+  font-size: 15px;
+  text-decoration: none;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+  border: 1px solid transparent;
+}
+.be-btn:hover {
+  transform: translateY(-2px);
+}
+.be-btn--primary {
+  background: linear-gradient(135deg, #6366f1, #ec4899);
+  color: #fff;
+  box-shadow: 0 10px 30px rgba(236, 72, 153, 0.35);
+}
+.be-btn--ghost {
+  background: rgba(255, 255, 255, 0.06);
+  color: #e6edf7;
+  border-color: rgba(255, 255, 255, 0.18);
+  backdrop-filter: blur(8px);
+}
+
+.be-stats {
+  position: relative;
+  z-index: 2;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 24px 80px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.be-stat {
+  padding: 24px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02));
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(12px);
+  transition:
+    transform 0.25s ease,
+    border-color 0.25s ease;
+}
+.be-stat:hover {
+  transform: translateY(-4px);
+  border-color: rgba(236, 72, 153, 0.4);
+}
+.be-stat__label {
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #94a3b8;
+  margin-bottom: 8px;
+}
+.be-stat__value {
+  font-size: 32px;
+  font-weight: 700;
+  background: linear-gradient(135deg, #22d3ee, #a5b4fc);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.be-section {
+  position: relative;
+  z-index: 2;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 80px 24px;
+}
+
+.be-section__title {
+  font-size: clamp(32px, 5vw, 52px);
+  font-weight: 700;
+  margin-bottom: 16px;
+  background: linear-gradient(135deg, #ffffff, #a5b4fc);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.be-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 18px;
+  margin-top: 32px;
+}
+
+.be-card {
+  padding: 26px;
+  border-radius: 20px;
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.12), rgba(236, 72, 153, 0.08));
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease;
+}
+.be-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 20px 40px rgba(99, 102, 241, 0.25);
+}
+.be-card__title {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #f1f5f9;
+}
+.be-card__text {
+  font-size: 14px;
+  color: #cbd5e1;
+  line-height: 1.6;
+}
+
+.be-contract {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 16px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  text-decoration: none;
+  color: inherit;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease;
+}
+.be-contract:hover {
+  background: rgba(99, 102, 241, 0.12);
+  border-color: rgba(99, 102, 241, 0.4);
+}
+.be-contract__name {
+  font-weight: 600;
+  color: #e6edf7;
+}
+.be-contract__id {
+  font-family: monospace;
+  font-size: 12px;
+  color: #94a3b8;
+  word-break: break-all;
+}
+
+.be-footer {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  padding: 60px 24px 40px;
+  color: #64748b;
+  font-size: 13px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
