@@ -42,6 +42,7 @@ contracts=(
   leasing
   marketplace
   governance
+  withdrawals
 )
 
 echo "{\"network\":\"$NETWORK\",\"deployedAt\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\",\"contracts\":{}}" > "$MANIFEST_PATH"
