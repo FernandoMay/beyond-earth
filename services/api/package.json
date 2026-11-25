@@ -20,7 +20,8 @@
     "fastify": "5.6.2",
     "pg": "^8.23.1",
     "zod": "3.25.76",
-    "@aerospace/stellar-sdk": "0.1.0"
+    "@aerospace/stellar-sdk": "0.1.0",
+    "@stellar/stellar-sdk": "17.4.0"
   },
   "devDependencies": {
     "@types/node": "24.10.0",

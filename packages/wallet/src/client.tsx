@@ -26,6 +26,7 @@ export interface UseFreighterWallet {
   connect: () => Promise<void>;
   disconnect: () => void;
   signXdr: (xdr: string) => Promise<string>;
+  signMessage: (message: string) => Promise<string>;
   refresh: () => Promise<void>;
 }
 
@@ -42,6 +43,10 @@ export interface FreighterApi {
     xdr: string,
     options?: { networkPassphrase?: string; address?: string },
   ) => Promise<{ signedTxXdr?: string; error?: { message?: string } }>;
+  signMessage?: (
+    message: string,
+    options?: { address?: string },
+  ) => Promise<{ signedMessage?: string; signature?: string; error?: { message?: string } }>;
 }
 
 const INITIAL: WalletState = { status: 'unavailable' };
@@ -178,6 +183,23 @@ export function useFreighterWallet(expectedNetwork = 'TESTNET'): UseFreighterWal
     [state.address, state.network?.networkPassphrase, state.status],
   );
 
+  const signMessage = useCallback(
+    async (message: string) => {
+      const api = apiRef.current ?? (await loadFreighter());
+      apiRef.current = api;
+      if (!api?.signMessage) throw new Error('Freighter is not available.');
+      if (state.status !== 'connected' || !state.address) {
+        throw new Error('Connect an eligible wallet before signing.');
+      }
+      const result = await api.signMessage(message, { address: state.address });
+      if (result.error) throw new Error(result.error.message ?? 'The message was not signed.');
+      const signature = result.signedMessage ?? result.signature;
+      if (!signature) throw new Error('Freighter did not return a signature.');
+      return signature;
+    },
+    [state.address, state.status],
+  );
+
   const displayAddress = useMemo(
     () => (state.address ? truncateAddress(state.address) : undefined),
     [state.address],
@@ -190,6 +212,7 @@ export function useFreighterWallet(expectedNetwork = 'TESTNET'): UseFreighterWal
     connect,
     disconnect,
     signXdr,
+    signMessage,
     refresh: checkAvailability,
   };
 }

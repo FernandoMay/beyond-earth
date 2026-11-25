@@ -16,6 +16,9 @@ import {
   readSorobanContract,
 } from '@aerospace/stellar-sdk';
 import type { AerospaceRepository } from './repository';
+import { z } from 'zod';
+import { Keypair } from '@stellar/stellar-sdk';
+import { randomBytes } from 'node:crypto';
 
 export interface ServerOptions {
   repository: AerospaceRepository;
@@ -62,6 +65,9 @@ function requireApiKey(request: FastifyRequest, apiKey: string | undefined, demo
 
 export async function buildServer(options: ServerOptions): Promise<FastifyInstance> {
   const demoMode = options.demoMode ?? true;
+  const challenges = new Map<string, { nonce: string; expires: number }>();
+  const sessions = new Map<string, { wallet: string; expires: number }>();
+
   const allowedOrigins = options.corsOrigins ?? [
     'http://localhost:3000',
     'http://localhost:3001',
@@ -286,6 +292,65 @@ export async function buildServer(options: ServerOptions): Promise<FastifyInstan
       });
     },
   );
+
+
+  const authChallengeSchema = z.object({ wallet: z.string() });
+  const authVerifySchema = z.object({
+    wallet: z.string(),
+    message: z.string(),
+    signature: z.string(),
+  });
+
+  app.post('/v1/auth/challenge', async (request, reply) => {
+    const parsed = authChallengeSchema.parse(request.body ?? {});
+    if (!isValidAccountAddress(parsed.wallet)) {
+      throw new HttpError(400, 'INVALID_WALLET', 'A valid Stellar wallet address is required.');
+    }
+    const nonce = randomBytes(16).toString('hex');
+    const message = `Aerospace RWA authentication\nWallet: ${parsed.wallet}\nNonce: ${nonce}`;
+    challenges.set(parsed.wallet, { nonce, expires: Date.now() + 5 * 60 * 1000 });
+    return reply.code(200).send({ wallet: parsed.wallet, nonce, message });
+  });
+
+  app.post('/v1/auth/verify', async (request, reply) => {
+    const parsed = authVerifySchema.parse(request.body ?? {});
+    if (!isValidAccountAddress(parsed.wallet)) {
+      throw new HttpError(400, 'INVALID_WALLET', 'A valid Stellar wallet address is required.');
+    }
+    const challenge = challenges.get(parsed.wallet);
+    if (!challenge || challenge.expires < Date.now()) {
+      throw new HttpError(401, 'CHALLENGE_EXPIRED', 'Request a new authentication challenge.');
+    }
+    const expectedMessage = `Aerospace RWA authentication\nWallet: ${parsed.wallet}\nNonce: ${challenge.nonce}`;
+    if (parsed.message !== expectedMessage) {
+      throw new HttpError(401, 'INVALID_MESSAGE', 'Authentication message mismatch.');
+    }
+    let valid = false;
+    try {
+      const keypair = Keypair.fromPublicKey(parsed.wallet);
+      valid = keypair.verify(Buffer.from(parsed.message), Buffer.from(parsed.signature, 'base64'));
+    } catch {
+      valid = false;
+    }
+    if (!valid) {
+      throw new HttpError(401, 'INVALID_SIGNATURE', 'Wallet signature verification failed.');
+    }
+    challenges.delete(parsed.wallet);
+    const token = randomBytes(32).toString('hex');
+    sessions.set(token, { wallet: parsed.wallet, expires: Date.now() + 24 * 60 * 60 * 1000 });
+    return reply.code(200).send({ token, wallet: parsed.wallet });
+  });
+
+  app.get('/v1/auth/session', async (request, reply) => {
+    const auth = request.headers.authorization;
+    const token = typeof auth === 'string' && auth.startsWith('Bearer ') ? auth.slice(7) : undefined;
+    if (!token) throw new HttpError(401, 'UNAUTHORIZED', 'Bearer token required.');
+    const session = sessions.get(token);
+    if (!session || session.expires < Date.now()) {
+      throw new HttpError(401, 'SESSION_EXPIRED', 'Session is invalid or expired.');
+    }
+    return { wallet: session.wallet };
+  });
 
   app.setNotFoundHandler((request: FastifyRequest, reply: FastifyReply) =>
     reply.code(404).send({
