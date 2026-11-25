@@ -8,6 +8,11 @@ import {
   subscriptionRequestSchema,
 } from '@aerospace/validation';
 import { DEMO_SUBSCRIPTION_MESSAGE, VERSION } from './constants';
+import {
+  CHALLENGE_PAYMENT_MEMO,
+  sendStellarPayment,
+} from '@aerospace/stellar-sdk';
+import { z } from 'zod';
 import type { AerospaceRepository } from './repository';
 
 export interface ServerOptions {
@@ -237,6 +242,44 @@ export async function buildServer(options: ServerOptions): Promise<FastifyInstan
       subscriptionId: record.id,
       status: record.status,
     });
+  });
+
+
+  const paymentBodySchema = z.object({
+    destination: z.string().min(55).max(56).optional(),
+    amount: z.string().regex(/^\d+(\.\d+)?$/).optional(),
+    memo: z.string().min(1).max(28).optional(),
+  });
+
+  app.post('/v1/stellar/testnet-payment', async (request, reply) => {
+    const parsed = paymentBodySchema.parse(request.body ?? {});
+    const sourceSecret =
+      process.env.STELLAR_PAYMENT_SECRET_KEY ?? process.env.STELLAR_SOURCE_SECRET_KEY;
+    if (!sourceSecret) {
+      throw new HttpError(
+        503,
+        'STELLAR_NOT_CONFIGURED',
+        'Set STELLAR_PAYMENT_SECRET_KEY to a funded Stellar testnet secret key.',
+      );
+    }
+    const destination =
+      parsed.destination ?? process.env.STELLAR_PAYMENT_DESTINATION;
+    if (!destination) {
+      throw new HttpError(
+        400,
+        'DESTINATION_REQUIRED',
+        'Provide a destination address in the request body or STELLAR_PAYMENT_DESTINATION.',
+      );
+    }
+
+    const result = await sendStellarPayment({
+      sourceSecretKey: sourceSecret,
+      destination,
+      amount: parsed.amount ?? process.env.STELLAR_PAYMENT_AMOUNT ?? '1',
+      memo: parsed.memo ?? process.env.STELLAR_PAYMENT_MEMO ?? CHALLENGE_PAYMENT_MEMO,
+    });
+
+    return reply.code(201).send({ mode: 'testnet', ...result });
   });
 
   app.setNotFoundHandler((request: FastifyRequest, reply: FastifyReply) =>

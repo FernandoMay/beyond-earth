@@ -147,3 +147,5 @@ export function assertNetworkIsTestnet(config: StellarNetworkConfig): void {
 }
 
 export { NETWORKS };
+
+export * from './payments';
