@@ -72,6 +72,14 @@ pub struct EscrowReleased {
     pub amount: i128,
 }
 
+/// Emitted when part of an escrow is released to the seller.
+#[contractevent]
+pub struct EscrowPartialReleased {
+    pub escrow_id: String,
+    pub seller: Address,
+    pub amount: i128,
+}
+
 /// Emitted when escrowed funds are refunded to the buyer.
 #[contractevent]
 pub struct EscrowRefunded {
@@ -215,6 +223,42 @@ impl EscrowContract {
             escrow_id: id.clone(),
             buyer: escrow.buyer.clone(),
             amount: escrow.amount,
+        }
+        .publish(&env);
+        env.storage()
+            .persistent()
+            .set(&DataKey::Escrow(id), &escrow);
+        Ok(escrow)
+    }
+
+    /// Releases a partial amount to the seller, reducing the remaining escrow.
+    pub fn liberar_parcial(
+        env: Env,
+        caller: Address,
+        id: String,
+        amount: i128,
+    ) -> Result<Escrow, Error> {
+        caller.require_auth();
+        let mut escrow = get_escrow_or_error(&env, &id)?;
+        require_resolver(&env, &caller, &escrow)?;
+        if escrow.status != EscrowStatus::Funded && escrow.status != EscrowStatus::Disputed {
+            return Err(Error::InvalidStatus);
+        }
+        if amount <= 0 || amount > escrow.amount {
+            return Err(Error::InvalidAmount);
+        }
+        let payment = token::Client::new(&env, &Self::token(env.clone())?);
+        payment.transfer(&env.current_contract_address(), &escrow.seller, &amount);
+
+        escrow.amount -= amount;
+        if escrow.amount == 0 {
+            escrow.status = EscrowStatus::Released;
+            escrow.resolved_at = env.ledger().timestamp();
+        }
+        EscrowPartialReleased {
+            escrow_id: id.clone(),
+            seller: escrow.seller.clone(),
+            amount,
         }
         .publish(&env);
         env.storage()
