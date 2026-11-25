@@ -151,3 +151,5 @@ export { NETWORKS };
 export * from './payments';
 
 export * from './horizon';
+
+export * from './soroban';

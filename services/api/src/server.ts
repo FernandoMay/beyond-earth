@@ -12,7 +12,10 @@ import {
   CHALLENGE_PAYMENT_MEMO,
   fetchStellarAccount,
   fetchStellarTransaction,
+  invokeSorobanContract,
   isValidAccountAddress,
+  isValidContractAddress,
+  readSorobanContract,
   sendStellarPayment,
 } from '@aerospace/stellar-sdk';
 import { z } from 'zod';
@@ -297,6 +300,49 @@ export async function buildServer(options: ServerOptions): Promise<FastifyInstan
   app.get<{ Params: { hash: string } }>('/v1/stellar/transactions/:hash', async (request) => {
     const transaction = await fetchStellarTransaction(request.params.hash);
     return transaction;
+  });
+
+
+  app.get<{ Params: { contractId: string; method: string } }>(
+    '/v1/stellar/soroban/:contractId/:method',
+    async (request) => {
+      if (!isValidContractAddress(request.params.contractId)) {
+        throw new HttpError(400, 'INVALID_CONTRACT', 'A valid Soroban contract address is required.');
+      }
+      return readSorobanContract({
+        contractId: request.params.contractId,
+        method: request.params.method,
+      });
+    },
+  );
+
+  const invokeBodySchema = z.object({
+    contractId: z.string(),
+    method: z.string().min(1),
+    args: z.array(z.unknown()).optional(),
+  });
+
+  app.post('/v1/stellar/soroban/invoke', async (request, reply) => {
+    const parsed = invokeBodySchema.parse(request.body ?? {});
+    if (!isValidContractAddress(parsed.contractId)) {
+      throw new HttpError(400, 'INVALID_CONTRACT', 'A valid Soroban contract address is required.');
+    }
+    const sourceSecret =
+      process.env.STELLAR_PAYMENT_SECRET_KEY ?? process.env.STELLAR_SOURCE_SECRET_KEY;
+    if (!sourceSecret) {
+      throw new HttpError(
+        503,
+        'STELLAR_NOT_CONFIGURED',
+        'Set STELLAR_PAYMENT_SECRET_KEY to a funded Stellar testnet secret key.',
+      );
+    }
+    const result = await invokeSorobanContract({
+      sourceSecretKey: sourceSecret,
+      contractId: parsed.contractId,
+      method: parsed.method,
+      args: parsed.args,
+    });
+    return reply.code(201).send({ mode: 'testnet', ...result });
   });
 
   app.setNotFoundHandler((request: FastifyRequest, reply: FastifyReply) =>
