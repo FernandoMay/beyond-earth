@@ -72,10 +72,10 @@ export async function buildServer(options: ServerOptions): Promise<FastifyInstan
     .map((v) => v.trim())
     .filter(Boolean);
 
-
   function sessionWallet(request: FastifyRequest): string | null {
     const auth = request.headers.authorization;
-    const token = typeof auth === 'string' && auth.startsWith('Bearer ') ? auth.slice(7) : undefined;
+    const token =
+      typeof auth === 'string' && auth.startsWith('Bearer ') ? auth.slice(7) : undefined;
     if (!token) return null;
     const session = sessions.get(token);
     if (!session || session.expires < Date.now()) return null;
@@ -312,7 +312,6 @@ export async function buildServer(options: ServerOptions): Promise<FastifyInstan
     },
   );
 
-
   const authChallengeSchema = z.object({ wallet: z.string() });
   const authVerifySchema = z.object({
     wallet: z.string(),
@@ -362,7 +361,8 @@ export async function buildServer(options: ServerOptions): Promise<FastifyInstan
 
   app.get('/v1/auth/session', async (request, reply) => {
     const auth = request.headers.authorization;
-    const token = typeof auth === 'string' && auth.startsWith('Bearer ') ? auth.slice(7) : undefined;
+    const token =
+      typeof auth === 'string' && auth.startsWith('Bearer ') ? auth.slice(7) : undefined;
     if (!token) throw new HttpError(401, 'UNAUTHORIZED', 'Bearer token required.');
     const session = sessions.get(token);
     if (!session || session.expires < Date.now()) {
@@ -371,14 +371,12 @@ export async function buildServer(options: ServerOptions): Promise<FastifyInstan
     return { wallet: session.wallet };
   });
 
-
   app.get('/v1/auth/me', async (request, reply) => {
     const wallet = sessionWallet(request);
     if (!wallet) throw new HttpError(401, 'UNAUTHORIZED', 'Valid session required.');
     const roles = adminWallets.includes(wallet) ? ['admin'] : ['investor'];
     return reply.code(200).send({ wallet, roles });
   });
-
 
   app.get('/v1/offerings', async () => ({ items: await options.repository.listOfferings() }));
 

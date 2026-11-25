@@ -1,34 +1,55 @@
-import type { Metadata } from 'next';
-import { ArrowUpRight, Search, SlidersHorizontal } from 'lucide-react';
-import { AssetCard, ButtonLink, PublicPage, SectionHeading, Badge } from '@aerospace/design-system';
-import { VERTICALS, demoSnapshot, type Vertical } from '@aerospace/shared-types';
+'use client';
 
-export const metadata: Metadata = {
-  title: 'Marketplace',
-};
+import { useEffect, useMemo, useState } from 'react';
+import { Search } from 'lucide-react';
+import { AssetCard, PublicPage, SectionHeading, Badge, ButtonLink } from '@aerospace/design-system';
+import { VERTICALS, type Asset, type Vertical } from '@aerospace/shared-types';
+import { createBrowserApi } from '@aerospace/api-client';
 
-type SearchParams = Promise<{ vertical?: string; q?: string; status?: string }>;
+export default function MarketplacePage() {
+  const [assets, setAssets] = useState<Asset[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [vertical, setVertical] = useState<Vertical | undefined>();
+  const [q, setQ] = useState('');
 
-export default async function MarketplacePage({ searchParams }: { searchParams: SearchParams }) {
-  const params = await searchParams;
-  const vertical = VERTICALS.some((item) => item.id === params.vertical)
-    ? (params.vertical as Vertical)
-    : undefined;
-  const q = params.q?.trim().toLowerCase();
-
-  const assets = demoSnapshot.assets.filter((asset) => {
-    if (vertical && asset.vertical !== vertical) return false;
-    if (
-      q &&
-      ![asset.name, asset.summary, asset.registryId, asset.operator, asset.tokenSymbol]
-        .join(' ')
-        .toLowerCase()
-        .includes(q)
-    ) {
-      return false;
+  useEffect(() => {
+    let active = true;
+    async function load() {
+      try {
+        const api = createBrowserApi();
+        const result = await api.listAssets({ limit: 100 });
+        if (!active) return;
+        setAssets(result.items);
+      } catch (err) {
+        if (!active) return;
+        setError(err instanceof Error ? err.message : 'Failed to load assets.');
+      } finally {
+        if (active) setLoading(false);
+      }
     }
-    return true;
-  });
+    void load();
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const filtered = useMemo(() => {
+    const text = q.trim().toLowerCase();
+    return assets.filter((asset) => {
+      if (vertical && asset.vertical !== vertical) return false;
+      if (
+        text &&
+        ![asset.name, asset.summary, asset.registryId, asset.operator, asset.tokenSymbol]
+          .join(' ')
+          .toLowerCase()
+          .includes(text)
+      ) {
+        return false;
+      }
+      return true;
+    });
+  }, [assets, vertical, q]);
 
   return (
     <PublicPage>
@@ -46,168 +67,66 @@ export default async function MarketplacePage({ searchParams }: { searchParams: 
                 <span className="w-silver">Eligible participation.</span>
               </h1>
               <p>
-                Discover demonstration aerospace assets across aviation, space, manufacturing and
-                drone infrastructure. Each record links to its evidence, legal structure and
-                offering terms.
+                Discover aerospace assets across aviation, space, manufacturing and drone
+                infrastructure. Data is loaded from the configured API; empty states mean no records
+                are available.
               </p>
-            </div>
-            <div className="w-page-hero__aside">
-              <div>
-                <span className="ar-mono">REGISTRY</span>
-                <strong>{demoSnapshot.assets.length.toString().padStart(2, '0')}</strong>
-                <small>illustrative assets</small>
-              </div>
-              <div>
-                <span className="ar-mono">VERTICALS</span>
-                <strong>05</strong>
-                <small>asset classes</small>
-              </div>
-              <div>
-                <span className="ar-mono">OPEN STRUCTURES</span>
-                <strong>
-                  {demoSnapshot.assets
-                    .filter(
-                      (asset) =>
-                        asset.offering?.status === 'open' ||
-                        asset.offering?.status === 'closing_soon',
-                    )
-                    .length.toString()
-                    .padStart(2, '0')}
-                </strong>
-                <small>demo offerings</small>
-              </div>
             </div>
           </div>
         </div>
       </section>
 
-      <section className="w-market">
+      <section className="w-section">
         <div className="ar-container">
-          <div className="w-market__bar">
-            <form className="w-market__filters" action="/marketplace" method="get">
-              <div className="w-market__search">
-                <Search size={14} />
-                <input
-                  name="q"
-                  defaultValue={params.q ?? ''}
-                  placeholder="Search assets, registry IDs, operators"
-                  aria-label="Search assets"
-                />
-              </div>
-              {vertical && <input type="hidden" name="vertical" value={vertical} />}
-              <button type="submit" className="ar-button ar-button--secondary ar-button--sm">
-                Search
-              </button>
-            </form>
-            <div className="w-market__view">
-              <SlidersHorizontal size={13} />
-              <span>{assets.length} structures</span>
-            </div>
-          </div>
-
-          <div className="w-market__chips">
-            <a href="/marketplace" className={`ar-pill ${!vertical ? 'is-active' : ''}`}>
-              All assets
-            </a>
-            {VERTICALS.filter((item) => item.id !== 'marketplace').map((item) => (
-              <a
-                key={item.id}
-                href={`/marketplace?vertical=${item.id}${q ? `&q=${encodeURIComponent(q)}` : ''}`}
-                className={`ar-pill ${vertical === item.id ? 'is-active' : ''}`}
-              >
-                {item.short}
-              </a>
-            ))}
-            <span className="w-market__filter-note">
-              <Badge tone="amber" dot>
-                Illustrative data
-              </Badge>
-            </span>
-          </div>
-
-          {assets.length > 0 ? (
-            <div className="w-market__grid">
-              {assets.map((asset) => (
-                <AssetCard key={asset.id} asset={asset} priority={asset.id === 'ast_eng_001'} />
+          <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 24 }}>
+            <input
+              placeholder="Search assets, registry IDs, operators"
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              style={{
+                flex: 1,
+                minWidth: 240,
+                padding: '10px 14px',
+                borderRadius: 10,
+                border: '1px solid rgba(255,255,255,0.12)',
+                background: 'rgba(255,255,255,0.04)',
+                color: '#e6edf7',
+              }}
+            />
+            <select
+              value={vertical ?? ''}
+              onChange={(e) => setVertical((e.target.value as Vertical) || undefined)}
+              style={{
+                padding: '10px 14px',
+                borderRadius: 10,
+                border: '1px solid rgba(255,255,255,0.12)',
+                background: 'rgba(255,255,255,0.04)',
+                color: '#e6edf7',
+              }}
+            >
+              <option value="">All verticals</option>
+              {VERTICALS.map((v) => (
+                <option key={v.id} value={v.id}>
+                  {v.label}
+                </option>
               ))}
-            </div>
-          ) : (
-            <div className="w-market__empty">
-              <h2>No structures match this filter.</h2>
-              <p>Try another vertical or clear the search query.</p>
-              <ButtonLink href="/marketplace" variant="secondary">
-                Reset filters
-              </ButtonLink>
-            </div>
-          )}
-
-          <div className="w-market__legend">
-            <div>
-              <span className="ar-mono">HOW TO READ THIS MARKET</span>
-              <p>
-                Cards show reference values and target distributions in illustrative terms. They are
-                not offers, projections or commitments. A structure marked &quot;evidence
-                review&quot; cannot be tokenized or subscribed.
-              </p>
-            </div>
-            <div>
-              <a href="/compliance" className="ar-text-link">
-                Eligibility framework <ArrowUpRight size={11} />
-              </a>
-              <a href="/protocol#asset-models" className="ar-text-link">
-                Asset models <ArrowUpRight size={11} />
-              </a>
-            </div>
+            </select>
           </div>
-        </div>
-      </section>
 
-      <section className="w-market__secondary">
-        <div className="ar-container">
-          <SectionHeading
-            eyebrow="SECONDARY MARKET"
-            title={
-              <>
-                Transferability is
-                <br />
-                <span className="w-silver">a permission, not an assumption.</span>
-              </>
-            }
-            description="The marketplace contract holds seller tokens in escrow before a listing goes live. A purchase settles payment and token transfer atomically. Cancellation returns the exact token quantity to the seller."
-            action={
-              <ButtonLink href="/protocol#marketplace" variant="secondary">
-                Marketplace contract <ArrowUpRight size={14} />
-              </ButtonLink>
-            }
-          />
-          <div className="w-market__secondary-grid">
-            {[
-              [
-                '01',
-                'Eligible seller',
-                'Seller authorises the listing and transfers units into escrow.',
-              ],
-              [
-                '02',
-                'Restricted listing',
-                'Compliance and jurisdiction rules remain active during the sale.',
-              ],
-              [
-                '03',
-                'Atomic settlement',
-                'Payment and token release occur in the same contract invocation.',
-              ],
-              [
-                '04',
-                'Cancellation path',
-                'Expired or cancelled listings return the held units to the seller.',
-              ],
-            ].map(([index, title, text]) => (
-              <div key={index}>
-                <span className="ar-mono">{index}</span>
-                <strong>{title}</strong>
-                <p>{text}</p>
-              </div>
+          {loading && <p style={{ color: '#cbd5e1' }}>Loading assets…</p>}
+          {error && <p style={{ color: 'crimson' }}>{error}</p>}
+          {!loading && !error && filtered.length === 0 && (
+            <p style={{ color: '#cbd5e1' }}>No assets available.</p>
+          )}
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+              gap: 18,
+            }}
+          >
+            {filtered.map((asset) => (
+              <AssetCard key={asset.id} asset={asset} />
             ))}
           </div>
         </div>

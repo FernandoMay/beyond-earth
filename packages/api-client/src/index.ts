@@ -222,10 +222,8 @@ export class LiveApi implements AerospaceApi {
 export function createAerospaceApi(options: ApiClientOptions = {}): AerospaceApi {
   const baseUrl = options.baseUrl?.replace(/\/$/, '');
   if (!baseUrl) {
-    if (process.env.NODE_ENV === 'production') {
-      throw new Error(
-        'NEXT_PUBLIC_API_URL is required in production. Demo mode is not available.',
-      );
+    if (process.env.NODE_ENV === 'production' && typeof window !== 'undefined') {
+      throw new Error('NEXT_PUBLIC_API_URL is required in production. Demo mode is not available.');
     }
     return new DemoApi();
   }
