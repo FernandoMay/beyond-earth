@@ -1,0 +1,16 @@
+{
+  "network": "testnet",
+  "deployedAt": "2026-01-01T00:00:00Z",
+  "contracts": {
+    "access-control": "C...",
+    "asset-registry": "C...",
+    "compliance": "C...",
+    "rwa-token": "C...",
+    "investment": "C...",
+    "escrow": "C...",
+    "revenue-distribution": "C...",
+    "leasing": "C...",
+    "marketplace": "C...",
+    "governance": "C..."
+  }
+}

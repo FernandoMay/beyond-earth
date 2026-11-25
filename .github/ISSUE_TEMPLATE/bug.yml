@@ -1,0 +1,52 @@
+name: Bug report
+description: Report a defect in the reference implementation.
+labels: ['bug']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Do not include secrets, private keys, identity documents or personal data.
+        Security issues belong in SECURITY.md, not in a public issue.
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: What happened, and what did you expect?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Reproduction steps
+      placeholder: |
+        1. Run ...
+        2. Open ...
+        3. Observe ...
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Public web
+        - Investor portal
+        - Issuer portal
+        - Admin portal
+        - Operations portal
+        - API / services
+        - Soroban contracts
+        - Database / infrastructure
+        - Documentation
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Commit or version
+      placeholder: main @ abc1234
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
+      description: Logs without secrets, screenshots, environment details.

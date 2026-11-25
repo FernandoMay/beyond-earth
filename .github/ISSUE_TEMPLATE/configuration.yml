@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security report
+    url: https://github.com/aerospace-rwa/aerospace-rwa/security/policy
+    about: Report vulnerabilities privately. Never open a public issue for a security defect.
+  - name: Questions and design discussion
+    url: https://github.com/aerospace-rwa/aerospace-rwa/discussions
+    about: Use discussions for open questions and early design proposals.

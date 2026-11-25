@@ -1,0 +1,109 @@
+name: aerospace-rwa
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: aerospace
+      POSTGRES_PASSWORD: aerospace
+      POSTGRES_DB: aerospace_rwa
+    ports:
+      - '5432:5432'
+    volumes:
+      - aerospace-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U aerospace -d aerospace_rwa']
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  api:
+    build:
+      context: ../..
+      dockerfile: infrastructure/docker/Dockerfile.api
+    environment:
+      NODE_ENV: production
+      DEMO_MODE: 'true'
+      PORT: '4000'
+      HOST: 0.0.0.0
+      DATABASE_URL: postgres://aerospace:aerospace@postgres:5432/aerospace_rwa
+      STELLAR_NETWORK: testnet
+      STELLAR_ALLOW_MAINNET: 'false'
+    ports:
+      - '4000:4000'
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ['CMD-SHELL', 'wget -qO- http://127.0.0.1:4000/health >/dev/null || exit 1']
+      interval: 10s
+      timeout: 3s
+      retries: 10
+
+  web:
+    build:
+      context: ../..
+      dockerfile: infrastructure/docker/Dockerfile.web
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:4000
+      NEXT_PUBLIC_STELLAR_NETWORK: testnet
+    ports:
+      - '3000:3000'
+    depends_on:
+      api:
+        condition: service_healthy
+
+  investor-portal:
+    profiles: ['portals']
+    build:
+      context: ../..
+      dockerfile: infrastructure/docker/Dockerfile.portal
+      args:
+        APP: investor-portal
+    ports:
+      - '3001:3001'
+    depends_on:
+      api:
+        condition: service_healthy
+
+  issuer-portal:
+    profiles: ['portals']
+    build:
+      context: ../..
+      dockerfile: infrastructure/docker/Dockerfile.portal
+      args:
+        APP: issuer-portal
+    ports:
+      - '3002:3002'
+    depends_on:
+      api:
+        condition: service_healthy
+
+  admin-portal:
+    profiles: ['portals']
+    build:
+      context: ../..
+      dockerfile: infrastructure/docker/Dockerfile.portal
+      args:
+        APP: admin-portal
+    ports:
+      - '3003:3003'
+    depends_on:
+      api:
+        condition: service_healthy
+
+  operations-portal:
+    profiles: ['portals']
+    build:
+      context: ../..
+      dockerfile: infrastructure/docker/Dockerfile.portal
+      args:
+        APP: operations-portal
+    ports:
+      - '3004:3004'
+    depends_on:
+      api:
+        condition: service_healthy
+
+volumes:
+  aerospace-pgdata:

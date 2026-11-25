@@ -1,0 +1,42 @@
+name: Feature request
+description: Propose a capability or protocol change.
+labels: ['enhancement']
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What aerospace RWA workflow is missing or unsafe today?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposal
+      description: Describe the behaviour, contracts and evidence implications.
+    validations:
+      required: true
+  - type: dropdown
+    id: vertical
+    attributes:
+      label: Primary vertical
+      options:
+        - Aviation
+        - Space
+        - Manufacturing
+        - Drones
+        - Cross-vertical marketplace
+        - Platform-wide
+    validations:
+      required: true
+  - type: checkboxes
+    id: guardrails
+    attributes:
+      label: Guardrails
+      options:
+        - label: The proposal does not imply that a token is automatic title to an asset.
+          required: true
+        - label: Demo data will remain visibly labelled.
+          required: true
+        - label: No speculative governance token is introduced at launch.
+          required: true

@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 520">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0a1629"/>
+      <stop offset=".6" stop-color="#07101f"/>
+      <stop offset="1" stop-color="#040811"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="60%" cy="48%" r="50%">
+      <stop offset="0" stop-color="#2f7bff" stop-opacity=".2"/>
+      <stop offset="1" stop-color="#2f7bff" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="grid" width="30" height="30" patternUnits="userSpaceOnUse">
+      <path d="M30 0H0v30" fill="none" stroke="#7ba6d8" stroke-opacity=".05"/>
+    </pattern>
+  </defs>
+  <rect width="900" height="520" fill="url(#bg)"/>
+  <rect width="900" height="520" fill="url(#grid)"/>
+  <rect width="900" height="520" fill="url(#glow)"/>
+  <g fill="none" color="#c9d7ea">
+    <circle cx="560" cy="250" r="150" stroke="#2f7bff" stroke-opacity=".7"/>
+    <circle cx="560" cy="250" r="112" stroke="currentColor" stroke-opacity=".22"/>
+    <circle cx="560" cy="250" r="78" stroke="currentColor" stroke-opacity=".16"/>
+    <circle cx="560" cy="250" r="30" stroke="#2f7bff" stroke-width="1.6"/>
+    <circle cx="560" cy="250" r="9" fill="#5fd5ff"/>
+    <g stroke="currentColor" stroke-opacity=".5">
+      <path d="M560 220 609 250 560 280 511 250Z"/>
+      <path d="M560 220v60M511 250h98"/>
+    </g>
+    <g stroke="#5fd5ff" stroke-opacity=".55">
+      <path d="M560 250 674 250M560 250 637 343M560 250 483 343M560 250 483 157M560 250 637 157"/>
+    </g>
+    <g stroke="currentColor" stroke-opacity=".7" stroke-width="2">
+      <path d="M374 275 170 345l45-95 129 12Z"/>
+      <path d="M390 215 270 225l-8 28 96 5"/>
+      <path d="M375 315h-76"/>
+    </g>
+    <circle cx="560" cy="250" r="17" fill="#07101f" stroke="currentColor"/>
+    <path d="M560 233v34m-17-17h34" stroke="#5fd5ff"/>
+    <path d="M720 250h75M650 168l60-42M470 168l-60-42M650 332l60 42M470 332l-60 42" stroke="#2f7bff" stroke-opacity=".35" stroke-dasharray="3 8"/>
+  </g>
+  <g fill="#7d90aa" font-family="monospace" font-size="10" letter-spacing="2">
+    <text x="42" y="48">ARWA / AV-0001</text>
+    <text x="42" y="68" fill="#5d6b80">TURBOFAN LEASE REFERENCE</text>
+    <text x="42" y="474">ILLUSTRATIVE TECHNICAL VIEW</text>
+    <text x="738" y="474">REF. 01</text>
+  </g>
+  <g stroke="#7ba6d8" stroke-opacity=".35" fill="none">
+    <path d="M30 84h36M30 84v36M870 436h-36M870 436v-36"/>
+  </g>
+</svg>

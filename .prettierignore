@@ -1,0 +1,8 @@
+node_modules
+.next
+dist
+coverage
+contracts/target
+package-lock.json
+*.wasm
+docs/assets

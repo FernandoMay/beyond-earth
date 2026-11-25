@@ -1,0 +1,34 @@
+{
+  "annotations": { "list": [] },
+  "editable": true,
+  "panels": [
+    {
+      "type": "timeseries",
+      "title": "API requests",
+      "targets": [{ "expr": "rate(aerospace_api_requests_total[5m])", "legendFormat": "requests/s" }],
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 }
+    },
+    {
+      "type": "timeseries",
+      "title": "API 5xx responses",
+      "targets": [{ "expr": "increase(aerospace_api_errors_total[5m])", "legendFormat": "5xx" }],
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 }
+    },
+    {
+      "type": "stat",
+      "title": "Demo mode",
+      "targets": [{ "expr": "aerospace_api_demo_mode", "legendFormat": "demo" }],
+      "gridPos": { "h": 6, "w": 6, "x": 0, "y": 8 }
+    },
+    {
+      "type": "stat",
+      "title": "API uptime (seconds)",
+      "targets": [{ "expr": "aerospace_api_uptime_seconds", "legendFormat": "uptime" }],
+      "gridPos": { "h": 6, "w": 6, "x": 6, "y": 8 }
+    }
+  ],
+  "schemaVersion": 39,
+  "title": "Aerospace RWA — API",
+  "uid": "aerospace-rwa-api",
+  "version": 1
+}

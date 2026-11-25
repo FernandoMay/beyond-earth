@@ -1,0 +1,29 @@
+groups:
+  - name: aerospace-rwa
+    rules:
+      - alert: AerospaceApiDown
+        expr: up{job="aerospace-api"} == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: Aerospace RWA API is unreachable
+          description: Prometheus has failed to scrape the API for more than two minutes.
+
+      - alert: AerospaceApi5xxRate
+        expr: increase(aerospace_api_errors_total[5m]) > 0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: Aerospace RWA API returned 5xx responses
+          description: Investigate the API logs and the upstream repository before retrying writes.
+
+      - alert: AerospaceApiDemoMode
+        expr: aerospace_api_demo_mode == 1
+        for: 1h
+        labels:
+          severity: info
+        annotations:
+          summary: Aerospace RWA API is running in demo mode
+          description: Expected for reference environments. Confirm before presenting the environment as live.

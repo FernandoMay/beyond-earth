@@ -1,0 +1,24 @@
+# Aerospace RWA public web app.
+FROM node:24-alpine AS deps
+WORKDIR /app
+COPY package.json package-lock.json ./
+COPY apps ./apps
+COPY packages ./packages
+COPY services ./services
+COPY scripts ./scripts
+RUN npm ci
+
+FROM deps AS builder
+WORKDIR /app
+ENV NEXT_TELEMETRY_DISABLED=1
+RUN npm run build -w @aerospace/web
+
+FROM node:24-alpine AS runner
+WORKDIR /app
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+COPY --from=deps /app/node_modules ./node_modules
+COPY --from=builder /app ./
+EXPOSE 3000
+USER node
+CMD ["npm", "run", "start", "-w", "@aerospace/web"]

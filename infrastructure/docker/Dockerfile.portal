@@ -1,0 +1,30 @@
+# Generic portal image. Set APP to one of:
+# investor-portal, issuer-portal, admin-portal, operations-portal.
+ARG APP=investor-portal
+
+FROM node:24-alpine AS deps
+ARG APP
+WORKDIR /app
+COPY package.json package-lock.json ./
+COPY apps ./apps
+COPY packages ./packages
+COPY services ./services
+COPY scripts ./scripts
+RUN npm ci
+
+FROM deps AS builder
+ARG APP
+WORKDIR /app
+ENV NEXT_TELEMETRY_DISABLED=1
+RUN npm run build -w @aerospace/${APP}
+
+FROM node:24-alpine AS runner
+ARG APP
+WORKDIR /app
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV APP=${APP}
+COPY --from=deps /app/node_modules ./node_modules
+COPY --from=builder /app ./
+USER node
+CMD ["sh", "-c", "npm run start -w @aerospace/${APP}"]

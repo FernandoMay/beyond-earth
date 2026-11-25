@@ -1,0 +1,49 @@
+{
+  "name": "aerospace-rwa",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Aerospace RWA — the aerospace asset financial network. Tokenization, compliance, investment and settlement infrastructure on Stellar + Soroban.",
+  "license": "Apache-2.0",
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "workspaces": [
+    "apps/*",
+    "packages/*",
+    "services/*"
+  ],
+  "scripts": {
+    "dev": "concurrently -n web,investor,issuer,admin,ops,api -c cyan,blue,magenta,yellow,green,gray \"npm run dev -w @aerospace/web\" \"npm run dev -w @aerospace/investor-portal\" \"npm run dev -w @aerospace/issuer-portal\" \"npm run dev -w @aerospace/admin-portal\" \"npm run dev -w @aerospace/operations-portal\" \"npm run dev -w @aerospace/api\"",
+    "dev:web": "npm run dev -w @aerospace/web",
+    "dev:api": "npm run dev -w @aerospace/api",
+    "build": "npm run build:apps && npm run build:services",
+    "build:apps": "npm run build -w @aerospace/web && npm run build -w @aerospace/investor-portal && npm run build -w @aerospace/issuer-portal && npm run build -w @aerospace/admin-portal && npm run build -w @aerospace/operations-portal",
+    "build:services": "npm run build --workspace @aerospace/api --workspace @aerospace/indexer --workspace @aerospace/oracle-adapters --workspace @aerospace/valuation --workspace @aerospace/document-verification --workspace @aerospace/notifications",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "test": "npm run test:unit && npm run test:contracts",
+    "test:unit": "vitest run",
+    "test:watch": "vitest",
+    "test:contracts": "cargo test --workspace --manifest-path contracts/Cargo.toml",
+    "test:e2e": "playwright test",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "contracts:build": "./scripts/build-contracts.sh",
+    "contracts:fmt": "cargo fmt --manifest-path contracts/Cargo.toml --all",
+    "contracts:clippy": "cargo clippy --workspace --manifest-path contracts/Cargo.toml --all-targets -- -D warnings",
+    "db:migrate": "tsx scripts/db-migrate.ts",
+    "db:seed": "tsx scripts/db-seed.ts",
+    "demo:hash": "tsx scripts/generate-demo-hashes.ts",
+    "prepare": "node scripts/setup-check.mjs"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.65.1",
+    "@types/node": "24.10.0",
+    "@types/pg": "^8.23.1",
+    "concurrently": "10.0.7",
+    "pg": "^8.23.1",
+    "prettier": "3.10.1",
+    "tsx": "^4.21.0",
+    "typescript": "5.9.3",
+    "vitest": "^5.1.1"
+  }
+}
