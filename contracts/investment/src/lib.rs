@@ -597,6 +597,41 @@ impl Investment {
         total_committed
     }
 
+    /// Marks multiple offerings as failed after their close.
+    pub fn marcar_fallido_masivo(
+        env: Env,
+        caller: Address,
+        offering_ids: soroban_sdk::Vec<String>,
+    ) -> u32 {
+        caller.require_auth();
+        if require_admin(&env, &caller).is_err() {
+            return 0;
+        }
+        let now = env.ledger().timestamp();
+        let mut marked = 0_u32;
+        for id in offering_ids.iter() {
+            if let Ok(mut offering) = get_offering_or_error(&env, &id) {
+                if now < offering.closes_at {
+                    continue;
+                }
+                if offering.status == OfferingStatus::Settled || offering.status == OfferingStatus::Failed {
+                    continue;
+                }
+                offering.status = OfferingStatus::Failed;
+                env.storage()
+                    .persistent()
+                    .set(&DataKey::Offering(id.clone()), &offering);
+                OfferingFailed {
+                    offering_id: id.clone(),
+                    committed: offering.committed,
+                }
+                .publish(&env);
+                marked += 1;
+            }
+        }
+        marked
+    }
+
     pub fn get_offering(env: Env, offering_id: String) -> Result<Offering, Error> {
         get_offering_or_error(&env, &offering_id)
     }

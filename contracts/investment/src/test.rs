@@ -363,3 +363,26 @@ fn suscribe_masivo_subscribes_multiple() {
     let total = fixture.client.suscribir_masivo(&String::from_str(&fixture.env, "off_001"), &investors, &amounts);
     assert_eq!(total, 5_000);
 }
+
+
+#[test]
+fn marks_multiple_offerings_failed() {
+    let fixture = setup();
+    create(&fixture, 10_000);
+    // create second offering
+    fixture.client.create_offering(
+        &fixture.issuer,
+        &String::from_str(&fixture.env, "off_002"),
+        &String::from_str(&fixture.env, "ast_eng_002"),
+        &10_000,
+        &100,
+        &(NOW + 10),
+        &(NOW + 1_000),
+        &2,
+        &String::from_str(&fixture.env, "US-DE"),
+    );
+    fixture.env.ledger().set_timestamp(NOW + 1_000);
+    let ids = soroban_sdk::vec![&fixture.env, String::from_str(&fixture.env, "off_001"), String::from_str(&fixture.env, "off_002")];
+    let marked = fixture.client.marcar_fallido_masivo(&fixture.admin, &ids);
+    assert_eq!(marked, 2);
+}
