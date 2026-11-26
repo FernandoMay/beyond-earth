@@ -413,6 +413,45 @@ impl Marketplace {
         count
     }
 
+    /// Applies a discount to multiple open listings.
+    pub fn aplicar_descuento_masivo(
+        env: Env,
+        caller: Address,
+        listing_ids: soroban_sdk::Vec<String>,
+        discount_bps: u32,
+    ) -> u32 {
+        caller.require_auth();
+        if discount_bps == 0 || discount_bps > 10_000 {
+            return 0;
+        }
+        let admin: Address = env.storage().instance().get(&DataKey::Admin).unwrap();
+        let mut applied = 0_u32;
+        for id in listing_ids.iter() {
+            if let Some(mut listing) = env
+                .storage()
+                .persistent()
+                .get::<_, Listing>(&DataKey::Listing(id.clone()))
+            {
+                if listing.status != ListingStatus::Open {
+                    continue;
+                }
+                if caller != listing.seller && caller != admin {
+                    continue;
+                }
+                let new_price = listing.price * (10_000 - discount_bps as i128) / 10_000;
+                if new_price <= 0 || new_price >= listing.price {
+                    continue;
+                }
+                listing.price = new_price;
+                env.storage()
+                    .persistent()
+                    .set(&DataKey::Listing(id), &listing);
+                applied += 1;
+            }
+        }
+        applied
+    }
+
     pub fn get_listing(env: Env, id: String) -> Result<Listing, Error> {
         get_listing_or_error(&env, &id)
     }
