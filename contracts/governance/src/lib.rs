@@ -1,5 +1,6 @@
 #![no_std]
 
+use soroban_sdk::contractevent;
 use soroban_sdk::{
     contract, contracterror, contractimpl, contracttype, Address, BytesN, Env, String,
 };
@@ -66,6 +67,58 @@ pub enum Error {
 
 /// Council governance. Voting power is one vote per approved council member;
 /// there is deliberately no transferable governance token at launch.
+/// Emitted when a member is added.
+#[contractevent]
+pub struct MemberAdded {
+    pub member: Address,
+}
+
+/// Emitted when a member is removed.
+#[contractevent]
+pub struct MemberRemoved {
+    pub member: Address,
+}
+
+/// Emitted when a proposal is created.
+#[contractevent]
+pub struct ProposalCreated {
+    pub proposal_id: String,
+    pub proposer: Address,
+}
+
+/// Emitted when a vote is cast.
+#[contractevent]
+pub struct VoteCast {
+    pub proposal_id: String,
+    pub voter: Address,
+    pub support: bool,
+}
+
+/// Emitted when a proposal is finalized.
+#[contractevent]
+pub struct ProposalFinalized {
+    pub proposal_id: String,
+    pub status: u32,
+}
+
+/// Emitted when a proposal is executed.
+#[contractevent]
+pub struct ProposalExecuted {
+    pub proposal_id: String,
+}
+
+/// Emitted when a proposal is cancelled.
+#[contractevent]
+pub struct ProposalCancelled {
+    pub proposal_id: String,
+}
+
+/// Emitted when a proposal is reopened.
+#[contractevent]
+pub struct ProposalReopened {
+    pub proposal_id: String,
+}
+
 #[contract]
 pub struct Governance;
 
@@ -111,7 +164,11 @@ impl Governance {
         }
         env.storage()
             .persistent()
-            .set(&DataKey::Member(member), &true);
+            .set(&DataKey::Member(member.clone()), &true);
+        MemberAdded {
+            member: member.clone(),
+        }
+        .publish(&env);
         let count = Self::member_count(env.clone()) + 1;
         env.storage().instance().set(&DataKey::MemberCount, &count);
         Ok(count)
@@ -136,7 +193,13 @@ impl Governance {
         {
             return Err(Error::NotMember);
         }
-        env.storage().persistent().remove(&DataKey::Member(member));
+        env.storage()
+            .persistent()
+            .remove(&DataKey::Member(member.clone()));
+        MemberRemoved {
+            member: member.clone(),
+        }
+        .publish(&env);
         let count = Self::member_count(env.clone()).saturating_sub(1);
         env.storage().instance().set(&DataKey::MemberCount, &count);
         Ok(count)
@@ -197,6 +260,11 @@ impl Governance {
             executed_at: 0,
         };
         env.storage().persistent().set(&key, &proposal);
+        ProposalCreated {
+            proposal_id: id.clone(),
+            proposer: proposal.proposer.clone(),
+        }
+        .publish(&env);
 
         let mut all: soroban_sdk::Vec<String> = env
             .storage()
@@ -238,7 +306,13 @@ impl Governance {
         env.storage().persistent().set(&vote_key, &true);
         env.storage()
             .persistent()
-            .set(&DataKey::Proposal(id), &proposal);
+            .set(&DataKey::Proposal(id.clone()), &proposal);
+        VoteCast {
+            proposal_id: id.clone(),
+            voter: voter.clone(),
+            support,
+        }
+        .publish(&env);
         Ok(proposal)
     }
 
@@ -270,6 +344,11 @@ impl Governance {
         } else {
             ProposalStatus::Rejected
         };
+        ProposalFinalized {
+            proposal_id: id.clone(),
+            status: proposal.status as u32,
+        }
+        .publish(&env);
         env.storage()
             .persistent()
             .set(&DataKey::Proposal(id), &proposal);
@@ -290,6 +369,10 @@ impl Governance {
         }
         proposal.status = ProposalStatus::Executed;
         proposal.executed_at = env.ledger().timestamp();
+        ProposalExecuted {
+            proposal_id: id.clone(),
+        }
+        .publish(&env);
         env.storage()
             .persistent()
             .set(&DataKey::Proposal(id), &proposal);
@@ -304,6 +387,10 @@ impl Governance {
             return Err(Error::CannotCancel);
         }
         proposal.status = ProposalStatus::Cancelled;
+        ProposalCancelled {
+            proposal_id: id.clone(),
+        }
+        .publish(&env);
         env.storage()
             .persistent()
             .set(&DataKey::Proposal(id), &proposal);
@@ -337,7 +424,11 @@ impl Governance {
         proposal.executable_at = proposal.voting_ends_at + timelock;
         env.storage()
             .persistent()
-            .set(&DataKey::Proposal(id), &proposal);
+            .set(&DataKey::Proposal(id.clone()), &proposal);
+        ProposalReopened {
+            proposal_id: id.clone(),
+        }
+        .publish(&env);
         Ok(proposal)
     }
 
@@ -377,6 +468,12 @@ impl Governance {
         env.storage()
             .persistent()
             .set(&DataKey::Proposal(id.clone()), &proposal);
+        VoteCast {
+            proposal_id: id.clone(),
+            voter: voter.clone(),
+            support,
+        }
+        .publish(&env);
 
         let quorum: u32 = env
             .storage()
@@ -385,6 +482,11 @@ impl Governance {
             .ok_or(Error::NotInitialized)?;
         if proposal.yes_votes >= quorum && proposal.yes_votes > proposal.no_votes {
             proposal.status = ProposalStatus::Passed;
+            ProposalFinalized {
+                proposal_id: id.clone(),
+                status: proposal.status as u32,
+            }
+            .publish(&env);
             env.storage()
                 .persistent()
                 .set(&DataKey::Proposal(id), &proposal);
@@ -412,6 +514,10 @@ impl Governance {
                 if proposal.status == ProposalStatus::Passed && now >= proposal.executable_at {
                     proposal.status = ProposalStatus::Executed;
                     proposal.executed_at = now;
+                    ProposalExecuted {
+                        proposal_id: id.clone(),
+                    }
+                    .publish(&env);
                     env.storage()
                         .persistent()
                         .set(&DataKey::Proposal(id), &proposal);
@@ -439,6 +545,10 @@ impl Governance {
                     || proposal.status == ProposalStatus::Passed
                 {
                     proposal.status = ProposalStatus::Cancelled;
+                    ProposalCancelled {
+                        proposal_id: id.clone(),
+                    }
+                    .publish(&env);
                     env.storage()
                         .persistent()
                         .set(&DataKey::Proposal(id), &proposal);
