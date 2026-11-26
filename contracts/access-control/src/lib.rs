@@ -32,6 +32,7 @@ pub enum Error {
     NotInitialized = 2,
     Unauthorized = 3,
     CannotRevokeOwner = 4,
+    AlreadyHasRole = 5,
 }
 
 /// Emitted when an admin grants a role.
@@ -39,6 +40,15 @@ pub enum Error {
 pub struct RoleGranted {
     pub caller: Address,
     pub grantee: Address,
+    pub role: u32,
+}
+
+/// Emitted when an admin transfers a role.
+#[contractevent]
+pub struct RoleTransferred {
+    pub caller: Address,
+    pub from: Address,
+    pub to: Address,
     pub role: u32,
 }
 
@@ -107,6 +117,42 @@ impl AccessControl {
         env.storage()
             .persistent()
             .remove(&DataKey::Role(grantee, role));
+        Ok(())
+    }
+
+    /// Transfers a role from one account to another. The owner's Admin role
+    /// cannot be transferred.
+    pub fn transferir_rol(
+        env: Env,
+        caller: Address,
+        from: Address,
+        to: Address,
+        role: Role,
+    ) -> Result<(), Error> {
+        caller.require_auth();
+        require_admin(&env, &caller)?;
+        if role == Role::Admin && is_owner(&env, &from) {
+            return Err(Error::CannotRevokeOwner);
+        }
+        if !Self::has_role(env.clone(), from.clone(), role) {
+            return Err(Error::Unauthorized);
+        }
+        if Self::has_role(env.clone(), to.clone(), role) {
+            return Err(Error::AlreadyHasRole);
+        }
+        env.storage()
+            .persistent()
+            .remove(&DataKey::Role(from.clone(), role));
+        env.storage()
+            .persistent()
+            .set(&DataKey::Role(to.clone(), role), &true);
+        RoleTransferred {
+            caller: caller.clone(),
+            from,
+            to,
+            role: role as u32,
+        }
+        .publish(&env);
         Ok(())
     }
 

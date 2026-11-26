@@ -78,3 +78,19 @@ fn role_is_scoped_to_account() {
     assert!(client.has_role(&auditor, &Role::Auditor));
     assert!(!client.has_role(&owner, &Role::Auditor));
 }
+
+
+#[test]
+fn transfers_a_role_between_accounts() {
+    let env = Env::default();
+    let (client, owner) = setup(&env);
+    let from = Address::generate(&env);
+    let to = Address::generate(&env);
+
+    client.grant(&owner, &from, &Role::Operator);
+    assert!(client.has_role(&from, &Role::Operator));
+
+    client.transferir_rol(&owner, &from, &to, &Role::Operator);
+    assert!(!client.has_role(&from, &Role::Operator));
+    assert!(client.has_role(&to, &Role::Operator));
+}
