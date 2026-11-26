@@ -200,3 +200,17 @@ fn updates_investor_tier() {
         .actualizar_tier(&fixture.officer, &investor, &4);
     assert_eq!(updated.tier, 4);
 }
+
+
+#[test]
+fn suspends_multiple_investors() {
+    let env = Env::default();
+    let fixture = setup(&env);
+    let alice = Address::generate(&env);
+    let bob = Address::generate(&env);
+    approve(&env, &fixture, &alice);
+    approve(&env, &fixture, &bob);
+    let investors = soroban_sdk::vec![&env, alice.clone(), bob.clone()];
+    let suspended = fixture.client.suspender_masivo(&fixture.officer, &investors);
+    assert_eq!(suspended, 2);
+}
