@@ -524,6 +524,79 @@ impl Investment {
         Ok(position)
     }
 
+    /// Subscribes multiple investors to an offering in one transaction.
+    pub fn suscribir_masivo(
+        env: Env,
+        offering_id: String,
+        investors: soroban_sdk::Vec<Address>,
+        amounts: soroban_sdk::Vec<i128>,
+    ) -> i128 {
+        let mut offering = match get_offering_or_error(&env, &offering_id) {
+            Ok(o) => o,
+            Err(_) => return 0,
+        };
+        let now = env.ledger().timestamp();
+        if offering.status != OfferingStatus::Open
+            || now < offering.opens_at
+            || now >= offering.closes_at
+        {
+            return 0;
+        }
+        let payment = token::Client::new(&env, &Self::payment_token(env.clone()).unwrap());
+        let mut total_committed: i128 = 0;
+        let len = investors.len().min(amounts.len());
+        for i in 0..len {
+            let investor = investors.get(i).unwrap();
+            let amount = amounts.get(i).unwrap();
+            if amount <= 0 || amount < offering.min_ticket {
+                continue;
+            }
+            // compliance check
+            if let Some(compliance) = env.storage().instance().get::<_, Address>(&DataKey::Compliance) {
+                let client = ComplianceClient::new(&env, &compliance);
+                if !client.is_eligible(&investor, &offering.required_tier, &offering.jurisdiction) {
+                    continue;
+                }
+            }
+            investor.require_auth();
+            let position_key = DataKey::Position(offering_id.clone(), investor.clone());
+            let existing: Option<Position> = env.storage().persistent().get(&position_key);
+            if existing.is_none() {
+                offering.investor_count += 1;
+            }
+            payment.transfer(&investor, env.current_contract_address(), &amount);
+            let position = match existing {
+                Some(mut p) => {
+                    p.amount += amount;
+                    p
+                }
+                None => Position {
+                    investor: investor.clone(),
+                    offering_id: offering_id.clone(),
+                    amount,
+                    refunded: false,
+                    subscribed_at: now,
+                },
+            };
+            env.storage().persistent().set(&position_key, &position);
+            offering.committed += amount;
+            total_committed += amount;
+            Subscribed {
+                offering_id: offering_id.clone(),
+                investor,
+                amount,
+            }
+            .publish(&env);
+        }
+        if offering.committed >= offering.target {
+            offering.status = OfferingStatus::Funded;
+        }
+        env.storage()
+            .persistent()
+            .set(&DataKey::Offering(offering_id), &offering);
+        total_committed
+    }
+
     pub fn get_offering(env: Env, offering_id: String) -> Result<Offering, Error> {
         get_offering_or_error(&env, &offering_id)
     }

@@ -347,3 +347,19 @@ fn suscribe_con_descuento_applies_discount() {
         .suscribir_con_descuento(&investor, &String::from_str(&fixture.env, "off_001"), &50_000_000);
     assert_eq!(position.amount, 45_000_000);
 }
+
+
+#[test]
+fn suscribe_masivo_subscribes_multiple() {
+    let fixture = setup();
+    create(&fixture, 10_000);
+    let alice = Address::generate(&fixture.env);
+    let bob = Address::generate(&fixture.env);
+    fixture.token_admin.mint(&alice, &10_000);
+    fixture.token_admin.mint(&bob, &10_000);
+    fixture.env.ledger().set_timestamp(NOW + 100);
+    let investors = soroban_sdk::vec![&fixture.env, alice.clone(), bob.clone()];
+    let amounts = soroban_sdk::vec![&fixture.env, 2_000_i128, 3_000_i128];
+    let total = fixture.client.suscribir_masivo(&String::from_str(&fixture.env, "off_001"), &investors, &amounts);
+    assert_eq!(total, 5_000);
+}
