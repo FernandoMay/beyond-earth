@@ -12,6 +12,7 @@ members = [
   "marketplace",
   "governance",
   "withdrawals",
+  "vault",
 ]
 
 [workspace.package]
