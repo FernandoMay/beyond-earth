@@ -392,6 +392,9 @@ impl Marketplace {
         listing_ids: soroban_sdk::Vec<String>,
     ) -> u32 {
         buyer.require_auth();
+        if listing_ids.len() > 50 {
+            return 0;
+        }
         let mut count: u32 = env
             .storage()
             .persistent()

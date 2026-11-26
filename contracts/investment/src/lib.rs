@@ -543,6 +543,9 @@ impl Investment {
             return 0;
         }
         let payment = token::Client::new(&env, &Self::payment_token(env.clone()).unwrap());
+        if investors.len() > 50 {
+            return 0;
+        }
         let mut total_committed: i128 = 0;
         let len = investors.len().min(amounts.len());
         for i in 0..len {
@@ -609,6 +612,9 @@ impl Investment {
     ) -> u32 {
         caller.require_auth();
         if require_admin(&env, &caller).is_err() {
+            return 0;
+        }
+        if offering_ids.len() > 50 {
             return 0;
         }
         let now = env.ledger().timestamp();

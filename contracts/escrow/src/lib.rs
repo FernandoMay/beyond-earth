@@ -368,6 +368,9 @@ impl EscrowContract {
     /// Refunds all provided escrows for a buyer in one transaction.
     pub fn reembolsar_todo(env: Env, buyer: Address, escrow_ids: soroban_sdk::Vec<String>) -> i128 {
         buyer.require_auth();
+        if escrow_ids.len() > 50 {
+            return 0;
+        }
         let payment = token::Client::new(&env, &Self::token(env.clone()).unwrap());
         let mut total: i128 = 0;
         for id in escrow_ids.iter() {
