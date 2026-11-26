@@ -296,14 +296,22 @@ fn executes_passed_proposals_after_timelock() {
     assert_eq!(executed, 1);
 }
 
-
 #[test]
 fn cancels_multiple_proposals() {
     let fixture = setup();
     propose(&fixture);
     let proposal2_id = String::from_str(&fixture.env, "prop_002");
-    fixture.client.propose(&fixture.alice, &proposal2_id, &BytesN::from_array(&fixture.env, &[1u8; 32]), &BytesN::from_array(&fixture.env, &[2u8; 32]));
-    let ids = soroban_sdk::vec![&fixture.env, String::from_str(&fixture.env, "prop_001"), proposal2_id];
+    fixture.client.propose(
+        &fixture.alice,
+        &proposal2_id,
+        &BytesN::from_array(&fixture.env, &[1u8; 32]),
+        &BytesN::from_array(&fixture.env, &[2u8; 32]),
+    );
+    let ids = soroban_sdk::vec![
+        &fixture.env,
+        String::from_str(&fixture.env, "prop_001"),
+        proposal2_id
+    ];
     let cancelled = fixture.client.cancelar_masivo(&fixture.admin, &ids);
     assert_eq!(cancelled, 2);
 }

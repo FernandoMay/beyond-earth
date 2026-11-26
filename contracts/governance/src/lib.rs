@@ -435,7 +435,9 @@ impl Governance {
                 .persistent()
                 .get::<_, Proposal>(&DataKey::Proposal(id.clone()))
             {
-                if proposal.status == ProposalStatus::Active || proposal.status == ProposalStatus::Passed {
+                if proposal.status == ProposalStatus::Active
+                    || proposal.status == ProposalStatus::Passed
+                {
                     proposal.status = ProposalStatus::Cancelled;
                     env.storage()
                         .persistent()

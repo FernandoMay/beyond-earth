@@ -370,5 +370,4 @@ mod test {
         assert_eq!(client.saldo(&alice), 120);
         assert_eq!(client.saldo(&bob), 70);
     }
-
 }

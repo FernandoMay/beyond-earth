@@ -425,7 +425,11 @@ impl RwaToken {
     }
 
     /// Burns tokens from multiple accounts.
-    pub fn quemar_masivo(env: Env, accounts: soroban_sdk::Vec<Address>, amounts: soroban_sdk::Vec<i128>) -> i128 {
+    pub fn quemar_masivo(
+        env: Env,
+        accounts: soroban_sdk::Vec<Address>,
+        amounts: soroban_sdk::Vec<i128>,
+    ) -> i128 {
         let mut total_burned: i128 = 0;
         let len = accounts.len().min(amounts.len());
         for i in 0..len {

@@ -1,7 +1,9 @@
 #![no_std]
 
 use soroban_sdk::contractevent;
-use soroban_sdk::{contract, contracterror, contractimpl, contracttype, token, Address, Env, String};
+use soroban_sdk::{
+    contract, contracterror, contractimpl, contracttype, token, Address, Env, String,
+};
 
 #[contracttype]
 pub enum DataKey {
@@ -41,7 +43,13 @@ pub struct Vault;
 
 #[contractimpl]
 impl Vault {
-    pub fn initialize(env: Env, admin: Address, token: Address, amount: i128, code: String) -> Result<(), Error> {
+    pub fn initialize(
+        env: Env,
+        admin: Address,
+        token: Address,
+        amount: i128,
+        code: String,
+    ) -> Result<(), Error> {
         if env.storage().instance().has(&DataKey::Admin) {
             return Err(Error::AlreadyInitialized);
         }

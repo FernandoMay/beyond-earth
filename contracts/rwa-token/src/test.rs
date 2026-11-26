@@ -247,7 +247,6 @@ fn transferir_todo_moves_entire_balance() {
     assert_eq!(fixture.client.balance(&fixture.admin), 20);
 }
 
-
 #[test]
 fn quemar_masivo_burns_from_multiple() {
     let fixture = setup();

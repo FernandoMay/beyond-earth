@@ -323,17 +323,17 @@ fn cancels_a_pending_subscription() {
     assert_eq!(fixture.payment.balance(&investor), 5_000);
 }
 
-
 #[test]
 fn extends_offering_close_date() {
     let fixture = setup();
     create(&fixture, 10_000);
-    let extended = fixture
-        .client
-        .extender_oferta(&fixture.issuer, &String::from_str(&fixture.env, "off_001"), &3600);
+    let extended = fixture.client.extender_oferta(
+        &fixture.issuer,
+        &String::from_str(&fixture.env, "off_001"),
+        &3600,
+    );
     assert_eq!(extended.closes_at, NOW + 1_000 + 3600);
 }
-
 
 #[test]
 fn suscribe_con_descuento_applies_discount() {
@@ -342,12 +342,13 @@ fn suscribe_con_descuento_applies_discount() {
     let investor = Address::generate(&fixture.env);
     fixture.token_admin.mint(&investor, &100_000_000);
     fixture.env.ledger().set_timestamp(NOW + 100);
-    let position = fixture
-        .client
-        .suscribir_con_descuento(&investor, &String::from_str(&fixture.env, "off_001"), &50_000_000);
+    let position = fixture.client.suscribir_con_descuento(
+        &investor,
+        &String::from_str(&fixture.env, "off_001"),
+        &50_000_000,
+    );
     assert_eq!(position.amount, 45_000_000);
 }
-
 
 #[test]
 fn suscribe_masivo_subscribes_multiple() {
@@ -360,10 +361,13 @@ fn suscribe_masivo_subscribes_multiple() {
     fixture.env.ledger().set_timestamp(NOW + 100);
     let investors = soroban_sdk::vec![&fixture.env, alice.clone(), bob.clone()];
     let amounts = soroban_sdk::vec![&fixture.env, 2_000_i128, 3_000_i128];
-    let total = fixture.client.suscribir_masivo(&String::from_str(&fixture.env, "off_001"), &investors, &amounts);
+    let total = fixture.client.suscribir_masivo(
+        &String::from_str(&fixture.env, "off_001"),
+        &investors,
+        &amounts,
+    );
     assert_eq!(total, 5_000);
 }
-
 
 #[test]
 fn marks_multiple_offerings_failed() {
@@ -382,7 +386,11 @@ fn marks_multiple_offerings_failed() {
         &String::from_str(&fixture.env, "US-DE"),
     );
     fixture.env.ledger().set_timestamp(NOW + 1_000);
-    let ids = soroban_sdk::vec![&fixture.env, String::from_str(&fixture.env, "off_001"), String::from_str(&fixture.env, "off_002")];
+    let ids = soroban_sdk::vec![
+        &fixture.env,
+        String::from_str(&fixture.env, "off_001"),
+        String::from_str(&fixture.env, "off_002")
+    ];
     let marked = fixture.client.marcar_fallido_masivo(&fixture.admin, &ids);
     assert_eq!(marked, 2);
 }
