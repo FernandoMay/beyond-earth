@@ -156,14 +156,12 @@ impl AccessControl {
         Ok(())
     }
 
-    /// Revokes every role held by an account.
-    pub fn revocar_todo(env: Env, caller: Address, grantee: Address) -> u32 {
+    /// Revokes every role held by an account. Returns the number of roles revoked.
+    pub fn revocar_todo(env: Env, caller: Address, grantee: Address) -> Result<u32, Error> {
         caller.require_auth();
-        if require_admin(&env, &caller).is_err() {
-            panic!("unauthorized");
-        }
+        require_admin(&env, &caller)?;
         if is_owner(&env, &grantee) {
-            // Owner's admin role is never revoked.
+            return Err(Error::CannotRevokeOwner);
         }
         let mut revoked = 0_u32;
         for role in [
@@ -173,9 +171,6 @@ impl AccessControl {
             Role::Operator,
             Role::Auditor,
         ] {
-            if role == Role::Admin && is_owner(&env, &grantee) {
-                continue;
-            }
             if Self::has_role(env.clone(), grantee.clone(), role) {
                 RoleRevoked {
                     caller: caller.clone(),
@@ -189,7 +184,7 @@ impl AccessControl {
                 revoked += 1;
             }
         }
-        revoked
+        Ok(revoked)
     }
 
     /// Grants a role to multiple accounts.

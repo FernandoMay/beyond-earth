@@ -123,3 +123,36 @@ fn grants_role_to_multiple_accounts() {
     assert!(client.has_role(&a, &Role::Operator));
     assert!(client.has_role(&b, &Role::Operator));
 }
+
+#[test]
+fn revocar_todo_returns_zero_when_no_roles() {
+    let env = Env::default();
+    let (client, owner) = setup(&env);
+    let target = Address::generate(&env);
+
+    let revoked = client.revocar_todo(&owner, &target);
+    assert_eq!(revoked, 0);
+}
+
+#[test]
+fn revocar_todo_cannot_revoke_owner() {
+    let env = Env::default();
+    let (client, owner) = setup(&env);
+
+    let result = client.try_revocar_todo(&owner, &owner);
+    assert_eq!(result, Err(Ok(Error::CannotRevokeOwner)));
+}
+
+#[test]
+fn non_admin_cannot_revoke_all_roles() {
+    let env = Env::default();
+    let (client, owner) = setup(&env);
+    let outsider = Address::generate(&env);
+    let target = Address::generate(&env);
+
+    client.grant(&owner, &target, &Role::Issuer);
+    let result = client.try_revocar_todo(&outsider, &target);
+
+    assert_eq!(result, Err(Ok(Error::Unauthorized)));
+    assert!(client.has_role(&target, &Role::Issuer));
+}
