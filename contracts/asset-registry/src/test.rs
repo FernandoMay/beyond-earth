@@ -206,3 +206,14 @@ fn suspends_an_active_asset() {
     let suspended = fixture.client.suspender_activo(&fixture.admin, &record.id);
     assert_eq!(suspended.status, AssetStatus::Suspended);
 }
+
+
+#[test]
+fn transfers_asset_ownership() {
+    let env = Env::default();
+    let fixture = setup(&env);
+    let record = register(&env, &fixture);
+    let new_owner = Address::generate(&env);
+    let updated = fixture.client.transferir_propiedad(&fixture.admin, &record.id, &new_owner);
+    assert_eq!(updated.owner, new_owner);
+}

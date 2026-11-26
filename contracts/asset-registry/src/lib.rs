@@ -324,6 +324,24 @@ impl AssetRegistry {
         Ok(record)
     }
 
+    /// Transfers ownership of an asset to a new owner (admin only).
+    pub fn transferir_propiedad(
+        env: Env,
+        caller: Address,
+        id: String,
+        new_owner: Address,
+    ) -> Result<AssetRecord, Error> {
+        caller.require_auth();
+        require_admin(&env, &caller)?;
+        let mut record = get_asset_or_error(&env, &id)?;
+        if new_owner == record.owner {
+            return Err(Error::InvalidTransition);
+        }
+        record.owner = new_owner.clone();
+        env.storage().persistent().set(&DataKey::Asset(id), &record);
+        Ok(record)
+    }
+
     pub fn get_asset(env: Env, id: String) -> Result<AssetRecord, Error> {
         get_asset_or_error(&env, &id)
     }
