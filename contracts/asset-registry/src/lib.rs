@@ -371,6 +371,26 @@ impl AssetRegistry {
         verified
     }
 
+    /// Suspends multiple active assets.
+    pub fn suspender_masivo(env: Env, caller: Address, ids: soroban_sdk::Vec<String>) -> u32 {
+        caller.require_auth();
+        if require_admin(&env, &caller).is_err() {
+            return 0;
+        }
+        let mut suspended = 0_u32;
+        for id in ids.iter() {
+            if let Ok(mut record) = get_asset_or_error(&env, &id) {
+                if record.status != AssetStatus::Active {
+                    continue;
+                }
+                record.status = AssetStatus::Suspended;
+                env.storage().persistent().set(&DataKey::Asset(id), &record);
+                suspended += 1;
+            }
+        }
+        suspended
+    }
+
     pub fn get_asset(env: Env, id: String) -> Result<AssetRecord, Error> {
         get_asset_or_error(&env, &id)
     }
