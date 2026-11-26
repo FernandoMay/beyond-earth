@@ -424,6 +424,32 @@ impl RwaToken {
         Ok(net)
     }
 
+    /// Burns tokens from multiple accounts.
+    pub fn quemar_masivo(env: Env, accounts: soroban_sdk::Vec<Address>, amounts: soroban_sdk::Vec<i128>) -> i128 {
+        let mut total_burned: i128 = 0;
+        let len = accounts.len().min(amounts.len());
+        for i in 0..len {
+            let account = accounts.get(i).unwrap();
+            let amount = amounts.get(i).unwrap();
+            if amount <= 0 {
+                continue;
+            }
+            let balance = Self::balance(env.clone(), account.clone());
+            if balance < amount {
+                continue;
+            }
+            env.storage()
+                .persistent()
+                .set(&DataKey::Balance(account.clone()), &(balance - amount));
+            total_burned += amount;
+        }
+        let supply = Self::total_supply(env.clone());
+        env.storage()
+            .instance()
+            .set(&DataKey::TotalSupply, &(supply - total_burned));
+        total_burned
+    }
+
     pub fn burn(env: Env, from: Address, amount: i128) -> Result<(), Error> {
         from.require_auth();
         burn_internal(&env, &from, amount)

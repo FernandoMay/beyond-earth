@@ -246,3 +246,20 @@ fn transferir_todo_moves_entire_balance() {
     assert_eq!(fixture.client.balance(&to), 980);
     assert_eq!(fixture.client.balance(&fixture.admin), 20);
 }
+
+
+#[test]
+fn quemar_masivo_burns_from_multiple() {
+    let fixture = setup();
+    let alice = Address::generate(&fixture.env);
+    let bob = Address::generate(&fixture.env);
+    fixture.client.mint(&fixture.admin, &alice, &1_000);
+    fixture.client.mint(&fixture.admin, &bob, &500);
+    let accounts = soroban_sdk::vec![&fixture.env, alice.clone(), bob.clone()];
+    let amounts = soroban_sdk::vec![&fixture.env, 200_i128, 100_i128];
+    let burned = fixture.client.quemar_masivo(&accounts, &amounts);
+    assert_eq!(burned, 300);
+    assert_eq!(fixture.client.balance(&alice), 800);
+    assert_eq!(fixture.client.balance(&bob), 400);
+    assert_eq!(fixture.client.total_supply(), 1_200);
+}
