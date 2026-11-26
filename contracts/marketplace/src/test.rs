@@ -326,3 +326,20 @@ fn cancelar_todo_cancels_open_listings() {
     let cancelled = client.cancelar_todo(&seller);
     assert_eq!(cancelled, 2);
 }
+
+
+#[test]
+fn registrar_compras_grants_rewards() {
+    let env = Env::default();
+    env.mock_all_auths();
+    let buyer = Address::generate(&env);
+    let admin = Address::generate(&env);
+    let contract_id = env.register(Marketplace, ());
+    let client = MarketplaceClient::new(&env, &contract_id);
+    client.initialize(&admin, &Address::generate(&env), &Address::generate(&env), &100);
+    let ids = soroban_sdk::vec![&env, String::from_str(&env, "lst_a"), String::from_str(&env, "lst_b")];
+    let count = client.registrar_compras(&buyer, &ids);
+    assert_eq!(count, 2);
+    assert_eq!(client.compras_de(&buyer), 2);
+    assert_eq!(client.recompensa_de(&buyer), 30);
+}
