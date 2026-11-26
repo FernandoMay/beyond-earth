@@ -223,7 +223,7 @@ fn transfers_asset_ownership() {
 fn verifies_multiple_assets() {
     let env = Env::default();
     let fixture = setup(&env);
-    let r1 = register(&env, &fixture);
+    let _r1 = register(&env, &fixture);
     // register second asset
     fixture.client.register_asset(
         &fixture.issuer,

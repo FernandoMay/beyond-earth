@@ -354,7 +354,7 @@ fn aplicar_descuento_masivo_discounts_multiple() {
     let fee_recipient = Address::generate(&env);
     let sac = env.register_stellar_asset_contract_v2(admin.clone());
     let payment_address = sac.address();
-    let token_admin = token::StellarAssetClient::new(&env, &payment_address);
+    let _token_admin = token::StellarAssetClient::new(&env, &payment_address);
 
     let asset_sac = env.register_stellar_asset_contract_v2(admin.clone());
     let asset_token = asset_sac.address();
@@ -387,7 +387,7 @@ fn cancelar_masivo_cancels_all_open() {
     let fee_recipient = Address::generate(&env);
     let sac = env.register_stellar_asset_contract_v2(admin.clone());
     let payment_address = sac.address();
-    let token_admin = token::StellarAssetClient::new(&env, &payment_address);
+    let _token_admin = token::StellarAssetClient::new(&env, &payment_address);
 
     let asset_sac = env.register_stellar_asset_contract_v2(admin.clone());
     let asset_token = asset_sac.address();
