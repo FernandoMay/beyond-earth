@@ -362,6 +362,29 @@ impl Marketplace {
         cancelled
     }
 
+    /// Registers a sale for a seller and grants a reward: 20 first, 10 afterwards.
+    pub fn registrar_venta(env: Env, seller: Address) -> u32 {
+        seller.require_auth();
+        let count: u32 = env
+            .storage()
+            .persistent()
+            .get(&DataKey::PurchaseCount(seller.clone()))
+            .unwrap_or(0);
+        let reward: i128 = if count == 0 { 20 } else { 10 };
+        let balance: i128 = env
+            .storage()
+            .persistent()
+            .get(&DataKey::RewardBalance(seller.clone()))
+            .unwrap_or(0);
+        env.storage()
+            .persistent()
+            .set(&DataKey::RewardBalance(seller.clone()), &(balance + reward));
+        env.storage()
+            .persistent()
+            .set(&DataKey::PurchaseCount(seller), &(count + 1));
+        count + 1
+    }
+
     pub fn get_listing(env: Env, id: String) -> Result<Listing, Error> {
         get_listing_or_error(&env, &id)
     }

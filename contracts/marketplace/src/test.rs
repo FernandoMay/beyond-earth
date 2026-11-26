@@ -248,6 +248,21 @@ fn applies_discount_to_open_listing() {
 
 
 #[test]
+fn registrar_venta_grants_rewards() {
+    let env = Env::default();
+    env.mock_all_auths();
+    let seller = Address::generate(&env);
+    let contract_id = env.register(Marketplace, ());
+    let client = MarketplaceClient::new(&env, &contract_id);
+    let admin = Address::generate(&env);
+    client.initialize(&admin, &Address::generate(&env), &Address::generate(&env), &100);
+    assert_eq!(client.registrar_venta(&seller), 1);
+    assert_eq!(client.registrar_venta(&seller), 2);
+    assert_eq!(client.compras_de(&seller), 2);
+    assert_eq!(client.recompensa_de(&seller), 30);
+}
+
+#[test]
 fn cancelar_todo_cancels_open_listings() {
     let env = Env::default();
     env.mock_all_auths();
