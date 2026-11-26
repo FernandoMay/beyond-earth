@@ -189,3 +189,152 @@ fn rejects_invalid_lease_parameters() {
         Err(Ok(Error::InvalidParties))
     );
 }
+
+#[test]
+fn extends_lease_due_date() {
+    let env = Env::default();
+    env.mock_all_auths();
+    env.ledger().set_timestamp(1_700_000_000);
+    let admin = Address::generate(&env);
+    let lessor = Address::generate(&env);
+    let lessee = Address::generate(&env);
+    let sac = env.register_stellar_asset_contract_v2(admin.clone());
+    let token = sac.address();
+    let contract_id = env.register(Leasing, ());
+    let client = LeasingClient::new(&env, &contract_id);
+    client.initialize(&admin, &token);
+    client.create_lease(
+        &lessor,
+        &String::from_str(&env, "lease_001"),
+        &String::from_str(&env, "asset_001"),
+        &lessee,
+        &100,
+        &3600,
+        &1_700_000_000,
+    );
+    let extended = client.extender_lease(&lessor, &String::from_str(&env, "lease_001"), &2);
+    assert_eq!(extended.next_due_at, 1_700_000_000 + 2 * 3600);
+}
+
+#[test]
+fn prepays_multiple_rent_periods() {
+    let env = Env::default();
+    env.mock_all_auths();
+    env.ledger().set_timestamp(1_700_000_000);
+    let admin = Address::generate(&env);
+    let lessor = Address::generate(&env);
+    let lessee = Address::generate(&env);
+    let sac = env.register_stellar_asset_contract_v2(admin.clone());
+    let token = sac.address();
+    let token_admin = token::StellarAssetClient::new(&env, &token);
+    token_admin.mint(&lessee, &10_000);
+    let contract_id = env.register(Leasing, ());
+    let client = LeasingClient::new(&env, &contract_id);
+    client.initialize(&admin, &token);
+    client.create_lease(
+        &lessor,
+        &String::from_str(&env, "lease_001"),
+        &String::from_str(&env, "asset_001"),
+        &lessee,
+        &100,
+        &3600,
+        &1_700_000_000,
+    );
+    let updated = client.pagar_renta_anticipada(&lessee, &String::from_str(&env, "lease_001"), &3);
+    assert_eq!(updated.payments, 3);
+    assert_eq!(updated.total_paid, 300);
+}
+
+#[test]
+fn closes_lease_early() {
+    let env = Env::default();
+    env.mock_all_auths();
+    env.ledger().set_timestamp(1_700_000_000);
+    let admin = Address::generate(&env);
+    let lessor = Address::generate(&env);
+    let lessee = Address::generate(&env);
+    let sac = env.register_stellar_asset_contract_v2(admin.clone());
+    let token = sac.address();
+    let contract_id = env.register(Leasing, ());
+    let client = LeasingClient::new(&env, &contract_id);
+    client.initialize(&admin, &token);
+    client.create_lease(
+        &lessor,
+        &String::from_str(&env, "lease_early"),
+        &String::from_str(&env, "asset_001"),
+        &lessee,
+        &100,
+        &3600,
+        &1_700_000_000,
+    );
+    let closed = client.cerrar_anticipado(&lessor, &String::from_str(&env, "lease_early"));
+    assert_eq!(closed.status, LeaseStatus::Closed);
+}
+
+#[test]
+fn renews_a_lease() {
+    let env = Env::default();
+    env.mock_all_auths();
+    env.ledger().set_timestamp(1_700_000_000);
+    let admin = Address::generate(&env);
+    let lessor = Address::generate(&env);
+    let lessee = Address::generate(&env);
+    let sac = env.register_stellar_asset_contract_v2(admin.clone());
+    let token = sac.address();
+    let contract_id = env.register(Leasing, ());
+    let client = LeasingClient::new(&env, &contract_id);
+    client.initialize(&admin, &token);
+    client.create_lease(
+        &lessor,
+        &String::from_str(&env, "lease_renew"),
+        &String::from_str(&env, "asset_001"),
+        &lessee,
+        &100,
+        &3600,
+        &1_700_000_000,
+    );
+    let renewed = client.renovar_lease(&lessor, &String::from_str(&env, "lease_renew"), &2);
+    assert_eq!(renewed.next_due_at, 1_700_000_000 + 2 * 3600);
+    assert_eq!(renewed.total_paid, 0);
+    assert_eq!(renewed.payments, 0);
+}
+
+#[test]
+fn renews_multiple_leases() {
+    let env = Env::default();
+    env.mock_all_auths();
+    env.ledger().set_timestamp(1_700_000_000);
+    let admin = Address::generate(&env);
+    let lessor = Address::generate(&env);
+    let lessee = Address::generate(&env);
+    let sac = env.register_stellar_asset_contract_v2(admin.clone());
+    let token = sac.address();
+    let contract_id = env.register(Leasing, ());
+    let client = LeasingClient::new(&env, &contract_id);
+    client.initialize(&admin, &token);
+    client.create_lease(
+        &lessor,
+        &String::from_str(&env, "lease_a"),
+        &String::from_str(&env, "asset_a"),
+        &lessee,
+        &100,
+        &3600,
+        &1_700_000_000,
+    );
+    client.create_lease(
+        &lessor,
+        &String::from_str(&env, "lease_b"),
+        &String::from_str(&env, "asset_b"),
+        &lessee,
+        &100,
+        &3600,
+        &1_700_000_000,
+    );
+    let ids = soroban_sdk::vec![
+        &env,
+        String::from_str(&env, "lease_a"),
+        String::from_str(&env, "lease_b")
+    ];
+    let renewed = client.renovar_masivo(&lessor, &ids, &2);
+    assert_eq!(renewed, 2);
+}

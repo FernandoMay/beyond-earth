@@ -32,6 +32,7 @@ pub enum Error {
     NotInitialized = 2,
     Unauthorized = 3,
     CannotRevokeOwner = 4,
+    AlreadyHasRole = 5,
 }
 
 /// Emitted when an admin grants a role.
@@ -39,6 +40,15 @@ pub enum Error {
 pub struct RoleGranted {
     pub caller: Address,
     pub grantee: Address,
+    pub role: u32,
+}
+
+/// Emitted when an admin transfers a role.
+#[contractevent]
+pub struct RoleTransferred {
+    pub caller: Address,
+    pub from: Address,
+    pub to: Address,
     pub role: u32,
 }
 
@@ -110,6 +120,42 @@ impl AccessControl {
         Ok(())
     }
 
+    /// Transfers a role from one account to another. The owner's Admin role
+    /// cannot be transferred.
+    pub fn transferir_rol(
+        env: Env,
+        caller: Address,
+        from: Address,
+        to: Address,
+        role: Role,
+    ) -> Result<(), Error> {
+        caller.require_auth();
+        require_admin(&env, &caller)?;
+        if role == Role::Admin && is_owner(&env, &from) {
+            return Err(Error::CannotRevokeOwner);
+        }
+        if !Self::has_role(env.clone(), from.clone(), role) {
+            return Err(Error::Unauthorized);
+        }
+        if Self::has_role(env.clone(), to.clone(), role) {
+            return Err(Error::AlreadyHasRole);
+        }
+        env.storage()
+            .persistent()
+            .remove(&DataKey::Role(from.clone(), role));
+        env.storage()
+            .persistent()
+            .set(&DataKey::Role(to.clone(), role), &true);
+        RoleTransferred {
+            caller: caller.clone(),
+            from,
+            to,
+            role: role as u32,
+        }
+        .publish(&env);
+        Ok(())
+    }
+
     /// Revokes every role held by an account. Returns the number of roles revoked.
     pub fn revocar_todo(env: Env, caller: Address, grantee: Address) -> Result<u32, Error> {
         caller.require_auth();
@@ -139,6 +185,39 @@ impl AccessControl {
             }
         }
         Ok(revoked)
+    }
+
+    /// Grants a role to multiple accounts.
+    pub fn otorgar_masivo(
+        env: Env,
+        caller: Address,
+        grantees: soroban_sdk::Vec<Address>,
+        role: Role,
+    ) -> u32 {
+        caller.require_auth();
+        if require_admin(&env, &caller).is_err() {
+            return 0;
+        }
+        let mut granted = 0_u32;
+        for grantee in grantees.iter() {
+            if Self::has_role(env.clone(), grantee.clone(), role) {
+                continue;
+            }
+            if role == Role::Admin && is_owner(&env, &grantee) {
+                continue;
+            }
+            RoleGranted {
+                caller: caller.clone(),
+                grantee: grantee.clone(),
+                role: role as u32,
+            }
+            .publish(&env);
+            env.storage()
+                .persistent()
+                .set(&DataKey::Role(grantee, role), &true);
+            granted += 1;
+        }
+        granted
     }
 
     pub fn has_role(env: Env, account: Address, role: Role) -> bool {

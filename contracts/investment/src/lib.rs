@@ -347,6 +347,297 @@ impl Investment {
         Ok(refund)
     }
 
+    /// Refunds all provided failed offerings for an investor in one transaction.
+    pub fn reembolsar_todo(
+        env: Env,
+        investor: Address,
+        offering_ids: soroban_sdk::Vec<String>,
+    ) -> i128 {
+        investor.require_auth();
+        let payment = token::Client::new(&env, &Self::payment_token(env.clone()).unwrap());
+        let mut total: i128 = 0;
+        for id in offering_ids.iter() {
+            let offering = match get_offering_or_error(&env, &id) {
+                Ok(o) => o,
+                Err(_) => continue,
+            };
+            if offering.status != OfferingStatus::Failed {
+                continue;
+            }
+            let key = DataKey::Position(id.clone(), investor.clone());
+            let mut position: Position = match env.storage().persistent().get(&key) {
+                Some(p) => p,
+                None => continue,
+            };
+            if position.refunded {
+                continue;
+            }
+            payment.transfer(&env.current_contract_address(), &investor, &position.amount);
+            position.refunded = true;
+            let refund = position.amount;
+            env.storage().persistent().set(&key, &position);
+            Refunded {
+                offering_id: id.clone(),
+                investor: investor.clone(),
+                amount: refund,
+            }
+            .publish(&env);
+            total += refund;
+        }
+        total
+    }
+
+    /// Cancels a pending subscription and refunds the investor.
+    pub fn cancelar_suscripcion(
+        env: Env,
+        investor: Address,
+        offering_id: String,
+    ) -> Result<i128, Error> {
+        investor.require_auth();
+        let mut offering = get_offering_or_error(&env, &offering_id)?;
+        if offering.status != OfferingStatus::Open {
+            return Err(Error::OfferingNotOpen);
+        }
+        let key = DataKey::Position(offering_id.clone(), investor.clone());
+        let mut position: Position = env
+            .storage()
+            .persistent()
+            .get(&key)
+            .ok_or(Error::NothingToRefund)?;
+        if position.refunded {
+            return Err(Error::NothingToRefund);
+        }
+        let payment = token::Client::new(&env, &Self::payment_token(env.clone())?);
+        payment.transfer(&env.current_contract_address(), &investor, &position.amount);
+        position.refunded = true;
+        let refund = position.amount;
+        env.storage().persistent().set(&key, &position);
+
+        offering.committed -= refund;
+        if offering.committed < 0 {
+            offering.committed = 0;
+        }
+        env.storage()
+            .persistent()
+            .set(&DataKey::Offering(offering_id.clone()), &offering);
+
+        Refunded {
+            offering_id,
+            investor,
+            amount: refund,
+        }
+        .publish(&env);
+        Ok(refund)
+    }
+
+    /// Extends an offering's close date.
+    pub fn extender_oferta(
+        env: Env,
+        caller: Address,
+        offering_id: String,
+        extra_seconds: u64,
+    ) -> Result<Offering, Error> {
+        caller.require_auth();
+        let mut offering = get_offering_or_error(&env, &offering_id)?;
+        if caller != offering.issuer {
+            require_admin(&env, &caller)?;
+        }
+        if offering.status != OfferingStatus::Open && offering.status != OfferingStatus::Funded {
+            return Err(Error::OfferingNotOpen);
+        }
+        if extra_seconds == 0 {
+            return Err(Error::InvalidAmount);
+        }
+        offering.closes_at += extra_seconds;
+        env.storage()
+            .persistent()
+            .set(&DataKey::Offering(offering_id), &offering);
+        Ok(offering)
+    }
+
+    /// Subscribes with a 10% discount when the amount reaches 5 XLM.
+    pub fn suscribir_con_descuento(
+        env: Env,
+        investor: Address,
+        offering_id: String,
+        amount: i128,
+    ) -> Result<Position, Error> {
+        investor.require_auth();
+        if amount <= 0 {
+            return Err(Error::InvalidAmount);
+        }
+        let mut offering = get_offering_or_error(&env, &offering_id)?;
+        let now = env.ledger().timestamp();
+        if offering.status != OfferingStatus::Open
+            || now < offering.opens_at
+            || now >= offering.closes_at
+        {
+            return Err(Error::OfferingNotOpen);
+        }
+        let discounted = if amount >= 50_000_000 {
+            amount * 90 / 100
+        } else {
+            amount
+        };
+        if discounted < offering.min_ticket {
+            return Err(Error::BelowMinimum);
+        }
+        check_compliance(&env, &investor, &offering)?;
+
+        let position_key = DataKey::Position(offering_id.clone(), investor.clone());
+        let existing: Option<Position> = env.storage().persistent().get(&position_key);
+        if existing.is_none() {
+            offering.investor_count += 1;
+        }
+
+        let payment = token::Client::new(&env, &Self::payment_token(env.clone())?);
+        payment.transfer(&investor, env.current_contract_address(), &discounted);
+
+        let position = match existing {
+            Some(mut position) => {
+                position.amount += discounted;
+                position
+            }
+            None => Position {
+                investor: investor.clone(),
+                offering_id: offering_id.clone(),
+                amount: discounted,
+                refunded: false,
+                subscribed_at: now,
+            },
+        };
+        env.storage().persistent().set(&position_key, &position);
+
+        offering.committed += discounted;
+        if offering.committed >= offering.target {
+            offering.status = OfferingStatus::Funded;
+        }
+        env.storage()
+            .persistent()
+            .set(&DataKey::Offering(offering_id.clone()), &offering);
+        Subscribed {
+            offering_id,
+            investor,
+            amount: discounted,
+        }
+        .publish(&env);
+        Ok(position)
+    }
+
+    /// Subscribes multiple investors to an offering in one transaction.
+    pub fn suscribir_masivo(
+        env: Env,
+        offering_id: String,
+        investors: soroban_sdk::Vec<Address>,
+        amounts: soroban_sdk::Vec<i128>,
+    ) -> i128 {
+        let mut offering = match get_offering_or_error(&env, &offering_id) {
+            Ok(o) => o,
+            Err(_) => return 0,
+        };
+        let now = env.ledger().timestamp();
+        if offering.status != OfferingStatus::Open
+            || now < offering.opens_at
+            || now >= offering.closes_at
+        {
+            return 0;
+        }
+        let payment = token::Client::new(&env, &Self::payment_token(env.clone()).unwrap());
+        let mut total_committed: i128 = 0;
+        let len = investors.len().min(amounts.len());
+        for i in 0..len {
+            let investor = investors.get(i).unwrap();
+            let amount = amounts.get(i).unwrap();
+            if amount <= 0 || amount < offering.min_ticket {
+                continue;
+            }
+            // compliance check
+            if let Some(compliance) = env
+                .storage()
+                .instance()
+                .get::<_, Address>(&DataKey::Compliance)
+            {
+                let client = ComplianceClient::new(&env, &compliance);
+                if !client.is_eligible(&investor, &offering.required_tier, &offering.jurisdiction) {
+                    continue;
+                }
+            }
+            investor.require_auth();
+            let position_key = DataKey::Position(offering_id.clone(), investor.clone());
+            let existing: Option<Position> = env.storage().persistent().get(&position_key);
+            if existing.is_none() {
+                offering.investor_count += 1;
+            }
+            payment.transfer(&investor, env.current_contract_address(), &amount);
+            let position = match existing {
+                Some(mut p) => {
+                    p.amount += amount;
+                    p
+                }
+                None => Position {
+                    investor: investor.clone(),
+                    offering_id: offering_id.clone(),
+                    amount,
+                    refunded: false,
+                    subscribed_at: now,
+                },
+            };
+            env.storage().persistent().set(&position_key, &position);
+            offering.committed += amount;
+            total_committed += amount;
+            Subscribed {
+                offering_id: offering_id.clone(),
+                investor,
+                amount,
+            }
+            .publish(&env);
+        }
+        if offering.committed >= offering.target {
+            offering.status = OfferingStatus::Funded;
+        }
+        env.storage()
+            .persistent()
+            .set(&DataKey::Offering(offering_id), &offering);
+        total_committed
+    }
+
+    /// Marks multiple offerings as failed after their close.
+    pub fn marcar_fallido_masivo(
+        env: Env,
+        caller: Address,
+        offering_ids: soroban_sdk::Vec<String>,
+    ) -> u32 {
+        caller.require_auth();
+        if require_admin(&env, &caller).is_err() {
+            return 0;
+        }
+        let now = env.ledger().timestamp();
+        let mut marked = 0_u32;
+        for id in offering_ids.iter() {
+            if let Ok(mut offering) = get_offering_or_error(&env, &id) {
+                if now < offering.closes_at {
+                    continue;
+                }
+                if offering.status == OfferingStatus::Settled
+                    || offering.status == OfferingStatus::Failed
+                {
+                    continue;
+                }
+                offering.status = OfferingStatus::Failed;
+                env.storage()
+                    .persistent()
+                    .set(&DataKey::Offering(id.clone()), &offering);
+                OfferingFailed {
+                    offering_id: id.clone(),
+                    committed: offering.committed,
+                }
+                .publish(&env);
+                marked += 1;
+            }
+        }
+        marked
+    }
+
     pub fn get_offering(env: Env, offering_id: String) -> Result<Offering, Error> {
         get_offering_or_error(&env, &offering_id)
     }

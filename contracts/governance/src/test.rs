@@ -228,3 +228,90 @@ fn non_members_cannot_propose() {
         Err(Ok(Error::NotMember))
     );
 }
+
+#[test]
+fn reopens_a_rejected_proposal() {
+    let fixture = setup();
+    propose(&fixture);
+    fixture.client.vote(
+        &fixture.alice,
+        &String::from_str(&fixture.env, "prop_001"),
+        &true,
+    );
+    fixture.env.ledger().set_timestamp(NOW + VOTING_PERIOD);
+    let rejected = fixture
+        .client
+        .finalize(&String::from_str(&fixture.env, "prop_001"));
+    assert_eq!(rejected.status, ProposalStatus::Rejected);
+
+    let reopened = fixture
+        .client
+        .reabrir_propuesta(&fixture.admin, &String::from_str(&fixture.env, "prop_001"));
+    assert_eq!(reopened.status, ProposalStatus::Active);
+    assert_eq!(reopened.yes_votes, 0);
+}
+
+#[test]
+fn votes_and_finalizes_when_quorum_reached() {
+    let fixture = setup();
+    propose(&fixture);
+    // quorum is 2; alice + bob = 2 yes votes
+    let p1 = fixture.client.votar_y_finalizar(
+        &fixture.alice,
+        &String::from_str(&fixture.env, "prop_001"),
+        &true,
+    );
+    assert_eq!(p1.status, ProposalStatus::Active);
+    let p2 = fixture.client.votar_y_finalizar(
+        &fixture.bob,
+        &String::from_str(&fixture.env, "prop_001"),
+        &true,
+    );
+    assert_eq!(p2.status, ProposalStatus::Passed);
+}
+
+#[test]
+fn executes_passed_proposals_after_timelock() {
+    let fixture = setup();
+    propose(&fixture);
+    fixture.client.vote(
+        &fixture.alice,
+        &String::from_str(&fixture.env, "prop_001"),
+        &true,
+    );
+    fixture.client.vote(
+        &fixture.bob,
+        &String::from_str(&fixture.env, "prop_001"),
+        &true,
+    );
+    fixture.env.ledger().set_timestamp(NOW + VOTING_PERIOD);
+    fixture
+        .client
+        .finalize(&String::from_str(&fixture.env, "prop_001"));
+    fixture
+        .env
+        .ledger()
+        .set_timestamp(NOW + VOTING_PERIOD + TIMELOCK);
+    let executed = fixture.client.ejecutar_todo(&fixture.admin);
+    assert_eq!(executed, 1);
+}
+
+#[test]
+fn cancels_multiple_proposals() {
+    let fixture = setup();
+    propose(&fixture);
+    let proposal2_id = String::from_str(&fixture.env, "prop_002");
+    fixture.client.propose(
+        &fixture.alice,
+        &proposal2_id,
+        &BytesN::from_array(&fixture.env, &[1u8; 32]),
+        &BytesN::from_array(&fixture.env, &[2u8; 32]),
+    );
+    let ids = soroban_sdk::vec![
+        &fixture.env,
+        String::from_str(&fixture.env, "prop_001"),
+        proposal2_id
+    ];
+    let cancelled = fixture.client.cancelar_masivo(&fixture.admin, &ids);
+    assert_eq!(cancelled, 2);
+}

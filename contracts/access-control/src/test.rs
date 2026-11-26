@@ -80,32 +80,48 @@ fn role_is_scoped_to_account() {
 }
 
 #[test]
-fn revokes_all_roles_from_an_account() {
+fn transfers_a_role_between_accounts() {
     let env = Env::default();
     let (client, owner) = setup(&env);
-    let target = Address::generate(&env);
+    let from = Address::generate(&env);
+    let to = Address::generate(&env);
 
-    client.grant(&owner, &target, &Role::Issuer);
-    client.grant(&owner, &target, &Role::Operator);
+    client.grant(&owner, &from, &Role::Operator);
+    assert!(client.has_role(&from, &Role::Operator));
 
-    let revoked = client.revocar_todo(&owner, &target);
-    assert_eq!(revoked, 2);
-    assert!(!client.has_role(&target, &Role::Issuer));
-    assert!(!client.has_role(&target, &Role::Operator));
+    client.transferir_rol(&owner, &from, &to, &Role::Operator);
+    assert!(!client.has_role(&from, &Role::Operator));
+    assert!(client.has_role(&to, &Role::Operator));
 }
 
 #[test]
-fn non_admin_cannot_revoke_all_roles() {
+fn revokes_all_roles_from_account() {
     let env = Env::default();
     let (client, owner) = setup(&env);
-    let outsider = Address::generate(&env);
-    let target = Address::generate(&env);
+    let operator = Address::generate(&env);
 
-    client.grant(&owner, &target, &Role::Issuer);
-    let result = client.try_revocar_todo(&outsider, &target);
+    client.grant(&owner, &operator, &Role::Operator);
+    client.grant(&owner, &operator, &Role::Issuer);
+    assert!(client.has_role(&operator, &Role::Operator));
+    assert!(client.has_role(&operator, &Role::Issuer));
 
-    assert_eq!(result, Err(Ok(Error::Unauthorized)));
-    assert!(client.has_role(&target, &Role::Issuer));
+    let revoked = client.revocar_todo(&owner, &operator);
+    assert_eq!(revoked, 2);
+    assert!(!client.has_role(&operator, &Role::Operator));
+    assert!(!client.has_role(&operator, &Role::Issuer));
+}
+
+#[test]
+fn grants_role_to_multiple_accounts() {
+    let env = Env::default();
+    let (client, owner) = setup(&env);
+    let a = Address::generate(&env);
+    let b = Address::generate(&env);
+    let grantees = soroban_sdk::vec![&env, a.clone(), b.clone()];
+    let granted = client.otorgar_masivo(&owner, &grantees, &Role::Operator);
+    assert_eq!(granted, 2);
+    assert!(client.has_role(&a, &Role::Operator));
+    assert!(client.has_role(&b, &Role::Operator));
 }
 
 #[test]
@@ -125,4 +141,18 @@ fn revocar_todo_cannot_revoke_owner() {
 
     let result = client.try_revocar_todo(&owner, &owner);
     assert_eq!(result, Err(Ok(Error::CannotRevokeOwner)));
+}
+
+#[test]
+fn non_admin_cannot_revoke_all_roles() {
+    let env = Env::default();
+    let (client, owner) = setup(&env);
+    let outsider = Address::generate(&env);
+    let target = Address::generate(&env);
+
+    client.grant(&owner, &target, &Role::Issuer);
+    let result = client.try_revocar_todo(&outsider, &target);
+
+    assert_eq!(result, Err(Ok(Error::Unauthorized)));
+    assert!(client.has_role(&target, &Role::Issuer));
 }

@@ -217,3 +217,73 @@ fn rejects_invalid_distribution_parameters() {
         Err(Ok(Error::InvalidDeadline))
     );
 }
+
+#[test]
+fn reclamar_todo_claims_all() {
+    let fixture = setup();
+    create(&fixture);
+    fixture.client.allocate(
+        &fixture.issuer,
+        &String::from_str(&fixture.env, "dist_001"),
+        &fixture.alice,
+        &50,
+    );
+    let ids = soroban_sdk::vec![&fixture.env, String::from_str(&fixture.env, "dist_001")];
+    let total = fixture.client.reclamar_todo(&fixture.alice, &ids);
+    assert_eq!(total, 5_000);
+    assert_eq!(fixture.payment.balance(&fixture.alice), 5_000);
+}
+
+#[test]
+fn cerrar_todo_closes_funded_distributions() {
+    let fixture = setup();
+    create(&fixture);
+    fixture.env.ledger().set_timestamp(DEADLINE + 1);
+    let closed = fixture.client.cerrar_todo(&fixture.issuer);
+    assert_eq!(closed, 1);
+}
+
+#[test]
+fn asignar_masivo_allocates_to_multiple() {
+    let fixture = setup();
+    create(&fixture);
+    let alice = fixture.alice.clone();
+    let bob = fixture.bob.clone();
+    let investors = soroban_sdk::vec![&fixture.env, alice.clone(), bob.clone()];
+    let units = soroban_sdk::vec![&fixture.env, 30_i128, 20_i128];
+    let total = fixture.client.asignar_masivo(
+        &fixture.issuer,
+        &String::from_str(&fixture.env, "dist_001"),
+        &investors,
+        &units,
+    );
+    assert_eq!(total, 50);
+    assert_eq!(
+        fixture
+            .client
+            .allocation(&String::from_str(&fixture.env, "dist_001"), &fixture.alice),
+        30
+    );
+    assert_eq!(
+        fixture
+            .client
+            .allocation(&String::from_str(&fixture.env, "dist_001"), &fixture.bob),
+        20
+    );
+}
+
+#[test]
+fn reclamar_masivo_claims_multiple() {
+    let fixture = setup();
+    create(&fixture);
+    fixture.client.allocate(
+        &fixture.issuer,
+        &String::from_str(&fixture.env, "dist_001"),
+        &fixture.alice,
+        &50,
+    );
+    let ids = soroban_sdk::vec![&fixture.env, String::from_str(&fixture.env, "dist_001")];
+    let total = fixture.client.reclamar_masivo(&fixture.alice, &ids);
+    assert_eq!(total, 5_000);
+    assert_eq!(fixture.payment.balance(&fixture.alice), 5_000);
+}

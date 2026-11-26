@@ -35,6 +35,9 @@ pub enum DataKey {
     FeeRecipient,
     FeeBps,
     Listing(String),
+    PurchaseCount(Address),
+    RewardBalance(Address),
+    SellerListings(Address),
 }
 
 #[contracterror]
@@ -154,6 +157,16 @@ impl Marketplace {
         };
         env.storage().persistent().set(&key, &listing);
 
+        let mut seller_listings: soroban_sdk::Vec<String> = env
+            .storage()
+            .persistent()
+            .get(&DataKey::SellerListings(seller.clone()))
+            .unwrap_or_else(|| soroban_sdk::Vec::new(&env));
+        seller_listings.push_back(id.clone());
+        env.storage()
+            .persistent()
+            .set(&DataKey::SellerListings(seller.clone()), &seller_listings);
+
         let token_client = token::Client::new(&env, &token);
         if token_client.allowance(&seller, &env.current_contract_address()) < units {
             return Err(Error::AllowanceTooLow);
@@ -242,6 +255,234 @@ impl Marketplace {
             .persistent()
             .set(&DataKey::Listing(id), &listing);
         Ok(listing)
+    }
+
+    /// Registers a purchase and grants a reward: 20 for the first, 10 afterwards.
+    pub fn registrar_compra(env: Env, buyer: Address, _listing_id: String) -> u32 {
+        buyer.require_auth();
+        let count: u32 = env
+            .storage()
+            .persistent()
+            .get(&DataKey::PurchaseCount(buyer.clone()))
+            .unwrap_or(0);
+        let reward: i128 = if count == 0 { 20 } else { 10 };
+        let balance: i128 = env
+            .storage()
+            .persistent()
+            .get(&DataKey::RewardBalance(buyer.clone()))
+            .unwrap_or(0);
+        env.storage()
+            .persistent()
+            .set(&DataKey::RewardBalance(buyer.clone()), &(balance + reward));
+        env.storage()
+            .persistent()
+            .set(&DataKey::PurchaseCount(buyer), &(count + 1));
+        count + 1
+    }
+
+    pub fn compras_de(env: Env, buyer: Address) -> u32 {
+        env.storage()
+            .persistent()
+            .get(&DataKey::PurchaseCount(buyer))
+            .unwrap_or(0)
+    }
+
+    pub fn recompensa_de(env: Env, buyer: Address) -> i128 {
+        env.storage()
+            .persistent()
+            .get(&DataKey::RewardBalance(buyer))
+            .unwrap_or(0)
+    }
+
+    /// Applies a percentage discount to an open listing. Only the seller or admin
+    /// can discount; the new price must be lower than the current one.
+    pub fn aplicar_descuento(
+        env: Env,
+        caller: Address,
+        id: String,
+        discount_bps: u32,
+    ) -> Result<Listing, Error> {
+        caller.require_auth();
+        if discount_bps == 0 || discount_bps > 10_000 {
+            return Err(Error::InvalidFee);
+        }
+        let mut listing = get_listing_or_error(&env, &id)?;
+        if listing.status != ListingStatus::Open {
+            return Err(Error::ListingNotOpen);
+        }
+        if caller != listing.seller {
+            let admin: Address = env
+                .storage()
+                .instance()
+                .get(&DataKey::Admin)
+                .ok_or(Error::NotInitialized)?;
+            if caller != admin {
+                return Err(Error::Unauthorized);
+            }
+        }
+        let new_price = listing.price * (10_000 - discount_bps as i128) / 10_000;
+        if new_price <= 0 || new_price >= listing.price {
+            return Err(Error::InvalidListing);
+        }
+        listing.price = new_price;
+        env.storage()
+            .persistent()
+            .set(&DataKey::Listing(id), &listing);
+        Ok(listing)
+    }
+
+    /// Cancels all open listings owned by a seller.
+    pub fn cancelar_todo(env: Env, seller: Address) -> u32 {
+        seller.require_auth();
+        let listings: soroban_sdk::Vec<String> = env
+            .storage()
+            .persistent()
+            .get(&DataKey::SellerListings(seller.clone()))
+            .unwrap_or_else(|| soroban_sdk::Vec::new(&env));
+        let mut cancelled = 0_u32;
+        for id in listings.iter() {
+            if let Some(mut listing) = env
+                .storage()
+                .persistent()
+                .get::<_, Listing>(&DataKey::Listing(id.clone()))
+            {
+                if listing.seller == seller && listing.status == ListingStatus::Open {
+                    listing.status = ListingStatus::Cancelled;
+                    ListingCancelled {
+                        listing_id: id.clone(),
+                    }
+                    .publish(&env);
+                    env.storage()
+                        .persistent()
+                        .set(&DataKey::Listing(id), &listing);
+                    cancelled += 1;
+                }
+            }
+        }
+        cancelled
+    }
+
+    /// Registers a sale for a seller and grants a reward: 20 first, 10 afterwards.
+    pub fn registrar_venta(env: Env, seller: Address) -> u32 {
+        seller.require_auth();
+        let count: u32 = env
+            .storage()
+            .persistent()
+            .get(&DataKey::PurchaseCount(seller.clone()))
+            .unwrap_or(0);
+        let reward: i128 = if count == 0 { 20 } else { 10 };
+        let balance: i128 = env
+            .storage()
+            .persistent()
+            .get(&DataKey::RewardBalance(seller.clone()))
+            .unwrap_or(0);
+        env.storage()
+            .persistent()
+            .set(&DataKey::RewardBalance(seller.clone()), &(balance + reward));
+        env.storage()
+            .persistent()
+            .set(&DataKey::PurchaseCount(seller), &(count + 1));
+        count + 1
+    }
+
+    /// Registers multiple purchases and grants rewards: 20 for the first, 10 afterwards.
+    pub fn registrar_compras(
+        env: Env,
+        buyer: Address,
+        listing_ids: soroban_sdk::Vec<String>,
+    ) -> u32 {
+        buyer.require_auth();
+        let mut count: u32 = env
+            .storage()
+            .persistent()
+            .get(&DataKey::PurchaseCount(buyer.clone()))
+            .unwrap_or(0);
+        for _id in listing_ids.iter() {
+            let reward: i128 = if count == 0 { 20 } else { 10 };
+            let balance: i128 = env
+                .storage()
+                .persistent()
+                .get(&DataKey::RewardBalance(buyer.clone()))
+                .unwrap_or(0);
+            env.storage()
+                .persistent()
+                .set(&DataKey::RewardBalance(buyer.clone()), &(balance + reward));
+            count += 1;
+        }
+        env.storage()
+            .persistent()
+            .set(&DataKey::PurchaseCount(buyer), &count);
+        count
+    }
+
+    /// Applies a discount to multiple open listings.
+    pub fn aplicar_descuento_masivo(
+        env: Env,
+        caller: Address,
+        listing_ids: soroban_sdk::Vec<String>,
+        discount_bps: u32,
+    ) -> u32 {
+        caller.require_auth();
+        if discount_bps == 0 || discount_bps > 10_000 {
+            return 0;
+        }
+        let admin: Address = env.storage().instance().get(&DataKey::Admin).unwrap();
+        let mut applied = 0_u32;
+        for id in listing_ids.iter() {
+            if let Some(mut listing) = env
+                .storage()
+                .persistent()
+                .get::<_, Listing>(&DataKey::Listing(id.clone()))
+            {
+                if listing.status != ListingStatus::Open {
+                    continue;
+                }
+                if caller != listing.seller && caller != admin {
+                    continue;
+                }
+                let new_price = listing.price * (10_000 - discount_bps as i128) / 10_000;
+                if new_price <= 0 || new_price >= listing.price {
+                    continue;
+                }
+                listing.price = new_price;
+                env.storage()
+                    .persistent()
+                    .set(&DataKey::Listing(id), &listing);
+                applied += 1;
+            }
+        }
+        applied
+    }
+
+    /// Cancels all open listings of a seller.
+    pub fn cancelar_masivo(env: Env, seller: Address) -> u32 {
+        seller.require_auth();
+        let listings: soroban_sdk::Vec<String> = env
+            .storage()
+            .persistent()
+            .get(&DataKey::SellerListings(seller.clone()))
+            .unwrap_or_else(|| soroban_sdk::Vec::new(&env));
+        let mut cancelled = 0_u32;
+        for id in listings.iter() {
+            if let Some(mut listing) = env
+                .storage()
+                .persistent()
+                .get::<_, Listing>(&DataKey::Listing(id.clone()))
+            {
+                if listing.seller == seller && listing.status == ListingStatus::Open {
+                    listing.status = ListingStatus::Cancelled;
+                    ListingCancelled {
+                        listing_id: id.clone(),
+                    }
+                    .publish(&env);
+                    env.storage()
+                        .persistent()
+                        .set(&DataKey::Listing(id), &listing);
+                    cancelled += 1;
+                }
+            }
+        }
+        cancelled
     }
 
     pub fn get_listing(env: Env, id: String) -> Result<Listing, Error> {

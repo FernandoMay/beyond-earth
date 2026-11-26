@@ -281,3 +281,116 @@ fn compliance_blocks_ineligible_subscribers() {
     );
     client.subscribe(&investor, &String::from_str(&env, "off_001"), &1_000);
 }
+
+#[test]
+fn reembolsar_todo_refunds_failed_offerings() {
+    let fixture = setup();
+    create(&fixture, 10_000);
+    let investor = Address::generate(&fixture.env);
+    fixture.token_admin.mint(&investor, &5_000);
+    fixture.env.ledger().set_timestamp(NOW + 100);
+    fixture.client.subscribe(
+        &investor,
+        &String::from_str(&fixture.env, "off_001"),
+        &2_000,
+    );
+    fixture.env.ledger().set_timestamp(NOW + 1_000);
+    fixture
+        .client
+        .mark_failed(&fixture.admin, &String::from_str(&fixture.env, "off_001"));
+    let ids = soroban_sdk::vec![&fixture.env, String::from_str(&fixture.env, "off_001")];
+    let total = fixture.client.reembolsar_todo(&investor, &ids);
+    assert_eq!(total, 2_000);
+    assert_eq!(fixture.payment.balance(&investor), 5_000);
+}
+
+#[test]
+fn cancels_a_pending_subscription() {
+    let fixture = setup();
+    create(&fixture, 10_000);
+    let investor = Address::generate(&fixture.env);
+    fixture.token_admin.mint(&investor, &5_000);
+    fixture.env.ledger().set_timestamp(NOW + 100);
+    fixture.client.subscribe(
+        &investor,
+        &String::from_str(&fixture.env, "off_001"),
+        &2_000,
+    );
+    let refund = fixture
+        .client
+        .cancelar_suscripcion(&investor, &String::from_str(&fixture.env, "off_001"));
+    assert_eq!(refund, 2_000);
+    assert_eq!(fixture.payment.balance(&investor), 5_000);
+}
+
+#[test]
+fn extends_offering_close_date() {
+    let fixture = setup();
+    create(&fixture, 10_000);
+    let extended = fixture.client.extender_oferta(
+        &fixture.issuer,
+        &String::from_str(&fixture.env, "off_001"),
+        &3600,
+    );
+    assert_eq!(extended.closes_at, NOW + 1_000 + 3600);
+}
+
+#[test]
+fn suscribe_con_descuento_applies_discount() {
+    let fixture = setup();
+    create(&fixture, 10_000);
+    let investor = Address::generate(&fixture.env);
+    fixture.token_admin.mint(&investor, &100_000_000);
+    fixture.env.ledger().set_timestamp(NOW + 100);
+    let position = fixture.client.suscribir_con_descuento(
+        &investor,
+        &String::from_str(&fixture.env, "off_001"),
+        &50_000_000,
+    );
+    assert_eq!(position.amount, 45_000_000);
+}
+
+#[test]
+fn suscribe_masivo_subscribes_multiple() {
+    let fixture = setup();
+    create(&fixture, 10_000);
+    let alice = Address::generate(&fixture.env);
+    let bob = Address::generate(&fixture.env);
+    fixture.token_admin.mint(&alice, &10_000);
+    fixture.token_admin.mint(&bob, &10_000);
+    fixture.env.ledger().set_timestamp(NOW + 100);
+    let investors = soroban_sdk::vec![&fixture.env, alice.clone(), bob.clone()];
+    let amounts = soroban_sdk::vec![&fixture.env, 2_000_i128, 3_000_i128];
+    let total = fixture.client.suscribir_masivo(
+        &String::from_str(&fixture.env, "off_001"),
+        &investors,
+        &amounts,
+    );
+    assert_eq!(total, 5_000);
+}
+
+#[test]
+fn marks_multiple_offerings_failed() {
+    let fixture = setup();
+    create(&fixture, 10_000);
+    // create second offering
+    fixture.client.create_offering(
+        &fixture.issuer,
+        &String::from_str(&fixture.env, "off_002"),
+        &String::from_str(&fixture.env, "ast_eng_002"),
+        &10_000,
+        &100,
+        &(NOW + 10),
+        &(NOW + 1_000),
+        &2,
+        &String::from_str(&fixture.env, "US-DE"),
+    );
+    fixture.env.ledger().set_timestamp(NOW + 1_000);
+    let ids = soroban_sdk::vec![
+        &fixture.env,
+        String::from_str(&fixture.env, "off_001"),
+        String::from_str(&fixture.env, "off_002")
+    ];
+    let marked = fixture.client.marcar_fallido_masivo(&fixture.admin, &ids);
+    assert_eq!(marked, 2);
+}

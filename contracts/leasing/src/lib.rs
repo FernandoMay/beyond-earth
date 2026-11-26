@@ -246,6 +246,135 @@ impl Leasing {
         Ok(lease)
     }
 
+    /// Extends a lease by the given number of periods.
+    pub fn extender_lease(
+        env: Env,
+        caller: Address,
+        id: String,
+        periods: u32,
+    ) -> Result<Lease, Error> {
+        caller.require_auth();
+        let mut lease = get_lease_or_error(&env, &id)?;
+        require_lessor_or_admin(&env, &caller, &lease)?;
+        if lease.status == LeaseStatus::Closed || lease.status == LeaseStatus::Defaulted {
+            return Err(Error::InvalidStatus);
+        }
+        if periods == 0 {
+            return Err(Error::InvalidLease);
+        }
+        lease.next_due_at += lease.interval_seconds * periods as u64;
+        env.storage().persistent().set(&DataKey::Lease(id), &lease);
+        Ok(lease)
+    }
+
+    /// Pays multiple rent periods in advance.
+    pub fn pagar_renta_anticipada(
+        env: Env,
+        lessee: Address,
+        id: String,
+        periods: u32,
+    ) -> Result<Lease, Error> {
+        lessee.require_auth();
+        if periods == 0 {
+            return Err(Error::InvalidLease);
+        }
+        let mut lease = get_lease_or_error(&env, &id)?;
+        if lessee != lease.lessee {
+            return Err(Error::Unauthorized);
+        }
+        if lease.status != LeaseStatus::Active && lease.status != LeaseStatus::Arrears {
+            return Err(Error::InvalidStatus);
+        }
+        let amount = lease.rent_amount * periods as i128;
+        let payment = token::Client::new(&env, &Self::token(env.clone())?);
+        payment.transfer(&lessee, &lease.lessor, &amount);
+
+        let now = env.ledger().timestamp();
+        lease.total_paid += amount;
+        lease.payments += periods;
+        lease.next_due_at = now + lease.interval_seconds * periods as u64;
+        lease.status = LeaseStatus::Active;
+        RentPaid {
+            lease_id: id.clone(),
+            lessee: lease.lessee.clone(),
+            amount,
+        }
+        .publish(&env);
+        env.storage().persistent().set(&DataKey::Lease(id), &lease);
+        Ok(lease)
+    }
+
+    /// Closes a lease ahead of schedule.
+    pub fn cerrar_anticipado(env: Env, caller: Address, id: String) -> Result<Lease, Error> {
+        caller.require_auth();
+        let mut lease = get_lease_or_error(&env, &id)?;
+        require_lessor_or_admin(&env, &caller, &lease)?;
+        if lease.status == LeaseStatus::Closed || lease.status == LeaseStatus::Defaulted {
+            return Err(Error::InvalidStatus);
+        }
+        lease.status = LeaseStatus::Closed;
+        LeaseClosed {
+            lease_id: id.clone(),
+        }
+        .publish(&env);
+        env.storage().persistent().set(&DataKey::Lease(id), &lease);
+        Ok(lease)
+    }
+
+    /// Renews a lease by extending its due date and resetting payment counters.
+    pub fn renovar_lease(
+        env: Env,
+        caller: Address,
+        id: String,
+        extra_periods: u32,
+    ) -> Result<Lease, Error> {
+        caller.require_auth();
+        let mut lease = get_lease_or_error(&env, &id)?;
+        require_lessor_or_admin(&env, &caller, &lease)?;
+        if lease.status == LeaseStatus::Closed || lease.status == LeaseStatus::Defaulted {
+            return Err(Error::InvalidStatus);
+        }
+        if extra_periods == 0 {
+            return Err(Error::InvalidLease);
+        }
+        lease.next_due_at += lease.interval_seconds * extra_periods as u64;
+        lease.total_paid = 0;
+        lease.payments = 0;
+        lease.status = LeaseStatus::Active;
+        env.storage().persistent().set(&DataKey::Lease(id), &lease);
+        Ok(lease)
+    }
+
+    /// Renews multiple leases by extending their due dates.
+    pub fn renovar_masivo(
+        env: Env,
+        caller: Address,
+        lease_ids: soroban_sdk::Vec<String>,
+        extra_periods: u32,
+    ) -> u32 {
+        caller.require_auth();
+        if extra_periods == 0 {
+            return 0;
+        }
+        let mut renewed = 0_u32;
+        for id in lease_ids.iter() {
+            if let Ok(mut lease) = get_lease_or_error(&env, &id) {
+                let admin: Address = env.storage().instance().get(&DataKey::Admin).unwrap();
+                if caller != lease.lessor && caller != admin {
+                    continue;
+                }
+                if lease.status == LeaseStatus::Closed || lease.status == LeaseStatus::Defaulted {
+                    continue;
+                }
+                lease.next_due_at += lease.interval_seconds * extra_periods as u64;
+                lease.status = LeaseStatus::Active;
+                env.storage().persistent().set(&DataKey::Lease(id), &lease);
+                renewed += 1;
+            }
+        }
+        renewed
+    }
+
     pub fn get_lease(env: Env, id: String) -> Result<Lease, Error> {
         get_lease_or_error(&env, &id)
     }

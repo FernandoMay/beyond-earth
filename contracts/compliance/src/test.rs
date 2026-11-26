@@ -163,3 +163,55 @@ fn unknown_investors_are_not_eligible() {
         .client
         .is_eligible(&unknown, &1, &String::from_str(&env, "US-DE")));
 }
+
+#[test]
+fn reactivates_a_suspended_investor() {
+    let env = Env::default();
+    let fixture = setup(&env);
+    let investor = Address::generate(&env);
+    approve(&env, &fixture, &investor);
+    fixture.client.suspend_investor(&fixture.officer, &investor);
+    let record = fixture
+        .client
+        .reactivar_inversor(&fixture.officer, &investor, &(NOW + 172_800));
+    assert_eq!(record.status, InvestorStatus::Approved);
+}
+
+#[test]
+fn renews_an_approved_investor() {
+    let env = Env::default();
+    let fixture = setup(&env);
+    let investor = Address::generate(&env);
+    approve(&env, &fixture, &investor);
+    let renewed = fixture
+        .client
+        .renovar_inversor(&fixture.officer, &investor, &(NOW + 172_800));
+    assert_eq!(renewed.expires_at, NOW + 172_800);
+}
+
+#[test]
+fn updates_investor_tier() {
+    let env = Env::default();
+    let fixture = setup(&env);
+    let investor = Address::generate(&env);
+    approve(&env, &fixture, &investor);
+    let updated = fixture
+        .client
+        .actualizar_tier(&fixture.officer, &investor, &4);
+    assert_eq!(updated.tier, 4);
+}
+
+#[test]
+fn suspends_multiple_investors() {
+    let env = Env::default();
+    let fixture = setup(&env);
+    let alice = Address::generate(&env);
+    let bob = Address::generate(&env);
+    approve(&env, &fixture, &alice);
+    approve(&env, &fixture, &bob);
+    let investors = soroban_sdk::vec![&env, alice.clone(), bob.clone()];
+    let suspended = fixture
+        .client
+        .suspender_masivo(&fixture.officer, &investors);
+    assert_eq!(suspended, 2);
+}

@@ -40,6 +40,7 @@ pub enum DataKey {
     MemberCount,
     Proposal(String),
     Vote(String, Address),
+    AllProposals,
 }
 
 #[contracterror]
@@ -196,6 +197,15 @@ impl Governance {
             executed_at: 0,
         };
         env.storage().persistent().set(&key, &proposal);
+
+        let mut all: soroban_sdk::Vec<String> = env
+            .storage()
+            .instance()
+            .get(&DataKey::AllProposals)
+            .unwrap_or_else(|| soroban_sdk::Vec::new(&env));
+        all.push_back(id.clone());
+        env.storage().instance().set(&DataKey::AllProposals, &all);
+
         Ok(proposal)
     }
 
@@ -298,6 +308,145 @@ impl Governance {
             .persistent()
             .set(&DataKey::Proposal(id), &proposal);
         Ok(proposal)
+    }
+
+    /// Reopens a rejected proposal with a fresh voting window.
+    pub fn reabrir_propuesta(env: Env, caller: Address, id: String) -> Result<Proposal, Error> {
+        caller.require_auth();
+        require_admin(&env, &caller)?;
+        let mut proposal = get_proposal_or_error(&env, &id)?;
+        if proposal.status != ProposalStatus::Rejected {
+            return Err(Error::ProposalNotActive);
+        }
+        let voting_period: u64 = env
+            .storage()
+            .instance()
+            .get(&DataKey::VotingPeriod)
+            .ok_or(Error::NotInitialized)?;
+        let timelock: u64 = env
+            .storage()
+            .instance()
+            .get(&DataKey::Timelock)
+            .unwrap_or(0);
+        let now = env.ledger().timestamp();
+        proposal.status = ProposalStatus::Active;
+        proposal.yes_votes = 0;
+        proposal.no_votes = 0;
+        proposal.created_at = now;
+        proposal.voting_ends_at = now + voting_period;
+        proposal.executable_at = proposal.voting_ends_at + timelock;
+        env.storage()
+            .persistent()
+            .set(&DataKey::Proposal(id), &proposal);
+        Ok(proposal)
+    }
+
+    /// Votes and finalizes immediately if quorum is reached.
+    pub fn votar_y_finalizar(
+        env: Env,
+        voter: Address,
+        id: String,
+        support: bool,
+    ) -> Result<Proposal, Error> {
+        voter.require_auth();
+        if !Self::is_member(env.clone(), voter.clone()) {
+            return Err(Error::NotMember);
+        }
+        let mut proposal = get_proposal_or_error(&env, &id)?;
+        if proposal.status != ProposalStatus::Active {
+            return Err(Error::ProposalNotActive);
+        }
+        if env.ledger().timestamp() >= proposal.voting_ends_at {
+            return Err(Error::VotingClosed);
+        }
+        let vote_key = DataKey::Vote(id.clone(), voter.clone());
+        if env
+            .storage()
+            .persistent()
+            .get::<_, bool>(&vote_key)
+            .unwrap_or(false)
+        {
+            return Err(Error::AlreadyVoted);
+        }
+        if support {
+            proposal.yes_votes += 1;
+        } else {
+            proposal.no_votes += 1;
+        }
+        env.storage().persistent().set(&vote_key, &true);
+        env.storage()
+            .persistent()
+            .set(&DataKey::Proposal(id.clone()), &proposal);
+
+        let quorum: u32 = env
+            .storage()
+            .instance()
+            .get(&DataKey::Quorum)
+            .ok_or(Error::NotInitialized)?;
+        if proposal.yes_votes >= quorum && proposal.yes_votes > proposal.no_votes {
+            proposal.status = ProposalStatus::Passed;
+            env.storage()
+                .persistent()
+                .set(&DataKey::Proposal(id), &proposal);
+        }
+        Ok(proposal)
+    }
+
+    /// Executes all passed proposals whose timelock has expired.
+    pub fn ejecutar_todo(env: Env, caller: Address) -> u32 {
+        caller.require_auth();
+        require_admin(&env, &caller).unwrap();
+        let proposals: soroban_sdk::Vec<String> = env
+            .storage()
+            .instance()
+            .get(&DataKey::AllProposals)
+            .unwrap_or_else(|| soroban_sdk::Vec::new(&env));
+        let now = env.ledger().timestamp();
+        let mut executed = 0_u32;
+        for id in proposals.iter() {
+            if let Some(mut proposal) = env
+                .storage()
+                .persistent()
+                .get::<_, Proposal>(&DataKey::Proposal(id.clone()))
+            {
+                if proposal.status == ProposalStatus::Passed && now >= proposal.executable_at {
+                    proposal.status = ProposalStatus::Executed;
+                    proposal.executed_at = now;
+                    env.storage()
+                        .persistent()
+                        .set(&DataKey::Proposal(id), &proposal);
+                    executed += 1;
+                }
+            }
+        }
+        executed
+    }
+
+    /// Cancels multiple active proposals.
+    pub fn cancelar_masivo(env: Env, caller: Address, ids: soroban_sdk::Vec<String>) -> u32 {
+        caller.require_auth();
+        if require_admin(&env, &caller).is_err() {
+            return 0;
+        }
+        let mut cancelled = 0_u32;
+        for id in ids.iter() {
+            if let Some(mut proposal) = env
+                .storage()
+                .persistent()
+                .get::<_, Proposal>(&DataKey::Proposal(id.clone()))
+            {
+                if proposal.status == ProposalStatus::Active
+                    || proposal.status == ProposalStatus::Passed
+                {
+                    proposal.status = ProposalStatus::Cancelled;
+                    env.storage()
+                        .persistent()
+                        .set(&DataKey::Proposal(id), &proposal);
+                    cancelled += 1;
+                }
+            }
+        }
+        cancelled
     }
 
     pub fn get_proposal(env: Env, id: String) -> Result<Proposal, Error> {

@@ -72,6 +72,14 @@ pub struct EscrowReleased {
     pub amount: i128,
 }
 
+/// Emitted when part of an escrow is released to the seller.
+#[contractevent]
+pub struct EscrowPartialReleased {
+    pub escrow_id: String,
+    pub seller: Address,
+    pub amount: i128,
+}
+
 /// Emitted when escrowed funds are refunded to the buyer.
 #[contractevent]
 pub struct EscrowRefunded {
@@ -221,6 +229,174 @@ impl EscrowContract {
             .persistent()
             .set(&DataKey::Escrow(id), &escrow);
         Ok(escrow)
+    }
+
+    /// Releases a partial amount to the seller, reducing the remaining escrow.
+    pub fn liberar_parcial(
+        env: Env,
+        caller: Address,
+        id: String,
+        amount: i128,
+    ) -> Result<Escrow, Error> {
+        caller.require_auth();
+        let mut escrow = get_escrow_or_error(&env, &id)?;
+        require_resolver(&env, &caller, &escrow)?;
+        if escrow.status != EscrowStatus::Funded && escrow.status != EscrowStatus::Disputed {
+            return Err(Error::InvalidStatus);
+        }
+        if amount <= 0 || amount > escrow.amount {
+            return Err(Error::InvalidAmount);
+        }
+        let payment = token::Client::new(&env, &Self::token(env.clone())?);
+        payment.transfer(&env.current_contract_address(), &escrow.seller, &amount);
+
+        escrow.amount -= amount;
+        if escrow.amount == 0 {
+            escrow.status = EscrowStatus::Released;
+            escrow.resolved_at = env.ledger().timestamp();
+        }
+        EscrowPartialReleased {
+            escrow_id: id.clone(),
+            seller: escrow.seller.clone(),
+            amount,
+        }
+        .publish(&env);
+        env.storage()
+            .persistent()
+            .set(&DataKey::Escrow(id), &escrow);
+        Ok(escrow)
+    }
+
+    /// Refunds a partial amount to the buyer, reducing the remaining escrow.
+    pub fn reembolsar_parcial(
+        env: Env,
+        caller: Address,
+        id: String,
+        amount: i128,
+    ) -> Result<Escrow, Error> {
+        caller.require_auth();
+        let mut escrow = get_escrow_or_error(&env, &id)?;
+        require_resolver(&env, &caller, &escrow)?;
+        if escrow.status != EscrowStatus::Funded && escrow.status != EscrowStatus::Disputed {
+            return Err(Error::InvalidStatus);
+        }
+        if amount <= 0 || amount > escrow.amount {
+            return Err(Error::InvalidAmount);
+        }
+        let payment = token::Client::new(&env, &Self::token(env.clone())?);
+        payment.transfer(&env.current_contract_address(), &escrow.buyer, &amount);
+
+        escrow.amount -= amount;
+        if escrow.amount == 0 {
+            escrow.status = EscrowStatus::Refunded;
+            escrow.resolved_at = env.ledger().timestamp();
+        }
+        EscrowRefunded {
+            escrow_id: id.clone(),
+            buyer: escrow.buyer.clone(),
+            amount,
+        }
+        .publish(&env);
+        env.storage()
+            .persistent()
+            .set(&DataKey::Escrow(id), &escrow);
+        Ok(escrow)
+    }
+
+    /// Releases the remaining escrow amount to the seller.
+    pub fn liberar_total(env: Env, caller: Address, id: String) -> Result<Escrow, Error> {
+        caller.require_auth();
+        let mut escrow = get_escrow_or_error(&env, &id)?;
+        require_resolver(&env, &caller, &escrow)?;
+        if escrow.status != EscrowStatus::Funded && escrow.status != EscrowStatus::Disputed {
+            return Err(Error::InvalidStatus);
+        }
+        if escrow.amount <= 0 {
+            return Err(Error::InvalidAmount);
+        }
+        let payment = token::Client::new(&env, &Self::token(env.clone())?);
+        payment.transfer(
+            &env.current_contract_address(),
+            &escrow.seller,
+            &escrow.amount,
+        );
+        escrow.status = EscrowStatus::Released;
+        escrow.resolved_at = env.ledger().timestamp();
+        EscrowReleased {
+            escrow_id: id.clone(),
+            seller: escrow.seller.clone(),
+            amount: escrow.amount,
+        }
+        .publish(&env);
+        escrow.amount = 0;
+        env.storage()
+            .persistent()
+            .set(&DataKey::Escrow(id), &escrow);
+        Ok(escrow)
+    }
+
+    /// Disputes an escrow and immediately refunds the buyer.
+    pub fn disputar_y_reembolsar(env: Env, caller: Address, id: String) -> Result<Escrow, Error> {
+        caller.require_auth();
+        let mut escrow = get_escrow_or_error(&env, &id)?;
+        if caller != escrow.buyer && caller != escrow.seller && caller != escrow.arbiter {
+            return Err(Error::Unauthorized);
+        }
+        if escrow.status != EscrowStatus::Funded {
+            return Err(Error::InvalidStatus);
+        }
+        let payment = token::Client::new(&env, &Self::token(env.clone())?);
+        payment.transfer(
+            &env.current_contract_address(),
+            &escrow.buyer,
+            &escrow.amount,
+        );
+        escrow.status = EscrowStatus::Refunded;
+        escrow.resolved_at = env.ledger().timestamp();
+        EscrowRefunded {
+            escrow_id: id.clone(),
+            buyer: escrow.buyer.clone(),
+            amount: escrow.amount,
+        }
+        .publish(&env);
+        env.storage()
+            .persistent()
+            .set(&DataKey::Escrow(id), &escrow);
+        Ok(escrow)
+    }
+
+    /// Refunds all provided escrows for a buyer in one transaction.
+    pub fn reembolsar_todo(env: Env, buyer: Address, escrow_ids: soroban_sdk::Vec<String>) -> i128 {
+        buyer.require_auth();
+        let payment = token::Client::new(&env, &Self::token(env.clone()).unwrap());
+        let mut total: i128 = 0;
+        for id in escrow_ids.iter() {
+            let mut escrow = match get_escrow_or_error(&env, &id) {
+                Ok(e) => e,
+                Err(_) => continue,
+            };
+            if escrow.buyer != buyer {
+                continue;
+            }
+            if escrow.status != EscrowStatus::Funded && escrow.status != EscrowStatus::Disputed {
+                continue;
+            }
+            payment.transfer(&env.current_contract_address(), &buyer, &escrow.amount);
+            escrow.status = EscrowStatus::Refunded;
+            escrow.resolved_at = env.ledger().timestamp();
+            EscrowRefunded {
+                escrow_id: id.clone(),
+                buyer: buyer.clone(),
+                amount: escrow.amount,
+            }
+            .publish(&env);
+            env.storage()
+                .persistent()
+                .set(&DataKey::Escrow(id), &escrow);
+            total += escrow.amount;
+            escrow.amount = 0;
+        }
+        total
     }
 
     pub fn get_escrow(env: Env, id: String) -> Result<Escrow, Error> {

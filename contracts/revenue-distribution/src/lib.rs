@@ -35,6 +35,7 @@ pub enum DataKey {
     Distribution(String),
     Allocation(String, Address),
     Claimed(String, Address),
+    IssuerDistributions(Address),
 }
 
 #[contracterror]
@@ -147,6 +148,18 @@ impl RevenueDistribution {
             status: DistributionStatus::Funded,
         };
         env.storage().persistent().set(&key, &distribution);
+
+        let mut issuer_dists: soroban_sdk::Vec<String> = env
+            .storage()
+            .persistent()
+            .get(&DataKey::IssuerDistributions(distribution.issuer.clone()))
+            .unwrap_or_else(|| soroban_sdk::Vec::new(&env));
+        issuer_dists.push_back(id.clone());
+        env.storage().persistent().set(
+            &DataKey::IssuerDistributions(distribution.issuer.clone()),
+            &issuer_dists,
+        );
+
         DistributionPublished {
             distribution_id: id.clone(),
             total_amount,
@@ -276,6 +289,220 @@ impl RevenueDistribution {
         }
         .publish(&env);
         Ok(remaining)
+    }
+
+    /// Claims all provided distributions for an investor in one transaction.
+    pub fn reclamar_todo(
+        env: Env,
+        investor: Address,
+        distribution_ids: soroban_sdk::Vec<String>,
+    ) -> i128 {
+        investor.require_auth();
+        let payment = token::Client::new(&env, &Self::token(env.clone()).unwrap());
+        let mut total_claimed: i128 = 0;
+        for id in distribution_ids.iter() {
+            let mut distribution = match get_distribution_or_error(&env, &id) {
+                Ok(d) => d,
+                Err(_) => continue,
+            };
+            if distribution.status != DistributionStatus::Funded {
+                continue;
+            }
+            let claim_key = DataKey::Claimed(id.clone(), investor.clone());
+            if env
+                .storage()
+                .persistent()
+                .get::<_, bool>(&claim_key)
+                .unwrap_or(false)
+            {
+                continue;
+            }
+            let units: i128 = env
+                .storage()
+                .persistent()
+                .get(&DataKey::Allocation(id.clone(), investor.clone()))
+                .unwrap_or(0);
+            if units <= 0 {
+                continue;
+            }
+            let entitlement = distribution.total_amount * units / distribution.total_units;
+            if entitlement <= 0 {
+                continue;
+            }
+            payment.transfer(&env.current_contract_address(), &investor, &entitlement);
+            env.storage().persistent().set(&claim_key, &true);
+            distribution.claimed_amount += entitlement;
+            env.storage()
+                .persistent()
+                .set(&DataKey::Distribution(id.clone()), &distribution);
+            DistributionClaimed {
+                distribution_id: id.clone(),
+                investor: investor.clone(),
+                amount: entitlement,
+            }
+            .publish(&env);
+            total_claimed += entitlement;
+        }
+        total_claimed
+    }
+
+    /// Closes all funded distributions of an issuer whose deadline has passed.
+    pub fn cerrar_todo(env: Env, caller: Address) -> u32 {
+        caller.require_auth();
+        let admin: Address = env
+            .storage()
+            .instance()
+            .get(&DataKey::Admin)
+            .unwrap_or_else(|| caller.clone());
+        let is_admin = admin == caller;
+        let distributions: soroban_sdk::Vec<String> = env
+            .storage()
+            .persistent()
+            .get(&DataKey::IssuerDistributions(caller.clone()))
+            .unwrap_or_else(|| soroban_sdk::Vec::new(&env));
+        let mut closed = 0_u32;
+        for id in distributions.iter() {
+            if let Some(mut distribution) = env
+                .storage()
+                .persistent()
+                .get::<_, Distribution>(&DataKey::Distribution(id.clone()))
+            {
+                if distribution.status != DistributionStatus::Funded {
+                    continue;
+                }
+                if !is_admin && distribution.issuer != caller {
+                    continue;
+                }
+                if env.ledger().timestamp() < distribution.claim_deadline {
+                    continue;
+                }
+                let remaining = distribution.total_amount - distribution.claimed_amount;
+                if remaining > 0 {
+                    let payment = token::Client::new(&env, &Self::token(env.clone()).unwrap());
+                    payment.transfer(
+                        &env.current_contract_address(),
+                        &distribution.issuer,
+                        &remaining,
+                    );
+                }
+                distribution.status = DistributionStatus::Closed;
+                env.storage()
+                    .persistent()
+                    .set(&DataKey::Distribution(id.clone()), &distribution);
+                DistributionClosed {
+                    distribution_id: id.clone(),
+                    remaining,
+                }
+                .publish(&env);
+                closed += 1;
+            }
+        }
+        closed
+    }
+
+    /// Allocates units to multiple investors in one transaction.
+    pub fn asignar_masivo(
+        env: Env,
+        caller: Address,
+        distribution_id: String,
+        investors: soroban_sdk::Vec<Address>,
+        units: soroban_sdk::Vec<i128>,
+    ) -> i128 {
+        caller.require_auth();
+        let mut distribution = match get_distribution_or_error(&env, &distribution_id) {
+            Ok(d) => d,
+            Err(_) => return 0,
+        };
+        if distribution.status != DistributionStatus::Funded {
+            return 0;
+        }
+        // require issuer or admin
+        let admin: Address = env.storage().instance().get(&DataKey::Admin).unwrap();
+        if caller != distribution.issuer && caller != admin {
+            return 0;
+        }
+        let mut total_allocated: i128 = 0;
+        let len = investors.len().min(units.len());
+        for i in 0..len {
+            let investor = investors.get(i).unwrap();
+            let u = units.get(i).unwrap();
+            if u <= 0 {
+                continue;
+            }
+            let key = DataKey::Allocation(distribution_id.clone(), investor.clone());
+            let current: i128 = env.storage().persistent().get(&key).unwrap_or(0);
+            if distribution.allocated_units + u > distribution.total_units {
+                continue;
+            }
+            distribution.allocated_units += u;
+            env.storage().persistent().set(&key, &(current + u));
+            UnitsAllocated {
+                distribution_id: distribution_id.clone(),
+                investor,
+                units: current + u,
+            }
+            .publish(&env);
+            total_allocated += u;
+        }
+        env.storage()
+            .persistent()
+            .set(&DataKey::Distribution(distribution_id), &distribution);
+        total_allocated
+    }
+
+    /// Claims multiple distributions for an investor in one transaction.
+    pub fn reclamar_masivo(
+        env: Env,
+        investor: Address,
+        distribution_ids: soroban_sdk::Vec<String>,
+    ) -> i128 {
+        investor.require_auth();
+        let payment = token::Client::new(&env, &Self::token(env.clone()).unwrap());
+        let mut total_claimed: i128 = 0;
+        for id in distribution_ids.iter() {
+            let mut distribution = match get_distribution_or_error(&env, &id) {
+                Ok(d) => d,
+                Err(_) => continue,
+            };
+            if distribution.status != DistributionStatus::Funded {
+                continue;
+            }
+            let claim_key = DataKey::Claimed(id.clone(), investor.clone());
+            if env
+                .storage()
+                .persistent()
+                .get::<_, bool>(&claim_key)
+                .unwrap_or(false)
+            {
+                continue;
+            }
+            let units: i128 = env
+                .storage()
+                .persistent()
+                .get(&DataKey::Allocation(id.clone(), investor.clone()))
+                .unwrap_or(0);
+            if units <= 0 {
+                continue;
+            }
+            let entitlement = distribution.total_amount * units / distribution.total_units;
+            if entitlement <= 0 {
+                continue;
+            }
+            payment.transfer(&env.current_contract_address(), &investor, &entitlement);
+            env.storage().persistent().set(&claim_key, &true);
+            distribution.claimed_amount += entitlement;
+            env.storage()
+                .persistent()
+                .set(&DataKey::Distribution(id.clone()), &distribution);
+            DistributionClaimed {
+                distribution_id: id.clone(),
+                investor: investor.clone(),
+                amount: entitlement,
+            }
+            .publish(&env);
+            total_claimed += entitlement;
+        }
+        total_claimed
     }
 
     pub fn get_distribution(env: Env, id: String) -> Result<Distribution, Error> {

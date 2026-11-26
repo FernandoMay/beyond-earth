@@ -36,6 +36,8 @@ pub enum DataKey {
     Compliance,
     RequiredTier,
     Jurisdiction,
+    PurchaseCount(Address),
+    RewardMintCount(Address),
 }
 
 #[contracterror]
@@ -225,6 +227,231 @@ impl RwaToken {
         let supply = Self::total_supply(env.clone()) + amount;
         env.storage().instance().set(&DataKey::TotalSupply, &supply);
         Ok(())
+    }
+
+    /// Transfers `amount` tokens with a fee: 20 for the first transfer, 10 afterwards.
+    pub fn transferir_con_fee(
+        env: Env,
+        from: Address,
+        to: Address,
+        amount: i128,
+    ) -> Result<i128, Error> {
+        from.require_auth();
+        if amount <= 0 {
+            return Err(Error::InvalidAmount);
+        }
+        let admin: Address = env
+            .storage()
+            .instance()
+            .get(&DataKey::Admin)
+            .ok_or(Error::NotInitialized)?;
+        if RwaToken::is_paused(env.clone()) {
+            return Err(Error::Paused);
+        }
+        check_compliance(&env, &from)?;
+        check_compliance(&env, &to)?;
+        check_compliance(&env, &admin)?;
+        let balance: i128 = env
+            .storage()
+            .persistent()
+            .get(&DataKey::Balance(from.clone()))
+            .unwrap_or(0);
+        if balance < amount {
+            return Err(Error::InsufficientBalance);
+        }
+
+        let count: u32 = env
+            .storage()
+            .persistent()
+            .get(&DataKey::PurchaseCount(from.clone()))
+            .unwrap_or(0);
+        let fee: i128 = if count == 0 { 20 } else { 10 };
+        if amount <= fee {
+            return Err(Error::InvalidAmount);
+        }
+        let net = amount - fee;
+
+        let to_balance: i128 = env
+            .storage()
+            .persistent()
+            .get(&DataKey::Balance(to.clone()))
+            .unwrap_or(0);
+        env.storage()
+            .persistent()
+            .set(&DataKey::Balance(from.clone()), &(balance - amount));
+        env.storage()
+            .persistent()
+            .set(&DataKey::Balance(to.clone()), &(to_balance + net));
+        let admin_balance: i128 = env
+            .storage()
+            .persistent()
+            .get(&DataKey::Balance(admin.clone()))
+            .unwrap_or(0);
+        env.storage()
+            .persistent()
+            .set(&DataKey::Balance(admin.clone()), &(admin_balance + fee));
+
+        TokenTransferred {
+            from: from.clone(),
+            to: to.clone(),
+            amount: net,
+        }
+        .publish(&env);
+
+        env.storage()
+            .persistent()
+            .set(&DataKey::PurchaseCount(from), &(count + 1));
+
+        Ok(net)
+    }
+
+    /// Mints a reward to a user: 20 the first time, 10 afterwards.
+    pub fn mintear_recompensa(env: Env, caller: Address, to: Address) -> Result<i128, Error> {
+        caller.require_auth();
+        require_admin(&env, &caller)?;
+        check_compliance(&env, &to)?;
+        let count: u32 = env
+            .storage()
+            .persistent()
+            .get(&DataKey::RewardMintCount(to.clone()))
+            .unwrap_or(0);
+        let reward: i128 = if count == 0 { 20 } else { 10 };
+
+        let balance = Self::balance(env.clone(), to.clone()) + reward;
+        env.storage()
+            .persistent()
+            .set(&DataKey::Balance(to.clone()), &balance);
+        TokenMinted {
+            to: to.clone(),
+            amount: reward,
+        }
+        .publish(&env);
+        let supply = Self::total_supply(env.clone()) + reward;
+        env.storage().instance().set(&DataKey::TotalSupply, &supply);
+
+        env.storage()
+            .persistent()
+            .set(&DataKey::RewardMintCount(to), &(count + 1));
+
+        Ok(reward)
+    }
+
+    /// Transfers the entire balance of `from` to `to`, deducting a fee.
+    pub fn transferir_todo(env: Env, from: Address, to: Address) -> Result<i128, Error> {
+        from.require_auth();
+        if RwaToken::is_paused(env.clone()) {
+            return Err(Error::Paused);
+        }
+        check_compliance(&env, &from)?;
+        check_compliance(&env, &to)?;
+        let admin: Address = env
+            .storage()
+            .instance()
+            .get(&DataKey::Admin)
+            .ok_or(Error::NotInitialized)?;
+        check_compliance(&env, &admin)?;
+        let balance: i128 = env
+            .storage()
+            .persistent()
+            .get(&DataKey::Balance(from.clone()))
+            .unwrap_or(0);
+        if balance <= 0 {
+            return Err(Error::InvalidAmount);
+        }
+        let admin: Address = env
+            .storage()
+            .instance()
+            .get(&DataKey::Admin)
+            .ok_or(Error::NotInitialized)?;
+        let count: u32 = env
+            .storage()
+            .persistent()
+            .get(&DataKey::PurchaseCount(from.clone()))
+            .unwrap_or(0);
+        let fee: i128 = if count == 0 { 20 } else { 10 };
+        if balance <= fee {
+            return Err(Error::InvalidAmount);
+        }
+        let net = balance - fee;
+
+        let to_balance: i128 = env
+            .storage()
+            .persistent()
+            .get(&DataKey::Balance(to.clone()))
+            .unwrap_or(0);
+        let admin_balance: i128 = env
+            .storage()
+            .persistent()
+            .get(&DataKey::Balance(admin.clone()))
+            .unwrap_or(0);
+
+        TokenTransferred {
+            from: from.clone(),
+            to: to.clone(),
+            amount: net,
+        }
+        .publish(&env);
+        if fee > 0 {
+            TokenTransferred {
+                from: from.clone(),
+                to: admin.clone(),
+                amount: fee,
+            }
+            .publish(&env);
+        }
+
+        env.storage()
+            .persistent()
+            .set(&DataKey::Balance(from.clone()), &0_i128);
+        env.storage()
+            .persistent()
+            .set(&DataKey::Balance(to.clone()), &(to_balance + net));
+        env.storage()
+            .persistent()
+            .set(&DataKey::Balance(admin.clone()), &(admin_balance + fee));
+
+        TokenTransferred {
+            from: from.clone(),
+            to: to.clone(),
+            amount: net,
+        }
+        .publish(&env);
+
+        env.storage()
+            .persistent()
+            .set(&DataKey::PurchaseCount(from), &(count + 1));
+
+        Ok(net)
+    }
+
+    /// Burns tokens from multiple accounts.
+    pub fn quemar_masivo(
+        env: Env,
+        accounts: soroban_sdk::Vec<Address>,
+        amounts: soroban_sdk::Vec<i128>,
+    ) -> i128 {
+        let mut total_burned: i128 = 0;
+        let len = accounts.len().min(amounts.len());
+        for i in 0..len {
+            let account = accounts.get(i).unwrap();
+            let amount = amounts.get(i).unwrap();
+            if amount <= 0 {
+                continue;
+            }
+            let balance = Self::balance(env.clone(), account.clone());
+            if balance < amount {
+                continue;
+            }
+            env.storage()
+                .persistent()
+                .set(&DataKey::Balance(account.clone()), &(balance - amount));
+            total_burned += amount;
+        }
+        let supply = Self::total_supply(env.clone());
+        env.storage()
+            .instance()
+            .set(&DataKey::TotalSupply, &(supply - total_burned));
+        total_burned
     }
 
     pub fn burn(env: Env, from: Address, amount: i128) -> Result<(), Error> {

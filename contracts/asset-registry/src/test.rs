@@ -170,3 +170,122 @@ fn only_admin_can_verify_or_change_status() {
         Err(Ok(Error::Unauthorized))
     );
 }
+
+#[test]
+fn reactivates_a_suspended_asset() {
+    let env = Env::default();
+    let fixture = setup(&env);
+    let record = register(&env, &fixture);
+    fixture
+        .client
+        .verify_asset(&fixture.admin, &record.id, &hash(&env, 7));
+    fixture.client.mark_tokenized(&fixture.admin, &record.id);
+    fixture
+        .client
+        .set_status(&fixture.admin, &record.id, &AssetStatus::Active);
+    fixture
+        .client
+        .set_status(&fixture.admin, &record.id, &AssetStatus::Suspended);
+    let reactivated = fixture.client.reactivar_activo(&fixture.admin, &record.id);
+    assert_eq!(reactivated.status, AssetStatus::Active);
+    assert_eq!(fixture.client.reactivations(), 1);
+}
+
+#[test]
+fn suspends_an_active_asset() {
+    let env = Env::default();
+    let fixture = setup(&env);
+    let record = register(&env, &fixture);
+    fixture
+        .client
+        .verify_asset(&fixture.admin, &record.id, &hash(&env, 7));
+    fixture.client.mark_tokenized(&fixture.admin, &record.id);
+    fixture
+        .client
+        .set_status(&fixture.admin, &record.id, &AssetStatus::Active);
+    let suspended = fixture.client.suspender_activo(&fixture.admin, &record.id);
+    assert_eq!(suspended.status, AssetStatus::Suspended);
+}
+
+#[test]
+fn transfers_asset_ownership() {
+    let env = Env::default();
+    let fixture = setup(&env);
+    let record = register(&env, &fixture);
+    let new_owner = Address::generate(&env);
+    let updated = fixture
+        .client
+        .transferir_propiedad(&fixture.admin, &record.id, &new_owner);
+    assert_eq!(updated.owner, new_owner);
+}
+
+#[test]
+fn verifies_multiple_assets() {
+    let env = Env::default();
+    let fixture = setup(&env);
+    register(&env, &fixture);
+    // register second asset
+    fixture.client.register_asset(
+        &fixture.issuer,
+        &String::from_str(&env, "ast_eng_002"),
+        &String::from_str(&env, "ARW-AV-0002"),
+        &Vertical::Aviation,
+        &String::from_str(&env, "Meridian LeaseCo"),
+        &hash(&env, 7),
+        &420_000_000_000_000,
+    );
+    let ids = soroban_sdk::vec![
+        &env,
+        String::from_str(&env, "ast_eng_001"),
+        String::from_str(&env, "ast_eng_002")
+    ];
+    let verified = fixture
+        .client
+        .verificar_masivo(&fixture.admin, &ids, &hash(&env, 7));
+    assert_eq!(verified, 2);
+}
+
+#[test]
+fn suspends_multiple_assets() {
+    let env = Env::default();
+    let fixture = setup(&env);
+    let r1 = register(&env, &fixture);
+    fixture
+        .client
+        .verify_asset(&fixture.admin, &r1.id, &hash(&env, 7));
+    fixture.client.mark_tokenized(&fixture.admin, &r1.id);
+    fixture
+        .client
+        .set_status(&fixture.admin, &r1.id, &AssetStatus::Active);
+
+    fixture.client.register_asset(
+        &fixture.issuer,
+        &String::from_str(&env, "ast_002"),
+        &String::from_str(&env, "ARW-002"),
+        &Vertical::Aviation,
+        &String::from_str(&env, "Op"),
+        &hash(&env, 7),
+        &1000,
+    );
+    fixture.client.verify_asset(
+        &fixture.admin,
+        &String::from_str(&env, "ast_002"),
+        &hash(&env, 7),
+    );
+    fixture
+        .client
+        .mark_tokenized(&fixture.admin, &String::from_str(&env, "ast_002"));
+    fixture.client.set_status(
+        &fixture.admin,
+        &String::from_str(&env, "ast_002"),
+        &AssetStatus::Active,
+    );
+
+    let ids = soroban_sdk::vec![
+        &env,
+        String::from_str(&env, "ast_eng_001"),
+        String::from_str(&env, "ast_002")
+    ];
+    let suspended = fixture.client.suspender_masivo(&fixture.admin, &ids);
+    assert_eq!(suspended, 2);
+}

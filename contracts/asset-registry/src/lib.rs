@@ -50,6 +50,7 @@ pub enum DataKey {
     Issuer(Address),
     Asset(String),
     AssetIds,
+    ReactivationCount,
 }
 
 #[contracterror]
@@ -268,6 +269,130 @@ impl AssetRegistry {
         .publish(&env);
         env.storage().persistent().set(&DataKey::Asset(id), &record);
         Ok(record)
+    }
+
+    /// Reactivates a suspended asset, returning it to active status.
+    pub fn reactivar_activo(env: Env, caller: Address, id: String) -> Result<AssetRecord, Error> {
+        caller.require_auth();
+        require_admin(&env, &caller)?;
+        let mut record = get_asset_or_error(&env, &id)?;
+        if record.status != AssetStatus::Suspended {
+            return Err(Error::InvalidTransition);
+        }
+        record.status = AssetStatus::Active;
+        AssetStatusChanged {
+            asset_id: id.clone(),
+            status: AssetStatus::Active as u32,
+        }
+        .publish(&env);
+        env.storage().persistent().set(&DataKey::Asset(id), &record);
+
+        let count: u32 = env
+            .storage()
+            .instance()
+            .get(&DataKey::ReactivationCount)
+            .unwrap_or(0);
+        env.storage()
+            .instance()
+            .set(&DataKey::ReactivationCount, &(count + 1));
+
+        Ok(record)
+    }
+
+    pub fn reactivations(env: Env) -> u32 {
+        env.storage()
+            .instance()
+            .get(&DataKey::ReactivationCount)
+            .unwrap_or(0)
+    }
+
+    /// Suspends an active asset.
+    pub fn suspender_activo(env: Env, caller: Address, id: String) -> Result<AssetRecord, Error> {
+        caller.require_auth();
+        require_admin(&env, &caller)?;
+        let mut record = get_asset_or_error(&env, &id)?;
+        if record.status != AssetStatus::Active {
+            return Err(Error::InvalidTransition);
+        }
+        record.status = AssetStatus::Suspended;
+        AssetStatusChanged {
+            asset_id: id.clone(),
+            status: AssetStatus::Suspended as u32,
+        }
+        .publish(&env);
+        env.storage().persistent().set(&DataKey::Asset(id), &record);
+        Ok(record)
+    }
+
+    /// Transfers ownership of an asset to a new owner (admin only).
+    pub fn transferir_propiedad(
+        env: Env,
+        caller: Address,
+        id: String,
+        new_owner: Address,
+    ) -> Result<AssetRecord, Error> {
+        caller.require_auth();
+        require_admin(&env, &caller)?;
+        let mut record = get_asset_or_error(&env, &id)?;
+        if new_owner == record.owner {
+            return Err(Error::InvalidTransition);
+        }
+        record.owner = new_owner.clone();
+        env.storage().persistent().set(&DataKey::Asset(id), &record);
+        Ok(record)
+    }
+
+    /// Verifies multiple assets in one transaction.
+    pub fn verificar_masivo(
+        env: Env,
+        reviewer: Address,
+        ids: soroban_sdk::Vec<String>,
+        evidence_hash: BytesN<32>,
+    ) -> u32 {
+        reviewer.require_auth();
+        if require_admin(&env, &reviewer).is_err() {
+            return 0;
+        }
+        let mut verified = 0_u32;
+        for id in ids.iter() {
+            if let Ok(mut record) = get_asset_or_error(&env, &id) {
+                if record.evidence_hash != evidence_hash {
+                    continue;
+                }
+                if record.status != AssetStatus::Draft
+                    && record.status != AssetStatus::EvidenceReview
+                {
+                    continue;
+                }
+                record.status = AssetStatus::Verified;
+                record.verified_at = env.ledger().timestamp();
+                env.storage()
+                    .persistent()
+                    .set(&DataKey::Asset(id.clone()), &record);
+                verified += 1;
+            }
+        }
+        verified
+    }
+
+    /// Suspends multiple active assets.
+    pub fn suspender_masivo(env: Env, caller: Address, ids: soroban_sdk::Vec<String>) -> u32 {
+        caller.require_auth();
+        if require_admin(&env, &caller).is_err() {
+            return 0;
+        }
+        let mut suspended = 0_u32;
+        for id in ids.iter() {
+            if let Ok(mut record) = get_asset_or_error(&env, &id) {
+                if record.status != AssetStatus::Active {
+                    continue;
+                }
+                record.status = AssetStatus::Suspended;
+                env.storage().persistent().set(&DataKey::Asset(id), &record);
+                suspended += 1;
+            }
+        }
+        suspended
     }
 
     pub fn get_asset(env: Env, id: String) -> Result<AssetRecord, Error> {

@@ -211,3 +211,54 @@ fn only_admin_can_change_policy() {
         Err(Ok(Error::Unauthorized))
     );
 }
+
+#[test]
+fn transferir_con_fee_deducts_fee() {
+    let fixture = setup();
+    let from = Address::generate(&fixture.env);
+    let to = Address::generate(&fixture.env);
+    fixture.client.mint(&fixture.admin, &from, &1_000);
+    let net = fixture.client.transferir_con_fee(&from, &to, &100);
+    assert_eq!(net, 80);
+    assert_eq!(fixture.client.balance(&from), 900);
+    assert_eq!(fixture.client.balance(&to), 80);
+    assert_eq!(fixture.client.balance(&fixture.admin), 20);
+}
+
+#[test]
+fn mintear_recompensa_grants_decreasing_rewards() {
+    let fixture = setup();
+    let user = Address::generate(&fixture.env);
+    assert_eq!(fixture.client.mintear_recompensa(&fixture.admin, &user), 20);
+    assert_eq!(fixture.client.mintear_recompensa(&fixture.admin, &user), 10);
+    assert_eq!(fixture.client.balance(&user), 30);
+}
+
+#[test]
+fn transferir_todo_moves_entire_balance() {
+    let fixture = setup();
+    let from = Address::generate(&fixture.env);
+    let to = Address::generate(&fixture.env);
+    fixture.client.mint(&fixture.admin, &from, &1_000);
+    let net = fixture.client.transferir_todo(&from, &to);
+    assert_eq!(net, 980);
+    assert_eq!(fixture.client.balance(&from), 0);
+    assert_eq!(fixture.client.balance(&to), 980);
+    assert_eq!(fixture.client.balance(&fixture.admin), 20);
+}
+
+#[test]
+fn quemar_masivo_burns_from_multiple() {
+    let fixture = setup();
+    let alice = Address::generate(&fixture.env);
+    let bob = Address::generate(&fixture.env);
+    fixture.client.mint(&fixture.admin, &alice, &1_000);
+    fixture.client.mint(&fixture.admin, &bob, &500);
+    let accounts = soroban_sdk::vec![&fixture.env, alice.clone(), bob.clone()];
+    let amounts = soroban_sdk::vec![&fixture.env, 200_i128, 100_i128];
+    let burned = fixture.client.quemar_masivo(&accounts, &amounts);
+    assert_eq!(burned, 300);
+    assert_eq!(fixture.client.balance(&alice), 800);
+    assert_eq!(fixture.client.balance(&bob), 400);
+    assert_eq!(fixture.client.total_supply(), 1_200);
+}
