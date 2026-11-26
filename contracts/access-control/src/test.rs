@@ -94,3 +94,21 @@ fn transfers_a_role_between_accounts() {
     assert!(!client.has_role(&from, &Role::Operator));
     assert!(client.has_role(&to, &Role::Operator));
 }
+
+
+#[test]
+fn revokes_all_roles_from_account() {
+    let env = Env::default();
+    let (client, owner) = setup(&env);
+    let operator = Address::generate(&env);
+
+    client.grant(&owner, &operator, &Role::Operator);
+    client.grant(&owner, &operator, &Role::Issuer);
+    assert!(client.has_role(&operator, &Role::Operator));
+    assert!(client.has_role(&operator, &Role::Issuer));
+
+    let revoked = client.revocar_todo(&owner, &operator);
+    assert_eq!(revoked, 2);
+    assert!(!client.has_role(&operator, &Role::Operator));
+    assert!(!client.has_role(&operator, &Role::Issuer));
+}

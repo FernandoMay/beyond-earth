@@ -156,6 +156,30 @@ impl AccessControl {
         Ok(())
     }
 
+    /// Revokes every role held by an account.
+    pub fn revocar_todo(env: Env, caller: Address, grantee: Address) -> u32 {
+        caller.require_auth();
+        if require_admin(&env, &caller).is_err() {
+            return 0;
+        }
+        if is_owner(&env, &grantee) {
+            // Owner's admin role is never revoked.
+        }
+        let mut revoked = 0_u32;
+        for role in [Role::Admin, Role::Issuer, Role::Compliance, Role::Operator, Role::Auditor] {
+            if role == Role::Admin && is_owner(&env, &grantee) {
+                continue;
+            }
+            if Self::has_role(env.clone(), grantee.clone(), role) {
+                env.storage()
+                    .persistent()
+                    .remove(&DataKey::Role(grantee.clone(), role));
+                revoked += 1;
+            }
+        }
+        revoked
+    }
+
     pub fn has_role(env: Env, account: Address, role: Role) -> bool {
         if role == Role::Admin && is_owner(&env, &account) {
             return true;
