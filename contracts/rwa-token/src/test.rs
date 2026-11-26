@@ -225,3 +225,13 @@ fn transferir_con_fee_deducts_fee() {
     assert_eq!(fixture.client.balance(&to), 80);
     assert_eq!(fixture.client.balance(&fixture.admin), 20);
 }
+
+
+#[test]
+fn mintear_recompensa_grants_decreasing_rewards() {
+    let fixture = setup();
+    let user = Address::generate(&fixture.env);
+    assert_eq!(fixture.client.mintear_recompensa(&fixture.admin, &user), 20);
+    assert_eq!(fixture.client.mintear_recompensa(&fixture.admin, &user), 10);
+    assert_eq!(fixture.client.balance(&user), 30);
+}

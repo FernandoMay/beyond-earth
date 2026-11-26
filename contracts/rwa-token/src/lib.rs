@@ -37,6 +37,7 @@ pub enum DataKey {
     RequiredTier,
     Jurisdiction,
     PurchaseCount(Address),
+    RewardMintCount(Address),
 }
 
 #[contracterror]
@@ -289,6 +290,36 @@ impl RwaToken {
             .set(&DataKey::PurchaseCount(from), &(count + 1));
 
         Ok(net)
+    }
+
+    /// Mints a reward to a user: 20 the first time, 10 afterwards.
+    pub fn mintear_recompensa(
+        env: Env,
+        caller: Address,
+        to: Address,
+    ) -> Result<i128, Error> {
+        caller.require_auth();
+        require_admin(&env, &caller)?;
+        let count: u32 = env
+            .storage()
+            .persistent()
+            .get(&DataKey::RewardMintCount(to.clone()))
+            .unwrap_or(0);
+        let reward: i128 = if count == 0 { 20 } else { 10 };
+
+        let balance = Self::balance(env.clone(), to.clone()) + reward;
+        env.storage()
+            .persistent()
+            .set(&DataKey::Balance(to.clone()), &balance);
+        TokenMinted { to: to.clone(), amount: reward }.publish(&env);
+        let supply = Self::total_supply(env.clone()) + reward;
+        env.storage().instance().set(&DataKey::TotalSupply, &supply);
+
+        env.storage()
+            .persistent()
+            .set(&DataKey::RewardMintCount(to), &(count + 1));
+
+        Ok(reward)
     }
 
     pub fn burn(env: Env, from: Address, amount: i128) -> Result<(), Error> {
