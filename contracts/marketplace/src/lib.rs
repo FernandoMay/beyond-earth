@@ -37,6 +37,7 @@ pub enum DataKey {
     Listing(String),
     PurchaseCount(Address),
     RewardBalance(Address),
+    SellerListings(Address),
 }
 
 #[contracterror]
@@ -155,6 +156,16 @@ impl Marketplace {
             status: ListingStatus::Open,
         };
         env.storage().persistent().set(&key, &listing);
+
+        let mut seller_listings: soroban_sdk::Vec<String> = env
+            .storage()
+            .persistent()
+            .get(&DataKey::SellerListings(seller.clone()))
+            .unwrap_or_else(|| soroban_sdk::Vec::new(&env));
+        seller_listings.push_back(id.clone());
+        env.storage()
+            .persistent()
+            .set(&DataKey::SellerListings(seller.clone()), &seller_listings);
 
         let token_client = token::Client::new(&env, &token);
         if token_client.allowance(&seller, &env.current_contract_address()) < units {
@@ -318,6 +329,37 @@ impl Marketplace {
             .persistent()
             .set(&DataKey::Listing(id), &listing);
         Ok(listing)
+    }
+
+    /// Cancels all open listings owned by a seller.
+    pub fn cancelar_todo(env: Env, seller: Address) -> u32 {
+        seller.require_auth();
+        let listings: soroban_sdk::Vec<String> = env
+            .storage()
+            .persistent()
+            .get(&DataKey::SellerListings(seller.clone()))
+            .unwrap_or_else(|| soroban_sdk::Vec::new(&env));
+        let mut cancelled = 0_u32;
+        for id in listings.iter() {
+            if let Some(mut listing) = env
+                .storage()
+                .persistent()
+                .get::<_, Listing>(&DataKey::Listing(id.clone()))
+            {
+                if listing.seller == seller && listing.status == ListingStatus::Open {
+                    listing.status = ListingStatus::Cancelled;
+                    ListingCancelled {
+                        listing_id: id.clone(),
+                    }
+                    .publish(&env);
+                    env.storage()
+                        .persistent()
+                        .set(&DataKey::Listing(id), &listing);
+                    cancelled += 1;
+                }
+            }
+        }
+        cancelled
     }
 
     pub fn get_listing(env: Env, id: String) -> Result<Listing, Error> {

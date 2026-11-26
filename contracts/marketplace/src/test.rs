@@ -245,3 +245,32 @@ fn applies_discount_to_open_listing() {
     let discounted = client.aplicar_descuento(&seller, &String::from_str(&env, "lst_disc"), &1000);
     assert_eq!(discounted.price, 450);
 }
+
+
+#[test]
+fn cancelar_todo_cancels_open_listings() {
+    let env = Env::default();
+    env.mock_all_auths();
+    let admin = Address::generate(&env);
+    let seller = Address::generate(&env);
+    let fee_recipient = Address::generate(&env);
+    let sac = env.register_stellar_asset_contract_v2(admin.clone());
+    let payment_address = sac.address();
+    let token_admin = token::StellarAssetClient::new(&env, &payment_address);
+
+    let asset_sac = env.register_stellar_asset_contract_v2(admin.clone());
+    let asset_token = asset_sac.address();
+    let asset_admin = token::StellarAssetClient::new(&env, &asset_token);
+    asset_admin.mint(&seller, &100);
+
+    let contract_id = env.register(Marketplace, ());
+    let client = MarketplaceClient::new(&env, &contract_id);
+    client.initialize(&admin, &payment_address, &fee_recipient, &100);
+    let asset_token_client = token::Client::new(&env, &asset_token);
+    asset_token_client.approve(&seller, &contract_id, &10, &1000);
+
+    client.create_listing(&seller, &String::from_str(&env, "lst_a"), &String::from_str(&env, "asset_a"), &asset_token, &5, &100, &EXPIRY);
+    client.create_listing(&seller, &String::from_str(&env, "lst_b"), &String::from_str(&env, "asset_b"), &asset_token, &5, &200, &EXPIRY);
+    let cancelled = client.cancelar_todo(&seller);
+    assert_eq!(cancelled, 2);
+}
