@@ -78,3 +78,32 @@ fn role_is_scoped_to_account() {
     assert!(client.has_role(&auditor, &Role::Auditor));
     assert!(!client.has_role(&owner, &Role::Auditor));
 }
+
+#[test]
+fn revokes_all_roles_from_an_account() {
+    let env = Env::default();
+    let (client, owner) = setup(&env);
+    let target = Address::generate(&env);
+
+    client.grant(&owner, &target, &Role::Issuer);
+    client.grant(&owner, &target, &Role::Operator);
+
+    let revoked = client.revocar_todo(&owner, &target);
+    assert_eq!(revoked, 2);
+    assert!(!client.has_role(&target, &Role::Issuer));
+    assert!(!client.has_role(&target, &Role::Operator));
+}
+
+#[test]
+fn non_admin_cannot_revoke_all_roles() {
+    let env = Env::default();
+    let (client, owner) = setup(&env);
+    let outsider = Address::generate(&env);
+    let target = Address::generate(&env);
+
+    client.grant(&owner, &target, &Role::Issuer);
+    let result = client.try_revocar_todo(&outsider, &target);
+
+    assert_eq!(result, Err(Ok(Error::Unauthorized)));
+    assert!(client.has_role(&target, &Role::Issuer));
+}
