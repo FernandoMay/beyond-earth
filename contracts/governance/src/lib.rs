@@ -422,6 +422,31 @@ impl Governance {
         executed
     }
 
+    /// Cancels multiple active proposals.
+    pub fn cancelar_masivo(env: Env, caller: Address, ids: soroban_sdk::Vec<String>) -> u32 {
+        caller.require_auth();
+        if require_admin(&env, &caller).is_err() {
+            return 0;
+        }
+        let mut cancelled = 0_u32;
+        for id in ids.iter() {
+            if let Some(mut proposal) = env
+                .storage()
+                .persistent()
+                .get::<_, Proposal>(&DataKey::Proposal(id.clone()))
+            {
+                if proposal.status == ProposalStatus::Active || proposal.status == ProposalStatus::Passed {
+                    proposal.status = ProposalStatus::Cancelled;
+                    env.storage()
+                        .persistent()
+                        .set(&DataKey::Proposal(id), &proposal);
+                    cancelled += 1;
+                }
+            }
+        }
+        cancelled
+    }
+
     pub fn get_proposal(env: Env, id: String) -> Result<Proposal, Error> {
         get_proposal_or_error(&env, &id)
     }
