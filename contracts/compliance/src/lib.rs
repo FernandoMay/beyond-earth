@@ -206,6 +206,36 @@ impl Compliance {
         Ok(record)
     }
 
+    /// Renews an approved investor's expiry date.
+    pub fn renovar_inversor(
+        env: Env,
+        officer: Address,
+        investor: Address,
+        expires_at: u64,
+    ) -> Result<InvestorRecord, Error> {
+        officer.require_auth();
+        require_officer(&env, &officer)?;
+        let mut record = get_investor_or_error(&env, &investor)?;
+        if record.status != InvestorStatus::Approved {
+            return Err(Error::InvalidTransition);
+        }
+        if expires_at <= env.ledger().timestamp() {
+            return Err(Error::InvalidExpiry);
+        }
+        record.expires_at = expires_at;
+        record.updated_at = env.ledger().timestamp();
+        InvestorUpdated {
+            investor: investor.clone(),
+            tier: record.tier,
+            approved: true,
+        }
+        .publish(&env);
+        env.storage()
+            .persistent()
+            .set(&DataKey::Investor(investor), &record);
+        Ok(record)
+    }
+
     pub fn get_investor(env: Env, investor: Address) -> Result<InvestorRecord, Error> {
         get_investor_or_error(&env, &investor)
     }

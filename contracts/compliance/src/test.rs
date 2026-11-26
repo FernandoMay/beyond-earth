@@ -177,3 +177,16 @@ fn reactivates_a_suspended_investor() {
         .reactivar_inversor(&fixture.officer, &investor, &(NOW + 172_800));
     assert_eq!(record.status, InvestorStatus::Approved);
 }
+
+
+#[test]
+fn renews_an_approved_investor() {
+    let env = Env::default();
+    let fixture = setup(&env);
+    let investor = Address::generate(&env);
+    approve(&env, &fixture, &investor);
+    let renewed = fixture
+        .client
+        .renovar_inversor(&fixture.officer, &investor, &(NOW + 172_800));
+    assert_eq!(renewed.expires_at, NOW + 172_800);
+}
