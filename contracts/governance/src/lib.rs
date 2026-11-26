@@ -40,6 +40,7 @@ pub enum DataKey {
     MemberCount,
     Proposal(String),
     Vote(String, Address),
+    AllProposals,
 }
 
 #[contracterror]
@@ -196,6 +197,15 @@ impl Governance {
             executed_at: 0,
         };
         env.storage().persistent().set(&key, &proposal);
+
+        let mut all: soroban_sdk::Vec<String> = env
+            .storage()
+            .instance()
+            .get(&DataKey::AllProposals)
+            .unwrap_or_else(|| soroban_sdk::Vec::new(&env));
+        all.push_back(id.clone());
+        env.storage().instance().set(&DataKey::AllProposals, &all);
+
         Ok(proposal)
     }
 
@@ -384,6 +394,36 @@ impl Governance {
                 .set(&DataKey::Proposal(id), &proposal);
         }
         Ok(proposal)
+    }
+
+    /// Executes all passed proposals whose timelock has expired.
+    pub fn ejecutar_todo(env: Env, caller: Address) -> u32 {
+        caller.require_auth();
+        require_admin(&env, &caller).unwrap();
+        let proposals: soroban_sdk::Vec<String> = env
+            .storage()
+            .instance()
+            .get(&DataKey::AllProposals)
+            .unwrap_or_else(|| soroban_sdk::Vec::new(&env));
+        let now = env.ledger().timestamp();
+        let mut executed = 0_u32;
+        for id in proposals.iter() {
+            if let Some(mut proposal) = env
+                .storage()
+                .persistent()
+                .get::<_, Proposal>(&DataKey::Proposal(id.clone()))
+            {
+                if proposal.status == ProposalStatus::Passed && now >= proposal.executable_at {
+                    proposal.status = ProposalStatus::Executed;
+                    proposal.executed_at = now;
+                    env.storage()
+                        .persistent()
+                        .set(&DataKey::Proposal(id), &proposal);
+                    executed += 1;
+                }
+            }
+        }
+        executed
     }
 
     pub fn get_proposal(env: Env, id: String) -> Result<Proposal, Error> {

@@ -570,6 +570,22 @@
                       "key": {
                         "vec": [
                           {
+                            "symbol": "AllProposals"
+                          }
+                        ]
+                      },
+                      "val": {
+                        "vec": [
+                          {
+                            "string": "prop_001"
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "key": {
+                        "vec": [
+                          {
                             "symbol": "MemberCount"
                           }
                         ]
