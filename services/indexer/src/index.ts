@@ -156,3 +156,5 @@ export class InMemoryIndexerStore implements IndexerStore {
     this.processed.add(eventId);
   }
 }
+
+export { FileIndexerStore } from './file-store';
