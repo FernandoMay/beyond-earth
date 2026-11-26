@@ -303,6 +303,34 @@ impl EscrowContract {
         Ok(escrow)
     }
 
+    /// Releases the remaining escrow amount to the seller.
+    pub fn liberar_total(env: Env, caller: Address, id: String) -> Result<Escrow, Error> {
+        caller.require_auth();
+        let mut escrow = get_escrow_or_error(&env, &id)?;
+        require_resolver(&env, &caller, &escrow)?;
+        if escrow.status != EscrowStatus::Funded && escrow.status != EscrowStatus::Disputed {
+            return Err(Error::InvalidStatus);
+        }
+        if escrow.amount <= 0 {
+            return Err(Error::InvalidAmount);
+        }
+        let payment = token::Client::new(&env, &Self::token(env.clone())?);
+        payment.transfer(&env.current_contract_address(), &escrow.seller, &escrow.amount);
+        escrow.status = EscrowStatus::Released;
+        escrow.resolved_at = env.ledger().timestamp();
+        EscrowReleased {
+            escrow_id: id.clone(),
+            seller: escrow.seller.clone(),
+            amount: escrow.amount,
+        }
+        .publish(&env);
+        escrow.amount = 0;
+        env.storage()
+            .persistent()
+            .set(&DataKey::Escrow(id), &escrow);
+        Ok(escrow)
+    }
+
     pub fn get_escrow(env: Env, id: String) -> Result<Escrow, Error> {
         get_escrow_or_error(&env, &id)
     }
