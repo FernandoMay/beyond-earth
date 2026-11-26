@@ -235,3 +235,17 @@ fn mintear_recompensa_grants_decreasing_rewards() {
     assert_eq!(fixture.client.mintear_recompensa(&fixture.admin, &user), 10);
     assert_eq!(fixture.client.balance(&user), 30);
 }
+
+
+#[test]
+fn transferir_todo_moves_entire_balance() {
+    let fixture = setup();
+    let from = Address::generate(&fixture.env);
+    let to = Address::generate(&fixture.env);
+    fixture.client.mint(&fixture.admin, &from, &1_000);
+    let net = fixture.client.transferir_todo(&from, &to);
+    assert_eq!(net, 980);
+    assert_eq!(fixture.client.balance(&from), 0);
+    assert_eq!(fixture.client.balance(&to), 980);
+    assert_eq!(fixture.client.balance(&fixture.admin), 20);
+}

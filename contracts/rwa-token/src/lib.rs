@@ -322,6 +322,65 @@ impl RwaToken {
         Ok(reward)
     }
 
+    /// Transfers the entire balance of `from` to `to`, deducting a fee.
+    pub fn transferir_todo(
+        env: Env,
+        from: Address,
+        to: Address,
+    ) -> Result<i128, Error> {
+        from.require_auth();
+        let balance: i128 = env
+            .storage()
+            .persistent()
+            .get(&DataKey::Balance(from.clone()))
+            .unwrap_or(0);
+        if balance <= 0 {
+            return Err(Error::InvalidAmount);
+        }
+        let admin: Address = env
+            .storage()
+            .instance()
+            .get(&DataKey::Admin)
+            .ok_or(Error::NotInitialized)?;
+        let count: u32 = env
+            .storage()
+            .persistent()
+            .get(&DataKey::PurchaseCount(from.clone()))
+            .unwrap_or(0);
+        let fee: i128 = if count == 0 { 20 } else { 10 };
+        if balance <= fee {
+            return Err(Error::InvalidAmount);
+        }
+        let net = balance - fee;
+
+        let to_balance: i128 = env
+            .storage()
+            .persistent()
+            .get(&DataKey::Balance(to.clone()))
+            .unwrap_or(0);
+        let admin_balance: i128 = env
+            .storage()
+            .persistent()
+            .get(&DataKey::Balance(admin.clone()))
+            .unwrap_or(0);
+
+        env.storage()
+            .persistent()
+            .set(&DataKey::Balance(from.clone()), &0_i128);
+        env.storage()
+            .persistent()
+            .set(&DataKey::Balance(to.clone()), &(to_balance + net));
+        env.storage()
+            .persistent()
+            .set(&DataKey::Balance(admin.clone()), &(admin_balance + fee));
+
+        env.storage()
+            .persistent()
+            .set(&DataKey::PurchaseCount(from), &(count + 1));
+
+        Ok(net)
+    }
+
     pub fn burn(env: Env, from: Address, amount: i128) -> Result<(), Error> {
         from.require_auth();
         burn_internal(&env, &from, amount)
