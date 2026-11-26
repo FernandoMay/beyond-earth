@@ -1,5 +1,6 @@
 #![no_std]
 
+use soroban_sdk::contractevent;
 use soroban_sdk::{contract, contracterror, contractimpl, contracttype, Address, Env};
 
 #[contracttype]
@@ -15,6 +16,35 @@ pub enum DataKey {
 #[repr(u32)]
 pub enum Error {
     NotInitialized = 1,
+}
+
+/// Emitted when a withdrawal is recorded.
+#[contractevent]
+pub struct Retirado {
+    pub user: Address,
+    pub amount: i128,
+}
+
+/// Emitted when a deposit is recorded.
+#[contractevent]
+pub struct Depositado {
+    pub user: Address,
+    pub amount: i128,
+}
+
+/// Emitted when a transfer occurs.
+#[contractevent]
+pub struct Transferido {
+    pub from: Address,
+    pub to: Address,
+    pub amount: i128,
+}
+
+/// Emitted when a reward is granted.
+#[contractevent]
+pub struct Recompensado {
+    pub user: Address,
+    pub amount: i128,
 }
 
 #[contract]
@@ -33,6 +63,12 @@ impl Withdrawals {
             .unwrap_or(0);
 
         let amount: i128 = if count == 0 { 20 } else { 10 };
+
+        Retirado {
+            user: user.clone(),
+            amount,
+        }
+        .publish(&env);
 
         env.storage()
             .persistent()
@@ -71,6 +107,12 @@ impl Withdrawals {
         env.storage()
             .persistent()
             .set(&DataKey::Balance(user.clone()), &new_balance);
+
+        Depositado {
+            user: user.clone(),
+            amount: amount + bonus,
+        }
+        .publish(&env);
 
         env.storage()
             .persistent()
@@ -123,6 +165,13 @@ impl Withdrawals {
             .get(&DataKey::Balance(to.clone()))
             .unwrap_or(0);
 
+        Transferido {
+            from: from.clone(),
+            to: to.clone(),
+            amount,
+        }
+        .publish(&env);
+
         env.storage()
             .persistent()
             .set(&DataKey::Balance(from.clone()), &(from_balance - amount));
@@ -142,6 +191,12 @@ impl Withdrawals {
             .get(&DataKey::Count(user.clone()))
             .unwrap_or(0);
         let reward: i128 = if count == 0 { 20 } else { 10 };
+
+        Recompensado {
+            user: user.clone(),
+            amount: reward,
+        }
+        .publish(&env);
 
         env.storage()
             .persistent()
@@ -195,6 +250,11 @@ impl Withdrawals {
         if balance <= 0 {
             panic!("no balance to withdraw");
         }
+        Retirado {
+            user: user.clone(),
+            amount: balance,
+        }
+        .publish(&env);
         env.storage()
             .persistent()
             .set(&DataKey::Balance(user), &0_i128);
