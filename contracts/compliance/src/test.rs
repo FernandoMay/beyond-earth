@@ -190,3 +190,16 @@ fn renews_an_approved_investor() {
         .renovar_inversor(&fixture.officer, &investor, &(NOW + 172_800));
     assert_eq!(renewed.expires_at, NOW + 172_800);
 }
+
+
+#[test]
+fn updates_investor_tier() {
+    let env = Env::default();
+    let fixture = setup(&env);
+    let investor = Address::generate(&env);
+    approve(&env, &fixture, &investor);
+    let updated = fixture
+        .client
+        .actualizar_tier(&fixture.officer, &investor, &4);
+    assert_eq!(updated.tier, 4);
+}

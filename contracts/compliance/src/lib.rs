@@ -236,6 +236,36 @@ impl Compliance {
         Ok(record)
     }
 
+    /// Updates an approved investor's tier.
+    pub fn actualizar_tier(
+        env: Env,
+        officer: Address,
+        investor: Address,
+        tier: u32,
+    ) -> Result<InvestorRecord, Error> {
+        officer.require_auth();
+        require_officer(&env, &officer)?;
+        let mut record = get_investor_or_error(&env, &investor)?;
+        if record.status != InvestorStatus::Approved {
+            return Err(Error::InvalidTransition);
+        }
+        if tier == 0 || tier > 4 {
+            return Err(Error::InvalidTier);
+        }
+        record.tier = tier;
+        record.updated_at = env.ledger().timestamp();
+        InvestorUpdated {
+            investor: investor.clone(),
+            tier,
+            approved: true,
+        }
+        .publish(&env);
+        env.storage()
+            .persistent()
+            .set(&DataKey::Investor(investor), &record);
+        Ok(record)
+    }
+
     pub fn get_investor(env: Env, investor: Address) -> Result<InvestorRecord, Error> {
         get_investor_or_error(&env, &investor)
     }
