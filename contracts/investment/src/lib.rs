@@ -365,11 +365,7 @@ impl Investment {
                 continue;
             }
             let key = DataKey::Position(id.clone(), investor.clone());
-            let mut position: Position = match env
-                .storage()
-                .persistent()
-                .get(&key)
-            {
+            let mut position: Position = match env.storage().persistent().get(&key) {
                 Some(p) => p,
                 None => continue,
             };

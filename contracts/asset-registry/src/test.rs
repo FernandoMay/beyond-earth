@@ -171,7 +171,6 @@ fn only_admin_can_verify_or_change_status() {
     );
 }
 
-
 #[test]
 fn reactivates_a_suspended_asset() {
     let env = Env::default();
@@ -180,31 +179,30 @@ fn reactivates_a_suspended_asset() {
     fixture
         .client
         .verify_asset(&fixture.admin, &record.id, &hash(&env, 7));
-    fixture
-        .client
-        .mark_tokenized(&fixture.admin, &record.id);
+    fixture.client.mark_tokenized(&fixture.admin, &record.id);
     fixture
         .client
         .set_status(&fixture.admin, &record.id, &AssetStatus::Active);
     fixture
         .client
         .set_status(&fixture.admin, &record.id, &AssetStatus::Suspended);
-    let reactivated = fixture
-        .client
-        .reactivar_activo(&fixture.admin, &record.id);
+    let reactivated = fixture.client.reactivar_activo(&fixture.admin, &record.id);
     assert_eq!(reactivated.status, AssetStatus::Active);
     assert_eq!(fixture.client.reactivations(), 1);
 }
-
 
 #[test]
 fn suspends_an_active_asset() {
     let env = Env::default();
     let fixture = setup(&env);
     let record = register(&env, &fixture);
-    fixture.client.verify_asset(&fixture.admin, &record.id, &hash(&env, 7));
+    fixture
+        .client
+        .verify_asset(&fixture.admin, &record.id, &hash(&env, 7));
     fixture.client.mark_tokenized(&fixture.admin, &record.id);
-    fixture.client.set_status(&fixture.admin, &record.id, &AssetStatus::Active);
+    fixture
+        .client
+        .set_status(&fixture.admin, &record.id, &AssetStatus::Active);
     let suspended = fixture.client.suspender_activo(&fixture.admin, &record.id);
     assert_eq!(suspended.status, AssetStatus::Suspended);
 }

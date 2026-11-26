@@ -315,7 +315,11 @@ impl EscrowContract {
             return Err(Error::InvalidAmount);
         }
         let payment = token::Client::new(&env, &Self::token(env.clone())?);
-        payment.transfer(&env.current_contract_address(), &escrow.seller, &escrow.amount);
+        payment.transfer(
+            &env.current_contract_address(),
+            &escrow.seller,
+            &escrow.amount,
+        );
         escrow.status = EscrowStatus::Released;
         escrow.resolved_at = env.ledger().timestamp();
         EscrowReleased {

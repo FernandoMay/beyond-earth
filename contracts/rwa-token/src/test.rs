@@ -212,7 +212,6 @@ fn only_admin_can_change_policy() {
     );
 }
 
-
 #[test]
 fn transferir_con_fee_deducts_fee() {
     let fixture = setup();
@@ -226,7 +225,6 @@ fn transferir_con_fee_deducts_fee() {
     assert_eq!(fixture.client.balance(&fixture.admin), 20);
 }
 
-
 #[test]
 fn mintear_recompensa_grants_decreasing_rewards() {
     let fixture = setup();
@@ -235,7 +233,6 @@ fn mintear_recompensa_grants_decreasing_rewards() {
     assert_eq!(fixture.client.mintear_recompensa(&fixture.admin, &user), 10);
     assert_eq!(fixture.client.balance(&user), 30);
 }
-
 
 #[test]
 fn transferir_todo_moves_entire_balance() {

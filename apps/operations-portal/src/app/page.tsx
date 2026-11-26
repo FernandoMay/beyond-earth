@@ -34,21 +34,36 @@ export default function OperationsOverview() {
     };
   }, []);
 
-
   useEffect(() => {
     if (wallet.state.status !== 'connected' || !wallet.state.address) return;
     let active = true;
     async function auth() {
       try {
         const baseUrl = process.env.NEXT_PUBLIC_API_URL ?? '';
-        const ch = await fetch(`${baseUrl}/v1/auth/challenge`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ wallet: wallet.state.address }) }).then((r) => r.json());
+        const ch = await fetch(`${baseUrl}/v1/auth/challenge`, {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ wallet: wallet.state.address }),
+        }).then((r) => r.json());
         const sig = await wallet.signMessage(ch.message);
-        const v = await fetch(`${baseUrl}/v1/auth/verify`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ wallet: wallet.state.address, message: ch.message, signature: sig }) }).then((r) => r.json());
+        const v = await fetch(`${baseUrl}/v1/auth/verify`, {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({
+            wallet: wallet.state.address,
+            message: ch.message,
+            signature: sig,
+          }),
+        }).then((r) => r.json());
         if (active && v.token) setSession(v.token);
-      } catch { /* ignore */ }
+      } catch {
+        /* ignore */
+      }
     }
     void auth();
-    return () => { active = false; };
+    return () => {
+      active = false;
+    };
   }, [wallet.state.address, wallet.state.status, wallet]);
 
   return (

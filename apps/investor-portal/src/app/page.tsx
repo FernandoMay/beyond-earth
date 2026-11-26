@@ -34,7 +34,6 @@ export default function InvestorOverview() {
     };
   }, []);
 
-
   useEffect(() => {
     if (wallet.state.status !== 'connected' || !wallet.state.address) return;
     let active = true;
@@ -50,7 +49,11 @@ export default function InvestorOverview() {
         const v = await fetch(`${baseUrl}/v1/auth/verify`, {
           method: 'POST',
           headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({ wallet: wallet.state.address, message: ch.message, signature: sig }),
+          body: JSON.stringify({
+            wallet: wallet.state.address,
+            message: ch.message,
+            signature: sig,
+          }),
         }).then((r) => r.json());
         if (active && v.token) setSession(v.token);
       } catch {
@@ -70,8 +73,12 @@ export default function InvestorOverview() {
       {error && <p style={{ color: 'crimson' }}>{error}</p>}
       {!loading && !error && investor && (
         <div>
-          <p><strong>Name:</strong> {investor.name ?? '—'}</p>
-          <p><strong>Wallet:</strong> {investor.wallet ?? '—'}</p>
+          <p>
+            <strong>Name:</strong> {investor.name ?? '—'}
+          </p>
+          <p>
+            <strong>Wallet:</strong> {investor.wallet ?? '—'}
+          </p>
           <p style={{ marginTop: '1rem', color: '#94a3b8' }}>
             Connect a wallet and authenticate to view positions and distributions.
           </p>

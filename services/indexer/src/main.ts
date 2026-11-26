@@ -8,12 +8,21 @@ const POLL_MS = Number(process.env.STELLAR_INDEXER_POLL_MS ?? '5000');
 
 async function main() {
   const store = new InMemoryIndexerStore();
-  const indexer = new Indexer({ store, handler: async (event) => { console.log('processed', event.id); } });
+  const indexer = new Indexer({
+    store,
+    handler: async (event) => {
+      console.log('processed', event.id);
+    },
+  });
   let cursor = START_LEDGER;
   // eslint-disable-next-line no-constant-condition
   while (true) {
     try {
-      const events = await fetchSorobanEvents({ rpcUrl: RPC_URL, contractIds: CONTRACT_IDS, startLedger: cursor });
+      const events = await fetchSorobanEvents({
+        rpcUrl: RPC_URL,
+        contractIds: CONTRACT_IDS,
+        startLedger: cursor,
+      });
       if (events.length) {
         const mapped = events.map((e) => ({
           id: e.id,

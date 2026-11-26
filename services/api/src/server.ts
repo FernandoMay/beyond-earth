@@ -79,7 +79,8 @@ export async function buildServer(options: ServerOptions): Promise<FastifyInstan
       );
     }
     const auth = request.headers.authorization;
-    const token = typeof auth === 'string' && auth.startsWith('Bearer ') ? auth.slice(7) : undefined;
+    const token =
+      typeof auth === 'string' && auth.startsWith('Bearer ') ? auth.slice(7) : undefined;
     if (token) {
       const session = sessions.get(token);
       if (session && session.expires >= Date.now()) {
@@ -394,7 +395,6 @@ export async function buildServer(options: ServerOptions): Promise<FastifyInstan
     const created = await options.repository.createOffering(offering as never);
     return reply.code(201).send({ mode: demoMode ? 'demo' : 'live', offering: created });
   });
-
 
   app.get('/v1/reconciliation', async () => {
     const assets = await options.repository.listAssets({ limit: 1000, offset: 0 });

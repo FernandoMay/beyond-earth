@@ -258,7 +258,7 @@ impl Marketplace {
     }
 
     /// Registers a purchase and grants a reward: 20 for the first, 10 afterwards.
-    pub fn registrar_compra(env: Env, buyer: Address, listing_id: String) -> u32 {
+    pub fn registrar_compra(env: Env, buyer: Address, _listing_id: String) -> u32 {
         buyer.require_auth();
         let count: u32 = env
             .storage()

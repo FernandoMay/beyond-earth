@@ -311,11 +311,7 @@ impl Governance {
     }
 
     /// Reopens a rejected proposal with a fresh voting window.
-    pub fn reabrir_propuesta(
-        env: Env,
-        caller: Address,
-        id: String,
-    ) -> Result<Proposal, Error> {
+    pub fn reabrir_propuesta(env: Env, caller: Address, id: String) -> Result<Proposal, Error> {
         caller.require_auth();
         require_admin(&env, &caller)?;
         let mut proposal = get_proposal_or_error(&env, &id)?;

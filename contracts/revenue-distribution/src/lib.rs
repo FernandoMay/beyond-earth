@@ -155,9 +155,10 @@ impl RevenueDistribution {
             .get(&DataKey::IssuerDistributions(distribution.issuer.clone()))
             .unwrap_or_else(|| soroban_sdk::Vec::new(&env));
         issuer_dists.push_back(id.clone());
-        env.storage()
-            .persistent()
-            .set(&DataKey::IssuerDistributions(distribution.issuer.clone()), &issuer_dists);
+        env.storage().persistent().set(
+            &DataKey::IssuerDistributions(distribution.issuer.clone()),
+            &issuer_dists,
+        );
 
         DistributionPublished {
             distribution_id: id.clone(),
@@ -378,7 +379,11 @@ impl RevenueDistribution {
                 let remaining = distribution.total_amount - distribution.claimed_amount;
                 if remaining > 0 {
                     let payment = token::Client::new(&env, &Self::token(env.clone()).unwrap());
-                    payment.transfer(&env.current_contract_address(), &distribution.issuer, &remaining);
+                    payment.transfer(
+                        &env.current_contract_address(),
+                        &distribution.issuer,
+                        &remaining,
+                    );
                 }
                 distribution.status = DistributionStatus::Closed;
                 env.storage()

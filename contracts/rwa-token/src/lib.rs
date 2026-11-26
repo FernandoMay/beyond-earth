@@ -245,6 +245,12 @@ impl RwaToken {
             .instance()
             .get(&DataKey::Admin)
             .ok_or(Error::NotInitialized)?;
+        if RwaToken::is_paused(env.clone()) {
+            return Err(Error::Paused);
+        }
+        check_compliance(&env, &from)?;
+        check_compliance(&env, &to)?;
+        check_compliance(&env, &admin)?;
         let balance: i128 = env
             .storage()
             .persistent()
@@ -285,6 +291,13 @@ impl RwaToken {
             .persistent()
             .set(&DataKey::Balance(admin.clone()), &(admin_balance + fee));
 
+        TokenTransferred {
+            from: from.clone(),
+            to: to.clone(),
+            amount: net,
+        }
+        .publish(&env);
+
         env.storage()
             .persistent()
             .set(&DataKey::PurchaseCount(from), &(count + 1));
@@ -293,13 +306,10 @@ impl RwaToken {
     }
 
     /// Mints a reward to a user: 20 the first time, 10 afterwards.
-    pub fn mintear_recompensa(
-        env: Env,
-        caller: Address,
-        to: Address,
-    ) -> Result<i128, Error> {
+    pub fn mintear_recompensa(env: Env, caller: Address, to: Address) -> Result<i128, Error> {
         caller.require_auth();
         require_admin(&env, &caller)?;
+        check_compliance(&env, &to)?;
         let count: u32 = env
             .storage()
             .persistent()
@@ -311,7 +321,11 @@ impl RwaToken {
         env.storage()
             .persistent()
             .set(&DataKey::Balance(to.clone()), &balance);
-        TokenMinted { to: to.clone(), amount: reward }.publish(&env);
+        TokenMinted {
+            to: to.clone(),
+            amount: reward,
+        }
+        .publish(&env);
         let supply = Self::total_supply(env.clone()) + reward;
         env.storage().instance().set(&DataKey::TotalSupply, &supply);
 
@@ -323,12 +337,19 @@ impl RwaToken {
     }
 
     /// Transfers the entire balance of `from` to `to`, deducting a fee.
-    pub fn transferir_todo(
-        env: Env,
-        from: Address,
-        to: Address,
-    ) -> Result<i128, Error> {
+    pub fn transferir_todo(env: Env, from: Address, to: Address) -> Result<i128, Error> {
         from.require_auth();
+        if RwaToken::is_paused(env.clone()) {
+            return Err(Error::Paused);
+        }
+        check_compliance(&env, &from)?;
+        check_compliance(&env, &to)?;
+        let admin: Address = env
+            .storage()
+            .instance()
+            .get(&DataKey::Admin)
+            .ok_or(Error::NotInitialized)?;
+        check_compliance(&env, &admin)?;
         let balance: i128 = env
             .storage()
             .persistent()
@@ -364,6 +385,21 @@ impl RwaToken {
             .get(&DataKey::Balance(admin.clone()))
             .unwrap_or(0);
 
+        TokenTransferred {
+            from: from.clone(),
+            to: to.clone(),
+            amount: net,
+        }
+        .publish(&env);
+        if fee > 0 {
+            TokenTransferred {
+                from: from.clone(),
+                to: admin.clone(),
+                amount: fee,
+            }
+            .publish(&env);
+        }
+
         env.storage()
             .persistent()
             .set(&DataKey::Balance(from.clone()), &0_i128);
@@ -373,6 +409,13 @@ impl RwaToken {
         env.storage()
             .persistent()
             .set(&DataKey::Balance(admin.clone()), &(admin_balance + fee));
+
+        TokenTransferred {
+            from: from.clone(),
+            to: to.clone(),
+            amount: net,
+        }
+        .publish(&env);
 
         env.storage()
             .persistent()

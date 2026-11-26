@@ -85,11 +85,7 @@ impl Withdrawals {
             .persistent()
             .set(&DataKey::BonusTotal, &(bonus_total + bonus));
 
-        let total: i128 = env
-            .storage()
-            .persistent()
-            .get(&DataKey::Total)
-            .unwrap_or(0);
+        let total: i128 = env.storage().persistent().get(&DataKey::Total).unwrap_or(0);
         env.storage()
             .persistent()
             .set(&DataKey::Total, &(total + amount + bonus));
@@ -184,9 +180,7 @@ impl Withdrawals {
         env.storage()
             .persistent()
             .set(&DataKey::Balance(user.clone()), &new_balance);
-        env.storage()
-            .persistent()
-            .set(&DataKey::BonusTotal, &0i128);
+        env.storage().persistent().set(&DataKey::BonusTotal, &0i128);
         new_balance
     }
 

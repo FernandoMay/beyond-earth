@@ -200,7 +200,6 @@ fn rejects_invalid_fees_and_listing_parameters() {
     );
 }
 
-
 #[test]
 fn registrar_compra_grants_rewards() {
     let env = Env::default();
@@ -208,14 +207,24 @@ fn registrar_compra_grants_rewards() {
     let admin = Address::generate(&env);
     let contract_id = env.register(Marketplace, ());
     let client = MarketplaceClient::new(&env, &contract_id);
-    client.initialize(&admin, &Address::generate(&env), &Address::generate(&env), &100);
+    client.initialize(
+        &admin,
+        &Address::generate(&env),
+        &Address::generate(&env),
+        &100,
+    );
     let buyer = Address::generate(&env);
-    assert_eq!(client.registrar_compra(&buyer, &String::from_str(&env, "lst_001")), 1);
-    assert_eq!(client.registrar_compra(&buyer, &String::from_str(&env, "lst_002")), 2);
+    assert_eq!(
+        client.registrar_compra(&buyer, &String::from_str(&env, "lst_001")),
+        1
+    );
+    assert_eq!(
+        client.registrar_compra(&buyer, &String::from_str(&env, "lst_002")),
+        2
+    );
     assert_eq!(client.compras_de(&buyer), 2);
     assert_eq!(client.recompensa_de(&buyer), 30);
 }
-
 
 #[test]
 fn applies_discount_to_open_listing() {
@@ -241,11 +250,18 @@ fn applies_discount_to_open_listing() {
     let asset_token_client = token::Client::new(&env, &asset_token);
     asset_token_client.approve(&seller, &contract_id, &10, &1000);
     client.initialize(&admin, &payment_address, &fee_recipient, &100);
-    let listing = client.create_listing(&seller, &String::from_str(&env, "lst_disc"), &String::from_str(&env, "asset_001"), &asset_token, &10, &500, &EXPIRY);
+    let _listing = client.create_listing(
+        &seller,
+        &String::from_str(&env, "lst_disc"),
+        &String::from_str(&env, "asset_001"),
+        &asset_token,
+        &10,
+        &500,
+        &EXPIRY,
+    );
     let discounted = client.aplicar_descuento(&seller, &String::from_str(&env, "lst_disc"), &1000);
     assert_eq!(discounted.price, 450);
 }
-
 
 #[test]
 fn registrar_venta_grants_rewards() {
@@ -255,7 +271,12 @@ fn registrar_venta_grants_rewards() {
     let contract_id = env.register(Marketplace, ());
     let client = MarketplaceClient::new(&env, &contract_id);
     let admin = Address::generate(&env);
-    client.initialize(&admin, &Address::generate(&env), &Address::generate(&env), &100);
+    client.initialize(
+        &admin,
+        &Address::generate(&env),
+        &Address::generate(&env),
+        &100,
+    );
     assert_eq!(client.registrar_venta(&seller), 1);
     assert_eq!(client.registrar_venta(&seller), 2);
     assert_eq!(client.compras_de(&seller), 2);
@@ -271,7 +292,7 @@ fn cancelar_todo_cancels_open_listings() {
     let fee_recipient = Address::generate(&env);
     let sac = env.register_stellar_asset_contract_v2(admin.clone());
     let payment_address = sac.address();
-    let token_admin = token::StellarAssetClient::new(&env, &payment_address);
+    let _token_admin = token::StellarAssetClient::new(&env, &payment_address);
 
     let asset_sac = env.register_stellar_asset_contract_v2(admin.clone());
     let asset_token = asset_sac.address();
@@ -284,8 +305,24 @@ fn cancelar_todo_cancels_open_listings() {
     let asset_token_client = token::Client::new(&env, &asset_token);
     asset_token_client.approve(&seller, &contract_id, &10, &1000);
 
-    client.create_listing(&seller, &String::from_str(&env, "lst_a"), &String::from_str(&env, "asset_a"), &asset_token, &5, &100, &EXPIRY);
-    client.create_listing(&seller, &String::from_str(&env, "lst_b"), &String::from_str(&env, "asset_b"), &asset_token, &5, &200, &EXPIRY);
+    client.create_listing(
+        &seller,
+        &String::from_str(&env, "lst_a"),
+        &String::from_str(&env, "asset_a"),
+        &asset_token,
+        &5,
+        &100,
+        &EXPIRY,
+    );
+    client.create_listing(
+        &seller,
+        &String::from_str(&env, "lst_b"),
+        &String::from_str(&env, "asset_b"),
+        &asset_token,
+        &5,
+        &200,
+        &EXPIRY,
+    );
     let cancelled = client.cancelar_todo(&seller);
     assert_eq!(cancelled, 2);
 }

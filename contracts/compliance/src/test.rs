@@ -164,7 +164,6 @@ fn unknown_investors_are_not_eligible() {
         .is_eligible(&unknown, &1, &String::from_str(&env, "US-DE")));
 }
 
-
 #[test]
 fn reactivates_a_suspended_investor() {
     let env = Env::default();
@@ -178,7 +177,6 @@ fn reactivates_a_suspended_investor() {
     assert_eq!(record.status, InvestorStatus::Approved);
 }
 
-
 #[test]
 fn renews_an_approved_investor() {
     let env = Env::default();
@@ -190,7 +188,6 @@ fn renews_an_approved_investor() {
         .renovar_inversor(&fixture.officer, &investor, &(NOW + 172_800));
     assert_eq!(renewed.expires_at, NOW + 172_800);
 }
-
 
 #[test]
 fn updates_investor_tier() {

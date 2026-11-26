@@ -160,17 +160,29 @@ impl AccessControl {
     pub fn revocar_todo(env: Env, caller: Address, grantee: Address) -> u32 {
         caller.require_auth();
         if require_admin(&env, &caller).is_err() {
-            return 0;
+            panic!("unauthorized");
         }
         if is_owner(&env, &grantee) {
             // Owner's admin role is never revoked.
         }
         let mut revoked = 0_u32;
-        for role in [Role::Admin, Role::Issuer, Role::Compliance, Role::Operator, Role::Auditor] {
+        for role in [
+            Role::Admin,
+            Role::Issuer,
+            Role::Compliance,
+            Role::Operator,
+            Role::Auditor,
+        ] {
             if role == Role::Admin && is_owner(&env, &grantee) {
                 continue;
             }
             if Self::has_role(env.clone(), grantee.clone(), role) {
+                RoleRevoked {
+                    caller: caller.clone(),
+                    grantee: grantee.clone(),
+                    role: role as u32,
+                }
+                .publish(&env);
                 env.storage()
                     .persistent()
                     .remove(&DataKey::Role(grantee.clone(), role));

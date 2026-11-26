@@ -79,7 +79,6 @@ fn role_is_scoped_to_account() {
     assert!(!client.has_role(&owner, &Role::Auditor));
 }
 
-
 #[test]
 fn transfers_a_role_between_accounts() {
     let env = Env::default();
@@ -94,7 +93,6 @@ fn transfers_a_role_between_accounts() {
     assert!(!client.has_role(&from, &Role::Operator));
     assert!(client.has_role(&to, &Role::Operator));
 }
-
 
 #[test]
 fn revokes_all_roles_from_account() {

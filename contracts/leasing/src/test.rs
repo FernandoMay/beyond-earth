@@ -203,11 +203,18 @@ fn extends_lease_due_date() {
     let contract_id = env.register(Leasing, ());
     let client = LeasingClient::new(&env, &contract_id);
     client.initialize(&admin, &token);
-    client.create_lease(&lessor, &String::from_str(&env, "lease_001"), &String::from_str(&env, "asset_001"), &lessee, &100, &3600, &1_700_000_000);
+    client.create_lease(
+        &lessor,
+        &String::from_str(&env, "lease_001"),
+        &String::from_str(&env, "asset_001"),
+        &lessee,
+        &100,
+        &3600,
+        &1_700_000_000,
+    );
     let extended = client.extender_lease(&lessor, &String::from_str(&env, "lease_001"), &2);
     assert_eq!(extended.next_due_at, 1_700_000_000 + 2 * 3600);
 }
-
 
 #[test]
 fn prepays_multiple_rent_periods() {
@@ -224,12 +231,19 @@ fn prepays_multiple_rent_periods() {
     let contract_id = env.register(Leasing, ());
     let client = LeasingClient::new(&env, &contract_id);
     client.initialize(&admin, &token);
-    client.create_lease(&lessor, &String::from_str(&env, "lease_001"), &String::from_str(&env, "asset_001"), &lessee, &100, &3600, &1_700_000_000);
+    client.create_lease(
+        &lessor,
+        &String::from_str(&env, "lease_001"),
+        &String::from_str(&env, "asset_001"),
+        &lessee,
+        &100,
+        &3600,
+        &1_700_000_000,
+    );
     let updated = client.pagar_renta_anticipada(&lessee, &String::from_str(&env, "lease_001"), &3);
     assert_eq!(updated.payments, 3);
     assert_eq!(updated.total_paid, 300);
 }
-
 
 #[test]
 fn closes_lease_early() {
@@ -244,7 +258,15 @@ fn closes_lease_early() {
     let contract_id = env.register(Leasing, ());
     let client = LeasingClient::new(&env, &contract_id);
     client.initialize(&admin, &token);
-    client.create_lease(&lessor, &String::from_str(&env, "lease_early"), &String::from_str(&env, "asset_001"), &lessee, &100, &3600, &1_700_000_000);
+    client.create_lease(
+        &lessor,
+        &String::from_str(&env, "lease_early"),
+        &String::from_str(&env, "asset_001"),
+        &lessee,
+        &100,
+        &3600,
+        &1_700_000_000,
+    );
     let closed = client.cerrar_anticipado(&lessor, &String::from_str(&env, "lease_early"));
     assert_eq!(closed.status, LeaseStatus::Closed);
 }
