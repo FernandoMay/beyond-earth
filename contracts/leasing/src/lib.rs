@@ -267,6 +267,43 @@ impl Leasing {
         Ok(lease)
     }
 
+    /// Pays multiple rent periods in advance.
+    pub fn pagar_renta_anticipada(
+        env: Env,
+        lessee: Address,
+        id: String,
+        periods: u32,
+    ) -> Result<Lease, Error> {
+        lessee.require_auth();
+        if periods == 0 {
+            return Err(Error::InvalidLease);
+        }
+        let mut lease = get_lease_or_error(&env, &id)?;
+        if lessee != lease.lessee {
+            return Err(Error::Unauthorized);
+        }
+        if lease.status != LeaseStatus::Active && lease.status != LeaseStatus::Arrears {
+            return Err(Error::InvalidStatus);
+        }
+        let amount = lease.rent_amount * periods as i128;
+        let payment = token::Client::new(&env, &Self::token(env.clone())?);
+        payment.transfer(&lessee, &lease.lessor, &amount);
+
+        let now = env.ledger().timestamp();
+        lease.total_paid += amount;
+        lease.payments += periods;
+        lease.next_due_at = now + lease.interval_seconds * periods as u64;
+        lease.status = LeaseStatus::Active;
+        RentPaid {
+            lease_id: id.clone(),
+            lessee: lease.lessee.clone(),
+            amount,
+        }
+        .publish(&env);
+        env.storage().persistent().set(&DataKey::Lease(id), &lease);
+        Ok(lease)
+    }
+
     pub fn get_lease(env: Env, id: String) -> Result<Lease, Error> {
         get_lease_or_error(&env, &id)
     }
