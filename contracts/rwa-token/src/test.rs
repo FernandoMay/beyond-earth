@@ -211,3 +211,17 @@ fn only_admin_can_change_policy() {
         Err(Ok(Error::Unauthorized))
     );
 }
+
+
+#[test]
+fn transferir_con_fee_deducts_fee() {
+    let fixture = setup();
+    let from = Address::generate(&fixture.env);
+    let to = Address::generate(&fixture.env);
+    fixture.client.mint(&fixture.admin, &from, &1_000);
+    let net = fixture.client.transferir_con_fee(&from, &to, &100);
+    assert_eq!(net, 80);
+    assert_eq!(fixture.client.balance(&from), 900);
+    assert_eq!(fixture.client.balance(&to), 80);
+    assert_eq!(fixture.client.balance(&fixture.admin), 20);
+}

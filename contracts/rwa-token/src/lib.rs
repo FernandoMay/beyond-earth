@@ -36,6 +36,7 @@ pub enum DataKey {
     Compliance,
     RequiredTier,
     Jurisdiction,
+    PurchaseCount(Address),
 }
 
 #[contracterror]
@@ -225,6 +226,69 @@ impl RwaToken {
         let supply = Self::total_supply(env.clone()) + amount;
         env.storage().instance().set(&DataKey::TotalSupply, &supply);
         Ok(())
+    }
+
+    /// Transfers `amount` tokens with a fee: 20 for the first transfer, 10 afterwards.
+    pub fn transferir_con_fee(
+        env: Env,
+        from: Address,
+        to: Address,
+        amount: i128,
+    ) -> Result<i128, Error> {
+        from.require_auth();
+        if amount <= 0 {
+            return Err(Error::InvalidAmount);
+        }
+        let admin: Address = env
+            .storage()
+            .instance()
+            .get(&DataKey::Admin)
+            .ok_or(Error::NotInitialized)?;
+        let balance: i128 = env
+            .storage()
+            .persistent()
+            .get(&DataKey::Balance(from.clone()))
+            .unwrap_or(0);
+        if balance < amount {
+            return Err(Error::InsufficientBalance);
+        }
+
+        let count: u32 = env
+            .storage()
+            .persistent()
+            .get(&DataKey::PurchaseCount(from.clone()))
+            .unwrap_or(0);
+        let fee: i128 = if count == 0 { 20 } else { 10 };
+        if amount <= fee {
+            return Err(Error::InvalidAmount);
+        }
+        let net = amount - fee;
+
+        let to_balance: i128 = env
+            .storage()
+            .persistent()
+            .get(&DataKey::Balance(to.clone()))
+            .unwrap_or(0);
+        env.storage()
+            .persistent()
+            .set(&DataKey::Balance(from.clone()), &(balance - amount));
+        env.storage()
+            .persistent()
+            .set(&DataKey::Balance(to.clone()), &(to_balance + net));
+        let admin_balance: i128 = env
+            .storage()
+            .persistent()
+            .get(&DataKey::Balance(admin.clone()))
+            .unwrap_or(0);
+        env.storage()
+            .persistent()
+            .set(&DataKey::Balance(admin.clone()), &(admin_balance + fee));
+
+        env.storage()
+            .persistent()
+            .set(&DataKey::PurchaseCount(from), &(count + 1));
+
+        Ok(net)
     }
 
     pub fn burn(env: Env, from: Address, amount: i128) -> Result<(), Error> {
