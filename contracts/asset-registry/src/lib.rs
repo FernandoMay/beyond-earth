@@ -359,12 +359,16 @@ impl AssetRegistry {
                 if record.evidence_hash != evidence_hash {
                     continue;
                 }
-                if record.status != AssetStatus::Draft && record.status != AssetStatus::EvidenceReview {
+                if record.status != AssetStatus::Draft
+                    && record.status != AssetStatus::EvidenceReview
+                {
                     continue;
                 }
                 record.status = AssetStatus::Verified;
                 record.verified_at = env.ledger().timestamp();
-                env.storage().persistent().set(&DataKey::Asset(id.clone()), &record);
+                env.storage()
+                    .persistent()
+                    .set(&DataKey::Asset(id.clone()), &record);
                 verified += 1;
             }
         }

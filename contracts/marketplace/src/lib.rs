@@ -386,14 +386,17 @@ impl Marketplace {
     }
 
     /// Registers multiple purchases and grants rewards: 20 for the first, 10 afterwards.
-    pub fn registrar_compras(env: Env, buyer: Address, listing_ids: soroban_sdk::Vec<String>) -> u32 {
+    pub fn registrar_compras(
+        env: Env,
+        buyer: Address,
+        listing_ids: soroban_sdk::Vec<String>,
+    ) -> u32 {
         buyer.require_auth();
         let mut count: u32 = env
             .storage()
             .persistent()
             .get(&DataKey::PurchaseCount(buyer.clone()))
             .unwrap_or(0);
-        let mut total_reward: i128 = 0;
         for _id in listing_ids.iter() {
             let reward: i128 = if count == 0 { 20 } else { 10 };
             let balance: i128 = env
@@ -405,7 +408,6 @@ impl Marketplace {
                 .persistent()
                 .set(&DataKey::RewardBalance(buyer.clone()), &(balance + reward));
             count += 1;
-            total_reward += reward;
         }
         env.storage()
             .persistent()

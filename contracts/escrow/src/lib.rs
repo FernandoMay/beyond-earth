@@ -336,11 +336,7 @@ impl EscrowContract {
     }
 
     /// Disputes an escrow and immediately refunds the buyer.
-    pub fn disputar_y_reembolsar(
-        env: Env,
-        caller: Address,
-        id: String,
-    ) -> Result<Escrow, Error> {
+    pub fn disputar_y_reembolsar(env: Env, caller: Address, id: String) -> Result<Escrow, Error> {
         caller.require_auth();
         let mut escrow = get_escrow_or_error(&env, &id)?;
         if caller != escrow.buyer && caller != escrow.seller && caller != escrow.arbiter {
@@ -350,7 +346,11 @@ impl EscrowContract {
             return Err(Error::InvalidStatus);
         }
         let payment = token::Client::new(&env, &Self::token(env.clone())?);
-        payment.transfer(&env.current_contract_address(), &escrow.buyer, &escrow.amount);
+        payment.transfer(
+            &env.current_contract_address(),
+            &escrow.buyer,
+            &escrow.amount,
+        );
         escrow.status = EscrowStatus::Refunded;
         escrow.resolved_at = env.ledger().timestamp();
         EscrowRefunded {

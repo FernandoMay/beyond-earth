@@ -271,7 +271,6 @@ fn closes_lease_early() {
     assert_eq!(closed.status, LeaseStatus::Closed);
 }
 
-
 #[test]
 fn renews_a_lease() {
     let env = Env::default();
@@ -285,13 +284,20 @@ fn renews_a_lease() {
     let contract_id = env.register(Leasing, ());
     let client = LeasingClient::new(&env, &contract_id);
     client.initialize(&admin, &token);
-    client.create_lease(&lessor, &String::from_str(&env, "lease_renew"), &String::from_str(&env, "asset_001"), &lessee, &100, &3600, &1_700_000_000);
+    client.create_lease(
+        &lessor,
+        &String::from_str(&env, "lease_renew"),
+        &String::from_str(&env, "asset_001"),
+        &lessee,
+        &100,
+        &3600,
+        &1_700_000_000,
+    );
     let renewed = client.renovar_lease(&lessor, &String::from_str(&env, "lease_renew"), &2);
     assert_eq!(renewed.next_due_at, 1_700_000_000 + 2 * 3600);
     assert_eq!(renewed.total_paid, 0);
     assert_eq!(renewed.payments, 0);
 }
-
 
 #[test]
 fn renews_multiple_leases() {
@@ -306,9 +312,29 @@ fn renews_multiple_leases() {
     let contract_id = env.register(Leasing, ());
     let client = LeasingClient::new(&env, &contract_id);
     client.initialize(&admin, &token);
-    client.create_lease(&lessor, &String::from_str(&env, "lease_a"), &String::from_str(&env, "asset_a"), &lessee, &100, &3600, &1_700_000_000);
-    client.create_lease(&lessor, &String::from_str(&env, "lease_b"), &String::from_str(&env, "asset_b"), &lessee, &100, &3600, &1_700_000_000);
-    let ids = soroban_sdk::vec![&env, String::from_str(&env, "lease_a"), String::from_str(&env, "lease_b")];
+    client.create_lease(
+        &lessor,
+        &String::from_str(&env, "lease_a"),
+        &String::from_str(&env, "asset_a"),
+        &lessee,
+        &100,
+        &3600,
+        &1_700_000_000,
+    );
+    client.create_lease(
+        &lessor,
+        &String::from_str(&env, "lease_b"),
+        &String::from_str(&env, "asset_b"),
+        &lessee,
+        &100,
+        &3600,
+        &1_700_000_000,
+    );
+    let ids = soroban_sdk::vec![
+        &env,
+        String::from_str(&env, "lease_a"),
+        String::from_str(&env, "lease_b")
+    ];
     let renewed = client.renovar_masivo(&lessor, &ids, &2);
     assert_eq!(renewed, 2);
 }

@@ -201,7 +201,6 @@ fn updates_investor_tier() {
     assert_eq!(updated.tier, 4);
 }
 
-
 #[test]
 fn suspends_multiple_investors() {
     let env = Env::default();
@@ -211,6 +210,8 @@ fn suspends_multiple_investors() {
     approve(&env, &fixture, &alice);
     approve(&env, &fixture, &bob);
     let investors = soroban_sdk::vec![&env, alice.clone(), bob.clone()];
-    let suspended = fixture.client.suspender_masivo(&fixture.officer, &investors);
+    let suspended = fixture
+        .client
+        .suspender_masivo(&fixture.officer, &investors);
     assert_eq!(suspended, 2);
 }

@@ -213,7 +213,6 @@ fn releases_remaining_escrow() {
     assert_eq!(fixture.payment.balance(&fixture.seller), 2_500);
 }
 
-
 #[test]
 fn disputes_and_refunds() {
     let fixture = setup();
@@ -224,7 +223,6 @@ fn disputes_and_refunds() {
     assert_eq!(refunded.status, EscrowStatus::Refunded);
     assert_eq!(fixture.payment.balance(&fixture.buyer), 10_000);
 }
-
 
 #[test]
 fn reembolsar_todo_refunds_multiple() {
@@ -238,7 +236,11 @@ fn reembolsar_todo_refunds_multiple() {
         &fixture.arbiter,
         &2_000,
     );
-    let ids = soroban_sdk::vec![&fixture.env, String::from_str(&fixture.env, "esc_001"), String::from_str(&fixture.env, "esc_002")];
+    let ids = soroban_sdk::vec![
+        &fixture.env,
+        String::from_str(&fixture.env, "esc_001"),
+        String::from_str(&fixture.env, "esc_002")
+    ];
     let total = fixture.client.reembolsar_todo(&fixture.buyer, &ids);
     assert_eq!(total, 3_000);
     assert_eq!(fixture.payment.balance(&fixture.buyer), 10_000);

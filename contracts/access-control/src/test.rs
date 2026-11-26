@@ -111,7 +111,6 @@ fn revokes_all_roles_from_account() {
     assert!(!client.has_role(&operator, &Role::Issuer));
 }
 
-
 #[test]
 fn grants_role_to_multiple_accounts() {
     let env = Env::default();

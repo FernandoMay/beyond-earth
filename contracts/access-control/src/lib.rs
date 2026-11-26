@@ -193,7 +193,12 @@ impl AccessControl {
     }
 
     /// Grants a role to multiple accounts.
-    pub fn otorgar_masivo(env: Env, caller: Address, grantees: soroban_sdk::Vec<Address>, role: Role) -> u32 {
+    pub fn otorgar_masivo(
+        env: Env,
+        caller: Address,
+        grantees: soroban_sdk::Vec<Address>,
+        role: Role,
+    ) -> u32 {
         caller.require_auth();
         if require_admin(&env, &caller).is_err() {
             return 0;

@@ -552,7 +552,11 @@ impl Investment {
                 continue;
             }
             // compliance check
-            if let Some(compliance) = env.storage().instance().get::<_, Address>(&DataKey::Compliance) {
+            if let Some(compliance) = env
+                .storage()
+                .instance()
+                .get::<_, Address>(&DataKey::Compliance)
+            {
                 let client = ComplianceClient::new(&env, &compliance);
                 if !client.is_eligible(&investor, &offering.required_tier, &offering.jurisdiction) {
                     continue;
@@ -614,7 +618,9 @@ impl Investment {
                 if now < offering.closes_at {
                     continue;
                 }
-                if offering.status == OfferingStatus::Settled || offering.status == OfferingStatus::Failed {
+                if offering.status == OfferingStatus::Settled
+                    || offering.status == OfferingStatus::Failed
+                {
                     continue;
                 }
                 offering.status = OfferingStatus::Failed;
