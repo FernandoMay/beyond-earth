@@ -347,6 +347,50 @@ impl Investment {
         Ok(refund)
     }
 
+    /// Refunds all provided failed offerings for an investor in one transaction.
+    pub fn reembolsar_todo(
+        env: Env,
+        investor: Address,
+        offering_ids: soroban_sdk::Vec<String>,
+    ) -> i128 {
+        investor.require_auth();
+        let payment = token::Client::new(&env, &Self::payment_token(env.clone()).unwrap());
+        let mut total: i128 = 0;
+        for id in offering_ids.iter() {
+            let offering = match get_offering_or_error(&env, &id) {
+                Ok(o) => o,
+                Err(_) => continue,
+            };
+            if offering.status != OfferingStatus::Failed {
+                continue;
+            }
+            let key = DataKey::Position(id.clone(), investor.clone());
+            let mut position: Position = match env
+                .storage()
+                .persistent()
+                .get(&key)
+            {
+                Some(p) => p,
+                None => continue,
+            };
+            if position.refunded {
+                continue;
+            }
+            payment.transfer(&env.current_contract_address(), &investor, &position.amount);
+            position.refunded = true;
+            let refund = position.amount;
+            env.storage().persistent().set(&key, &position);
+            Refunded {
+                offering_id: id.clone(),
+                investor: investor.clone(),
+                amount: refund,
+            }
+            .publish(&env);
+            total += refund;
+        }
+        total
+    }
+
     pub fn get_offering(env: Env, offering_id: String) -> Result<Offering, Error> {
         get_offering_or_error(&env, &offering_id)
     }
