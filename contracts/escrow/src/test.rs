@@ -179,3 +179,16 @@ fn partial_release_reduces_escrow() {
     assert_eq!(updated.status, EscrowStatus::Funded);
     assert_eq!(fixture.payment.balance(&fixture.seller), 1_000);
 }
+
+
+#[test]
+fn partial_refund_reduces_escrow() {
+    let fixture = setup();
+    create(&fixture, 2_500);
+    let updated = fixture
+        .client
+        .reembolsar_parcial(&fixture.arbiter, &String::from_str(&fixture.env, "esc_001"), &1_000);
+    assert_eq!(updated.amount, 1_500);
+    assert_eq!(updated.status, EscrowStatus::Funded);
+    assert_eq!(fixture.payment.balance(&fixture.buyer), 8_500);
+}

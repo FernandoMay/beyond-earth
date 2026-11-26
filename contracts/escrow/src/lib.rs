@@ -267,6 +267,42 @@ impl EscrowContract {
         Ok(escrow)
     }
 
+    /// Refunds a partial amount to the buyer, reducing the remaining escrow.
+    pub fn reembolsar_parcial(
+        env: Env,
+        caller: Address,
+        id: String,
+        amount: i128,
+    ) -> Result<Escrow, Error> {
+        caller.require_auth();
+        let mut escrow = get_escrow_or_error(&env, &id)?;
+        require_resolver(&env, &caller, &escrow)?;
+        if escrow.status != EscrowStatus::Funded && escrow.status != EscrowStatus::Disputed {
+            return Err(Error::InvalidStatus);
+        }
+        if amount <= 0 || amount > escrow.amount {
+            return Err(Error::InvalidAmount);
+        }
+        let payment = token::Client::new(&env, &Self::token(env.clone())?);
+        payment.transfer(&env.current_contract_address(), &escrow.buyer, &amount);
+
+        escrow.amount -= amount;
+        if escrow.amount == 0 {
+            escrow.status = EscrowStatus::Refunded;
+            escrow.resolved_at = env.ledger().timestamp();
+        }
+        EscrowRefunded {
+            escrow_id: id.clone(),
+            buyer: escrow.buyer.clone(),
+            amount,
+        }
+        .publish(&env);
+        env.storage()
+            .persistent()
+            .set(&DataKey::Escrow(id), &escrow);
+        Ok(escrow)
+    }
+
     pub fn get_escrow(env: Env, id: String) -> Result<Escrow, Error> {
         get_escrow_or_error(&env, &id)
     }
