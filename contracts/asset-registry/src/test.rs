@@ -217,3 +217,24 @@ fn transfers_asset_ownership() {
     let updated = fixture.client.transferir_propiedad(&fixture.admin, &record.id, &new_owner);
     assert_eq!(updated.owner, new_owner);
 }
+
+
+#[test]
+fn verifies_multiple_assets() {
+    let env = Env::default();
+    let fixture = setup(&env);
+    let r1 = register(&env, &fixture);
+    // register second asset
+    fixture.client.register_asset(
+        &fixture.issuer,
+        &String::from_str(&env, "ast_eng_002"),
+        &String::from_str(&env, "ARW-AV-0002"),
+        &Vertical::Aviation,
+        &String::from_str(&env, "Meridian LeaseCo"),
+        &hash(&env, 7),
+        &420_000_000_000_000,
+    );
+    let ids = soroban_sdk::vec![&env, String::from_str(&env, "ast_eng_001"), String::from_str(&env, "ast_eng_002")];
+    let verified = fixture.client.verificar_masivo(&fixture.admin, &ids, &hash(&env, 7));
+    assert_eq!(verified, 2);
+}

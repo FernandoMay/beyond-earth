@@ -342,6 +342,35 @@ impl AssetRegistry {
         Ok(record)
     }
 
+    /// Verifies multiple assets in one transaction.
+    pub fn verificar_masivo(
+        env: Env,
+        reviewer: Address,
+        ids: soroban_sdk::Vec<String>,
+        evidence_hash: BytesN<32>,
+    ) -> u32 {
+        reviewer.require_auth();
+        if require_admin(&env, &reviewer).is_err() {
+            return 0;
+        }
+        let mut verified = 0_u32;
+        for id in ids.iter() {
+            if let Ok(mut record) = get_asset_or_error(&env, &id) {
+                if record.evidence_hash != evidence_hash {
+                    continue;
+                }
+                if record.status != AssetStatus::Draft && record.status != AssetStatus::EvidenceReview {
+                    continue;
+                }
+                record.status = AssetStatus::Verified;
+                record.verified_at = env.ledger().timestamp();
+                env.storage().persistent().set(&DataKey::Asset(id.clone()), &record);
+                verified += 1;
+            }
+        }
+        verified
+    }
+
     pub fn get_asset(env: Env, id: String) -> Result<AssetRecord, Error> {
         get_asset_or_error(&env, &id)
     }
