@@ -184,6 +184,23 @@ impl Withdrawals {
         new_balance
     }
 
+    /// Withdraws the entire balance of a user.
+    pub fn retirar_todo(env: Env, user: Address) -> i128 {
+        user.require_auth();
+        let balance: i128 = env
+            .storage()
+            .persistent()
+            .get(&DataKey::Balance(user.clone()))
+            .unwrap_or(0);
+        if balance <= 0 {
+            panic!("no balance to withdraw");
+        }
+        env.storage()
+            .persistent()
+            .set(&DataKey::Balance(user), &0_i128);
+        balance
+    }
+
     pub fn bonus_total(env: Env) -> i128 {
         env.storage()
             .persistent()
@@ -279,4 +296,16 @@ mod test {
         assert_eq!(client.total_retirado(), 40);
         assert_eq!(client.retiros_de(&user), 3);
     }
+    #[test]
+    fn retirar_todo_empties_balance() {
+        let env = Env::default();
+        env.mock_all_auths();
+        let contract_id = env.register(Withdrawals, ());
+        let client = WithdrawalsClient::new(&env, &contract_id);
+        let user = Address::generate(&env);
+        client.depositar(&user, &100);
+        assert_eq!(client.retirar_todo(&user), 120);
+        assert_eq!(client.saldo(&user), 0);
+    }
+
 }
