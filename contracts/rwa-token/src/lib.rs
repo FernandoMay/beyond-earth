@@ -438,6 +438,12 @@ impl RwaToken {
             if amount <= 0 {
                 continue;
             }
+            if RwaToken::is_paused(env.clone()) {
+                continue;
+            }
+            if check_compliance(&env, &account).is_err() {
+                continue;
+            }
             let balance = Self::balance(env.clone(), account.clone());
             if balance < amount {
                 continue;
@@ -445,6 +451,11 @@ impl RwaToken {
             env.storage()
                 .persistent()
                 .set(&DataKey::Balance(account.clone()), &(balance - amount));
+            TokenBurned {
+                from: account.clone(),
+                amount,
+            }
+            .publish(&env);
             total_burned += amount;
         }
         let supply = Self::total_supply(env.clone());
