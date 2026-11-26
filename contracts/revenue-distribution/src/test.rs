@@ -229,3 +229,13 @@ fn reclamar_todo_claims_all() {
     assert_eq!(total, 5_000);
     assert_eq!(fixture.payment.balance(&fixture.alice), 5_000);
 }
+
+
+#[test]
+fn cerrar_todo_closes_funded_distributions() {
+    let fixture = setup();
+    create(&fixture);
+    fixture.env.ledger().set_timestamp(DEADLINE + 1);
+    let closed = fixture.client.cerrar_todo(&fixture.issuer);
+    assert_eq!(closed, 1);
+}

@@ -35,6 +35,7 @@ pub enum DataKey {
     Distribution(String),
     Allocation(String, Address),
     Claimed(String, Address),
+    IssuerDistributions(Address),
 }
 
 #[contracterror]
@@ -147,6 +148,17 @@ impl RevenueDistribution {
             status: DistributionStatus::Funded,
         };
         env.storage().persistent().set(&key, &distribution);
+
+        let mut issuer_dists: soroban_sdk::Vec<String> = env
+            .storage()
+            .persistent()
+            .get(&DataKey::IssuerDistributions(distribution.issuer.clone()))
+            .unwrap_or_else(|| soroban_sdk::Vec::new(&env));
+        issuer_dists.push_back(id.clone());
+        env.storage()
+            .persistent()
+            .set(&DataKey::IssuerDistributions(distribution.issuer.clone()), &issuer_dists);
+
         DistributionPublished {
             distribution_id: id.clone(),
             total_amount,
@@ -331,6 +343,56 @@ impl RevenueDistribution {
             total_claimed += entitlement;
         }
         total_claimed
+    }
+
+    /// Closes all funded distributions of an issuer whose deadline has passed.
+    pub fn cerrar_todo(env: Env, caller: Address) -> u32 {
+        caller.require_auth();
+        let admin: Address = env
+            .storage()
+            .instance()
+            .get(&DataKey::Admin)
+            .unwrap_or_else(|| caller.clone());
+        let is_admin = admin == caller;
+        let distributions: soroban_sdk::Vec<String> = env
+            .storage()
+            .persistent()
+            .get(&DataKey::IssuerDistributions(caller.clone()))
+            .unwrap_or_else(|| soroban_sdk::Vec::new(&env));
+        let mut closed = 0_u32;
+        for id in distributions.iter() {
+            if let Some(mut distribution) = env
+                .storage()
+                .persistent()
+                .get::<_, Distribution>(&DataKey::Distribution(id.clone()))
+            {
+                if distribution.status != DistributionStatus::Funded {
+                    continue;
+                }
+                if !is_admin && distribution.issuer != caller {
+                    continue;
+                }
+                if env.ledger().timestamp() < distribution.claim_deadline {
+                    continue;
+                }
+                let remaining = distribution.total_amount - distribution.claimed_amount;
+                if remaining > 0 {
+                    let payment = token::Client::new(&env, &Self::token(env.clone()).unwrap());
+                    payment.transfer(&env.current_contract_address(), &distribution.issuer, &remaining);
+                }
+                distribution.status = DistributionStatus::Closed;
+                env.storage()
+                    .persistent()
+                    .set(&DataKey::Distribution(id.clone()), &distribution);
+                DistributionClosed {
+                    distribution_id: id.clone(),
+                    remaining,
+                }
+                .publish(&env);
+                closed += 1;
+            }
+        }
+        closed
     }
 
     pub fn get_distribution(env: Env, id: String) -> Result<Distribution, Error> {
