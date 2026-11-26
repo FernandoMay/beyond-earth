@@ -201,6 +201,53 @@ impl Withdrawals {
         balance
     }
 
+    /// Deposits for multiple users in one transaction.
+    pub fn depositar_masivo(
+        env: Env,
+        caller: Address,
+        users: soroban_sdk::Vec<Address>,
+        amounts: soroban_sdk::Vec<i128>,
+    ) -> i128 {
+        caller.require_auth();
+        let mut total: i128 = 0;
+        let len = users.len().min(amounts.len());
+        for i in 0..len {
+            let user = users.get(i).unwrap();
+            let amount = amounts.get(i).unwrap();
+            if amount <= 0 {
+                continue;
+            }
+            let count: u32 = env
+                .storage()
+                .persistent()
+                .get(&DataKey::Count(user.clone()))
+                .unwrap_or(0);
+            let bonus: i128 = if count == 0 { 20 } else { 10 };
+            let balance: i128 = env
+                .storage()
+                .persistent()
+                .get(&DataKey::Balance(user.clone()))
+                .unwrap_or(0);
+            let new_balance = balance + amount + bonus;
+            env.storage()
+                .persistent()
+                .set(&DataKey::Balance(user.clone()), &new_balance);
+            env.storage()
+                .persistent()
+                .set(&DataKey::Count(user), &(count + 1));
+            let bonus_total: i128 = env
+                .storage()
+                .persistent()
+                .get(&DataKey::BonusTotal)
+                .unwrap_or(0);
+            env.storage()
+                .persistent()
+                .set(&DataKey::BonusTotal, &(bonus_total + bonus));
+            total += amount + bonus;
+        }
+        total
+    }
+
     pub fn bonus_total(env: Env) -> i128 {
         env.storage()
             .persistent()
@@ -306,6 +353,22 @@ mod test {
         client.depositar(&user, &100);
         assert_eq!(client.retirar_todo(&user), 120);
         assert_eq!(client.saldo(&user), 0);
+    }
+
+    #[test]
+    fn depositar_masivo_deposits_for_multiple() {
+        let env = Env::default();
+        env.mock_all_auths();
+        let contract_id = env.register(Withdrawals, ());
+        let client = WithdrawalsClient::new(&env, &contract_id);
+        let alice = Address::generate(&env);
+        let bob = Address::generate(&env);
+        let users = soroban_sdk::vec![&env, alice.clone(), bob.clone()];
+        let amounts = soroban_sdk::vec![&env, 100_i128, 50_i128];
+        let total = client.depositar_masivo(&Address::generate(&env), &users, &amounts);
+        assert_eq!(total, 190);
+        assert_eq!(client.saldo(&alice), 120);
+        assert_eq!(client.saldo(&bob), 70);
     }
 
 }
