@@ -1,4 +1,4 @@
-import { Indexer, InMemoryIndexerStore } from './index';
+import { Indexer, FileIndexerStore } from './index';
 import { fetchSorobanEvents } from './rpc';
 
 const RPC_URL = process.env.STELLAR_RPC_URL ?? 'https://soroban-testnet.stellar.org';
@@ -7,7 +7,7 @@ const START_LEDGER = Number(process.env.STELLAR_INDEXER_START_LEDGER ?? '1');
 const POLL_MS = Number(process.env.STELLAR_INDEXER_POLL_MS ?? '5000');
 
 async function main() {
-  const store = new InMemoryIndexerStore();
+  const store = new FileIndexerStore(process.env.STELLAR_INDEXER_CURSOR_FILE ?? '.data/indexer-cursor.json');
   const indexer = new Indexer({
     store,
     handler: async (event) => {
