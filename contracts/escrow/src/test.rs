@@ -224,3 +224,22 @@ fn disputes_and_refunds() {
     assert_eq!(refunded.status, EscrowStatus::Refunded);
     assert_eq!(fixture.payment.balance(&fixture.buyer), 10_000);
 }
+
+
+#[test]
+fn reembolsar_todo_refunds_multiple() {
+    let fixture = setup();
+    create(&fixture, 1_000);
+    // create a second escrow
+    fixture.client.create_escrow(
+        &fixture.buyer,
+        &String::from_str(&fixture.env, "esc_002"),
+        &fixture.seller,
+        &fixture.arbiter,
+        &2_000,
+    );
+    let ids = soroban_sdk::vec![&fixture.env, String::from_str(&fixture.env, "esc_001"), String::from_str(&fixture.env, "esc_002")];
+    let total = fixture.client.reembolsar_todo(&fixture.buyer, &ids);
+    assert_eq!(total, 3_000);
+    assert_eq!(fixture.payment.balance(&fixture.buyer), 10_000);
+}

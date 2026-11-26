@@ -365,6 +365,40 @@ impl EscrowContract {
         Ok(escrow)
     }
 
+    /// Refunds all provided escrows for a buyer in one transaction.
+    pub fn reembolsar_todo(env: Env, buyer: Address, escrow_ids: soroban_sdk::Vec<String>) -> i128 {
+        buyer.require_auth();
+        let payment = token::Client::new(&env, &Self::token(env.clone()).unwrap());
+        let mut total: i128 = 0;
+        for id in escrow_ids.iter() {
+            let mut escrow = match get_escrow_or_error(&env, &id) {
+                Ok(e) => e,
+                Err(_) => continue,
+            };
+            if escrow.buyer != buyer {
+                continue;
+            }
+            if escrow.status != EscrowStatus::Funded && escrow.status != EscrowStatus::Disputed {
+                continue;
+            }
+            payment.transfer(&env.current_contract_address(), &buyer, &escrow.amount);
+            escrow.status = EscrowStatus::Refunded;
+            escrow.resolved_at = env.ledger().timestamp();
+            EscrowRefunded {
+                escrow_id: id.clone(),
+                buyer: buyer.clone(),
+                amount: escrow.amount,
+            }
+            .publish(&env);
+            env.storage()
+                .persistent()
+                .set(&DataKey::Escrow(id), &escrow);
+            total += escrow.amount;
+            escrow.amount = 0;
+        }
+        total
+    }
+
     pub fn get_escrow(env: Env, id: String) -> Result<Escrow, Error> {
         get_escrow_or_error(&env, &id)
     }
