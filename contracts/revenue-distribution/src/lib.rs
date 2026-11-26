@@ -400,6 +400,56 @@ impl RevenueDistribution {
         closed
     }
 
+    /// Allocates units to multiple investors in one transaction.
+    pub fn asignar_masivo(
+        env: Env,
+        caller: Address,
+        distribution_id: String,
+        investors: soroban_sdk::Vec<Address>,
+        units: soroban_sdk::Vec<i128>,
+    ) -> i128 {
+        caller.require_auth();
+        let mut distribution = match get_distribution_or_error(&env, &distribution_id) {
+            Ok(d) => d,
+            Err(_) => return 0,
+        };
+        if distribution.status != DistributionStatus::Funded {
+            return 0;
+        }
+        // require issuer or admin
+        let admin: Address = env.storage().instance().get(&DataKey::Admin).unwrap();
+        if caller != distribution.issuer && caller != admin {
+            return 0;
+        }
+        let mut total_allocated: i128 = 0;
+        let len = investors.len().min(units.len());
+        for i in 0..len {
+            let investor = investors.get(i).unwrap();
+            let u = units.get(i).unwrap();
+            if u <= 0 {
+                continue;
+            }
+            let key = DataKey::Allocation(distribution_id.clone(), investor.clone());
+            let current: i128 = env.storage().persistent().get(&key).unwrap_or(0);
+            if distribution.allocated_units + u > distribution.total_units {
+                continue;
+            }
+            distribution.allocated_units += u;
+            env.storage().persistent().set(&key, &(current + u));
+            UnitsAllocated {
+                distribution_id: distribution_id.clone(),
+                investor,
+                units: current + u,
+            }
+            .publish(&env);
+            total_allocated += u;
+        }
+        env.storage()
+            .persistent()
+            .set(&DataKey::Distribution(distribution_id), &distribution);
+        total_allocated
+    }
+
     pub fn get_distribution(env: Env, id: String) -> Result<Distribution, Error> {
         get_distribution_or_error(&env, &id)
     }

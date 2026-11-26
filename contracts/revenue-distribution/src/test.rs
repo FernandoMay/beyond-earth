@@ -242,3 +242,18 @@ fn cerrar_todo_closes_funded_distributions() {
     let closed = fixture.client.cerrar_todo(&fixture.issuer);
     assert_eq!(closed, 1);
 }
+
+
+#[test]
+fn asignar_masivo_allocates_to_multiple() {
+    let fixture = setup();
+    create(&fixture);
+    let alice = fixture.alice.clone();
+    let bob = fixture.bob.clone();
+    let investors = soroban_sdk::vec![&fixture.env, alice.clone(), bob.clone()];
+    let units = soroban_sdk::vec![&fixture.env, 30_i128, 20_i128];
+    let total = fixture.client.asignar_masivo(&fixture.issuer, &String::from_str(&fixture.env, "dist_001"), &investors, &units);
+    assert_eq!(total, 50);
+    assert_eq!(fixture.client.allocation(&String::from_str(&fixture.env, "dist_001"), &fixture.alice), 30);
+    assert_eq!(fixture.client.allocation(&String::from_str(&fixture.env, "dist_001"), &fixture.bob), 20);
+}
