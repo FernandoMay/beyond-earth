@@ -345,6 +345,36 @@ impl Leasing {
         Ok(lease)
     }
 
+    /// Renews multiple leases by extending their due dates.
+    pub fn renovar_masivo(
+        env: Env,
+        caller: Address,
+        lease_ids: soroban_sdk::Vec<String>,
+        extra_periods: u32,
+    ) -> u32 {
+        caller.require_auth();
+        if extra_periods == 0 {
+            return 0;
+        }
+        let mut renewed = 0_u32;
+        for id in lease_ids.iter() {
+            if let Ok(mut lease) = get_lease_or_error(&env, &id) {
+                let admin: Address = env.storage().instance().get(&DataKey::Admin).unwrap();
+                if caller != lease.lessor && caller != admin {
+                    continue;
+                }
+                if lease.status == LeaseStatus::Closed || lease.status == LeaseStatus::Defaulted {
+                    continue;
+                }
+                lease.next_due_at += lease.interval_seconds * extra_periods as u64;
+                lease.status = LeaseStatus::Active;
+                env.storage().persistent().set(&DataKey::Lease(id), &lease);
+                renewed += 1;
+            }
+        }
+        renewed
+    }
+
     pub fn get_lease(env: Env, id: String) -> Result<Lease, Error> {
         get_lease_or_error(&env, &id)
     }

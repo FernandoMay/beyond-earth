@@ -291,3 +291,24 @@ fn renews_a_lease() {
     assert_eq!(renewed.total_paid, 0);
     assert_eq!(renewed.payments, 0);
 }
+
+
+#[test]
+fn renews_multiple_leases() {
+    let env = Env::default();
+    env.mock_all_auths();
+    env.ledger().set_timestamp(1_700_000_000);
+    let admin = Address::generate(&env);
+    let lessor = Address::generate(&env);
+    let lessee = Address::generate(&env);
+    let sac = env.register_stellar_asset_contract_v2(admin.clone());
+    let token = sac.address();
+    let contract_id = env.register(Leasing, ());
+    let client = LeasingClient::new(&env, &contract_id);
+    client.initialize(&admin, &token);
+    client.create_lease(&lessor, &String::from_str(&env, "lease_a"), &String::from_str(&env, "asset_a"), &lessee, &100, &3600, &1_700_000_000);
+    client.create_lease(&lessor, &String::from_str(&env, "lease_b"), &String::from_str(&env, "asset_b"), &lessee, &100, &3600, &1_700_000_000);
+    let ids = soroban_sdk::vec![&env, String::from_str(&env, "lease_a"), String::from_str(&env, "lease_b")];
+    let renewed = client.renovar_masivo(&lessor, &ids, &2);
+    assert_eq!(renewed, 2);
+}
