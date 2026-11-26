@@ -212,3 +212,15 @@ fn releases_remaining_escrow() {
     assert_eq!(released.status, EscrowStatus::Released);
     assert_eq!(fixture.payment.balance(&fixture.seller), 2_500);
 }
+
+
+#[test]
+fn disputes_and_refunds() {
+    let fixture = setup();
+    create(&fixture, 2_500);
+    let refunded = fixture
+        .client
+        .disputar_y_reembolsar(&fixture.buyer, &String::from_str(&fixture.env, "esc_001"));
+    assert_eq!(refunded.status, EscrowStatus::Refunded);
+    assert_eq!(fixture.payment.balance(&fixture.buyer), 10_000);
+}
