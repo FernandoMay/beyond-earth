@@ -333,3 +333,17 @@ fn extends_offering_close_date() {
         .extender_oferta(&fixture.issuer, &String::from_str(&fixture.env, "off_001"), &3600);
     assert_eq!(extended.closes_at, NOW + 1_000 + 3600);
 }
+
+
+#[test]
+fn suscribe_con_descuento_applies_discount() {
+    let fixture = setup();
+    create(&fixture, 10_000);
+    let investor = Address::generate(&fixture.env);
+    fixture.token_admin.mint(&investor, &100_000_000);
+    fixture.env.ledger().set_timestamp(NOW + 100);
+    let position = fixture
+        .client
+        .suscribir_con_descuento(&investor, &String::from_str(&fixture.env, "off_001"), &50_000_000);
+    assert_eq!(position.amount, 45_000_000);
+}

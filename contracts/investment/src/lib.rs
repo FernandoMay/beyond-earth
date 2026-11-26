@@ -455,6 +455,75 @@ impl Investment {
         Ok(offering)
     }
 
+    /// Subscribes with a 10% discount when the amount reaches 5 XLM.
+    pub fn suscribir_con_descuento(
+        env: Env,
+        investor: Address,
+        offering_id: String,
+        amount: i128,
+    ) -> Result<Position, Error> {
+        investor.require_auth();
+        if amount <= 0 {
+            return Err(Error::InvalidAmount);
+        }
+        let mut offering = get_offering_or_error(&env, &offering_id)?;
+        let now = env.ledger().timestamp();
+        if offering.status != OfferingStatus::Open
+            || now < offering.opens_at
+            || now >= offering.closes_at
+        {
+            return Err(Error::OfferingNotOpen);
+        }
+        let discounted = if amount >= 50_000_000 {
+            amount * 90 / 100
+        } else {
+            amount
+        };
+        if discounted < offering.min_ticket {
+            return Err(Error::BelowMinimum);
+        }
+        check_compliance(&env, &investor, &offering)?;
+
+        let position_key = DataKey::Position(offering_id.clone(), investor.clone());
+        let existing: Option<Position> = env.storage().persistent().get(&position_key);
+        if existing.is_none() {
+            offering.investor_count += 1;
+        }
+
+        let payment = token::Client::new(&env, &Self::payment_token(env.clone())?);
+        payment.transfer(&investor, env.current_contract_address(), &discounted);
+
+        let position = match existing {
+            Some(mut position) => {
+                position.amount += discounted;
+                position
+            }
+            None => Position {
+                investor: investor.clone(),
+                offering_id: offering_id.clone(),
+                amount: discounted,
+                refunded: false,
+                subscribed_at: now,
+            },
+        };
+        env.storage().persistent().set(&position_key, &position);
+
+        offering.committed += discounted;
+        if offering.committed >= offering.target {
+            offering.status = OfferingStatus::Funded;
+        }
+        env.storage()
+            .persistent()
+            .set(&DataKey::Offering(offering_id.clone()), &offering);
+        Subscribed {
+            offering_id,
+            investor,
+            amount: discounted,
+        }
+        .publish(&env);
+        Ok(position)
+    }
+
     pub fn get_offering(env: Env, offering_id: String) -> Result<Offering, Error> {
         get_offering_or_error(&env, &offering_id)
     }
