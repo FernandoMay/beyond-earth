@@ -430,6 +430,31 @@ impl Investment {
         Ok(refund)
     }
 
+    /// Extends an offering's close date.
+    pub fn extender_oferta(
+        env: Env,
+        caller: Address,
+        offering_id: String,
+        extra_seconds: u64,
+    ) -> Result<Offering, Error> {
+        caller.require_auth();
+        let mut offering = get_offering_or_error(&env, &offering_id)?;
+        if caller != offering.issuer {
+            require_admin(&env, &caller)?;
+        }
+        if offering.status != OfferingStatus::Open && offering.status != OfferingStatus::Funded {
+            return Err(Error::OfferingNotOpen);
+        }
+        if extra_seconds == 0 {
+            return Err(Error::InvalidAmount);
+        }
+        offering.closes_at += extra_seconds;
+        env.storage()
+            .persistent()
+            .set(&DataKey::Offering(offering_id), &offering);
+        Ok(offering)
+    }
+
     pub fn get_offering(env: Env, offering_id: String) -> Result<Offering, Error> {
         get_offering_or_error(&env, &offering_id)
     }

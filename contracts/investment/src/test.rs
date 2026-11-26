@@ -322,3 +322,14 @@ fn cancels_a_pending_subscription() {
     assert_eq!(refund, 2_000);
     assert_eq!(fixture.payment.balance(&investor), 5_000);
 }
+
+
+#[test]
+fn extends_offering_close_date() {
+    let fixture = setup();
+    create(&fixture, 10_000);
+    let extended = fixture
+        .client
+        .extender_oferta(&fixture.issuer, &String::from_str(&fixture.env, "off_001"), &3600);
+    assert_eq!(extended.closes_at, NOW + 1_000 + 3600);
+}
