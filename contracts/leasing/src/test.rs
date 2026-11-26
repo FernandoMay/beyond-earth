@@ -270,3 +270,24 @@ fn closes_lease_early() {
     let closed = client.cerrar_anticipado(&lessor, &String::from_str(&env, "lease_early"));
     assert_eq!(closed.status, LeaseStatus::Closed);
 }
+
+
+#[test]
+fn renews_a_lease() {
+    let env = Env::default();
+    env.mock_all_auths();
+    env.ledger().set_timestamp(1_700_000_000);
+    let admin = Address::generate(&env);
+    let lessor = Address::generate(&env);
+    let lessee = Address::generate(&env);
+    let sac = env.register_stellar_asset_contract_v2(admin.clone());
+    let token = sac.address();
+    let contract_id = env.register(Leasing, ());
+    let client = LeasingClient::new(&env, &contract_id);
+    client.initialize(&admin, &token);
+    client.create_lease(&lessor, &String::from_str(&env, "lease_renew"), &String::from_str(&env, "asset_001"), &lessee, &100, &3600, &1_700_000_000);
+    let renewed = client.renovar_lease(&lessor, &String::from_str(&env, "lease_renew"), &2);
+    assert_eq!(renewed.next_due_at, 1_700_000_000 + 2 * 3600);
+    assert_eq!(renewed.total_paid, 0);
+    assert_eq!(renewed.payments, 0);
+}
