@@ -17,7 +17,7 @@
   "dependencies": {
     "@aerospace/shared-types": "0.1.0",
     "@aerospace/validation": "0.1.0",
-    "fastify": "5.12.8",
+    "fastify": "5.6.2",
     "pg": "^8.23.1",
     "zod": "3.25.76",
     "@aerospace/stellar-sdk": "0.1.0",
