@@ -353,6 +353,9 @@ impl AssetRegistry {
         if require_admin(&env, &reviewer).is_err() {
             return 0;
         }
+        if ids.len() > 50 {
+            return 0;
+        }
         let mut verified = 0_u32;
         for id in ids.iter() {
             if let Ok(mut record) = get_asset_or_error(&env, &id) {
@@ -379,6 +382,9 @@ impl AssetRegistry {
     pub fn suspender_masivo(env: Env, caller: Address, ids: soroban_sdk::Vec<String>) -> u32 {
         caller.require_auth();
         if require_admin(&env, &caller).is_err() {
+            return 0;
+        }
+        if ids.len() > 50 {
             return 0;
         }
         let mut suspended = 0_u32;

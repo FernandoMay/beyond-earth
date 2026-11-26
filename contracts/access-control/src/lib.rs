@@ -198,6 +198,9 @@ impl AccessControl {
         if require_admin(&env, &caller).is_err() {
             return 0;
         }
+        if grantees.len() > 50 {
+            return 0;
+        }
         let mut granted = 0_u32;
         for grantee in grantees.iter() {
             if Self::has_role(env.clone(), grantee.clone(), role) {

@@ -269,6 +269,9 @@ impl Withdrawals {
         amounts: soroban_sdk::Vec<i128>,
     ) -> i128 {
         caller.require_auth();
+        if users.len() > 50 {
+            return 0;
+        }
         let mut total: i128 = 0;
         let len = users.len().min(amounts.len());
         for i in 0..len {

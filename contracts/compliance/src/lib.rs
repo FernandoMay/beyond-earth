@@ -276,6 +276,9 @@ impl Compliance {
         if require_officer(&env, &officer).is_err() {
             return 0;
         }
+        if investors.len() > 50 {
+            return 0;
+        }
         let mut suspended = 0_u32;
         for investor in investors.iter() {
             if let Ok(mut record) = get_investor_or_error(&env, &investor) {

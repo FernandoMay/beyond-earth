@@ -299,6 +299,9 @@ impl RevenueDistribution {
     ) -> i128 {
         investor.require_auth();
         let payment = token::Client::new(&env, &Self::token(env.clone()).unwrap());
+        if distribution_ids.len() > 50 {
+            return 0;
+        }
         let mut total_claimed: i128 = 0;
         for id in distribution_ids.iter() {
             let mut distribution = match get_distribution_or_error(&env, &id) {
@@ -421,6 +424,9 @@ impl RevenueDistribution {
         if caller != distribution.issuer && caller != admin {
             return 0;
         }
+        if investors.len() > 50 {
+            return 0;
+        }
         let mut total_allocated: i128 = 0;
         let len = investors.len().min(units.len());
         for i in 0..len {
@@ -458,6 +464,9 @@ impl RevenueDistribution {
     ) -> i128 {
         investor.require_auth();
         let payment = token::Client::new(&env, &Self::token(env.clone()).unwrap());
+        if distribution_ids.len() > 50 {
+            return 0;
+        }
         let mut total_claimed: i128 = 0;
         for id in distribution_ids.iter() {
             let mut distribution = match get_distribution_or_error(&env, &id) {

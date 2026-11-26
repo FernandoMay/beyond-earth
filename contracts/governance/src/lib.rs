@@ -534,6 +534,9 @@ impl Governance {
         if require_admin(&env, &caller).is_err() {
             return 0;
         }
+        if ids.len() > 50 {
+            return 0;
+        }
         let mut cancelled = 0_u32;
         for id in ids.iter() {
             if let Some(mut proposal) = env
