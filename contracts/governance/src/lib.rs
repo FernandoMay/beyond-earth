@@ -335,6 +335,57 @@ impl Governance {
         Ok(proposal)
     }
 
+    /// Votes and finalizes immediately if quorum is reached.
+    pub fn votar_y_finalizar(
+        env: Env,
+        voter: Address,
+        id: String,
+        support: bool,
+    ) -> Result<Proposal, Error> {
+        voter.require_auth();
+        if !Self::is_member(env.clone(), voter.clone()) {
+            return Err(Error::NotMember);
+        }
+        let mut proposal = get_proposal_or_error(&env, &id)?;
+        if proposal.status != ProposalStatus::Active {
+            return Err(Error::ProposalNotActive);
+        }
+        if env.ledger().timestamp() >= proposal.voting_ends_at {
+            return Err(Error::VotingClosed);
+        }
+        let vote_key = DataKey::Vote(id.clone(), voter.clone());
+        if env
+            .storage()
+            .persistent()
+            .get::<_, bool>(&vote_key)
+            .unwrap_or(false)
+        {
+            return Err(Error::AlreadyVoted);
+        }
+        if support {
+            proposal.yes_votes += 1;
+        } else {
+            proposal.no_votes += 1;
+        }
+        env.storage().persistent().set(&vote_key, &true);
+        env.storage()
+            .persistent()
+            .set(&DataKey::Proposal(id.clone()), &proposal);
+
+        let quorum: u32 = env
+            .storage()
+            .instance()
+            .get(&DataKey::Quorum)
+            .ok_or(Error::NotInitialized)?;
+        if proposal.yes_votes >= quorum && proposal.yes_votes > proposal.no_votes {
+            proposal.status = ProposalStatus::Passed;
+            env.storage()
+                .persistent()
+                .set(&DataKey::Proposal(id), &proposal);
+        }
+        Ok(proposal)
+    }
+
     pub fn get_proposal(env: Env, id: String) -> Result<Proposal, Error> {
         get_proposal_or_error(&env, &id)
     }
