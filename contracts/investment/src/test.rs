@@ -298,3 +298,17 @@ fn reembolsar_todo_refunds_failed_offerings() {
     assert_eq!(total, 2_000);
     assert_eq!(fixture.payment.balance(&investor), 5_000);
 }
+
+
+#[test]
+fn cancels_a_pending_subscription() {
+    let fixture = setup();
+    create(&fixture, 10_000);
+    let investor = Address::generate(&fixture.env);
+    fixture.token_admin.mint(&investor, &5_000);
+    fixture.env.ledger().set_timestamp(NOW + 100);
+    fixture.client.subscribe(&investor, &String::from_str(&fixture.env, "off_001"), &2_000);
+    let refund = fixture.client.cancelar_suscripcion(&investor, &String::from_str(&fixture.env, "off_001"));
+    assert_eq!(refund, 2_000);
+    assert_eq!(fixture.payment.balance(&investor), 5_000);
+}

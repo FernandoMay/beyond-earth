@@ -391,6 +391,49 @@ impl Investment {
         total
     }
 
+    /// Cancels a pending subscription and refunds the investor.
+    pub fn cancelar_suscripcion(
+        env: Env,
+        investor: Address,
+        offering_id: String,
+    ) -> Result<i128, Error> {
+        investor.require_auth();
+        let mut offering = get_offering_or_error(&env, &offering_id)?;
+        if offering.status != OfferingStatus::Open {
+            return Err(Error::OfferingNotOpen);
+        }
+        let key = DataKey::Position(offering_id.clone(), investor.clone());
+        let mut position: Position = env
+            .storage()
+            .persistent()
+            .get(&key)
+            .ok_or(Error::NothingToRefund)?;
+        if position.refunded {
+            return Err(Error::NothingToRefund);
+        }
+        let payment = token::Client::new(&env, &Self::payment_token(env.clone())?);
+        payment.transfer(&env.current_contract_address(), &investor, &position.amount);
+        position.refunded = true;
+        let refund = position.amount;
+        env.storage().persistent().set(&key, &position);
+
+        offering.committed -= refund;
+        if offering.committed < 0 {
+            offering.committed = 0;
+        }
+        env.storage()
+            .persistent()
+            .set(&DataKey::Offering(offering_id.clone()), &offering);
+
+        Refunded {
+            offering_id,
+            investor,
+            amount: refund,
+        }
+        .publish(&env);
+        Ok(refund)
+    }
+
     pub fn get_offering(env: Env, offering_id: String) -> Result<Offering, Error> {
         get_offering_or_error(&env, &offering_id)
     }
