@@ -304,6 +304,23 @@ impl Leasing {
         Ok(lease)
     }
 
+    /// Closes a lease ahead of schedule.
+    pub fn cerrar_anticipado(env: Env, caller: Address, id: String) -> Result<Lease, Error> {
+        caller.require_auth();
+        let mut lease = get_lease_or_error(&env, &id)?;
+        require_lessor_or_admin(&env, &caller, &lease)?;
+        if lease.status == LeaseStatus::Closed || lease.status == LeaseStatus::Defaulted {
+            return Err(Error::InvalidStatus);
+        }
+        lease.status = LeaseStatus::Closed;
+        LeaseClosed {
+            lease_id: id.clone(),
+        }
+        .publish(&env);
+        env.storage().persistent().set(&DataKey::Lease(id), &lease);
+        Ok(lease)
+    }
+
     pub fn get_lease(env: Env, id: String) -> Result<Lease, Error> {
         get_lease_or_error(&env, &id)
     }
