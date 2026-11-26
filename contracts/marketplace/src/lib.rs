@@ -452,6 +452,37 @@ impl Marketplace {
         applied
     }
 
+    /// Cancels all open listings of a seller.
+    pub fn cancelar_masivo(env: Env, seller: Address) -> u32 {
+        seller.require_auth();
+        let listings: soroban_sdk::Vec<String> = env
+            .storage()
+            .persistent()
+            .get(&DataKey::SellerListings(seller.clone()))
+            .unwrap_or_else(|| soroban_sdk::Vec::new(&env));
+        let mut cancelled = 0_u32;
+        for id in listings.iter() {
+            if let Some(mut listing) = env
+                .storage()
+                .persistent()
+                .get::<_, Listing>(&DataKey::Listing(id.clone()))
+            {
+                if listing.seller == seller && listing.status == ListingStatus::Open {
+                    listing.status = ListingStatus::Cancelled;
+                    ListingCancelled {
+                        listing_id: id.clone(),
+                    }
+                    .publish(&env);
+                    env.storage()
+                        .persistent()
+                        .set(&DataKey::Listing(id), &listing);
+                    cancelled += 1;
+                }
+            }
+        }
+        cancelled
+    }
+
     pub fn get_listing(env: Env, id: String) -> Result<Listing, Error> {
         get_listing_or_error(&env, &id)
     }
