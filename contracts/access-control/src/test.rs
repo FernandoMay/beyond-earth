@@ -110,3 +110,17 @@ fn revokes_all_roles_from_account() {
     assert!(!client.has_role(&operator, &Role::Operator));
     assert!(!client.has_role(&operator, &Role::Issuer));
 }
+
+
+#[test]
+fn grants_role_to_multiple_accounts() {
+    let env = Env::default();
+    let (client, owner) = setup(&env);
+    let a = Address::generate(&env);
+    let b = Address::generate(&env);
+    let grantees = soroban_sdk::vec![&env, a.clone(), b.clone()];
+    let granted = client.otorgar_masivo(&owner, &grantees, &Role::Operator);
+    assert_eq!(granted, 2);
+    assert!(client.has_role(&a, &Role::Operator));
+    assert!(client.has_role(&b, &Role::Operator));
+}

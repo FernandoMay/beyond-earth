@@ -192,6 +192,34 @@ impl AccessControl {
         revoked
     }
 
+    /// Grants a role to multiple accounts.
+    pub fn otorgar_masivo(env: Env, caller: Address, grantees: soroban_sdk::Vec<Address>, role: Role) -> u32 {
+        caller.require_auth();
+        if require_admin(&env, &caller).is_err() {
+            return 0;
+        }
+        let mut granted = 0_u32;
+        for grantee in grantees.iter() {
+            if Self::has_role(env.clone(), grantee.clone(), role) {
+                continue;
+            }
+            if role == Role::Admin && is_owner(&env, &grantee) {
+                continue;
+            }
+            RoleGranted {
+                caller: caller.clone(),
+                grantee: grantee.clone(),
+                role: role as u32,
+            }
+            .publish(&env);
+            env.storage()
+                .persistent()
+                .set(&DataKey::Role(grantee, role), &true);
+            granted += 1;
+        }
+        granted
+    }
+
     pub fn has_role(env: Env, account: Address, role: Role) -> bool {
         if role == Role::Admin && is_owner(&env, &account) {
             return true;
