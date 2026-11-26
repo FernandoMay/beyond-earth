@@ -215,3 +215,33 @@ fn registrar_compra_grants_rewards() {
     assert_eq!(client.compras_de(&buyer), 2);
     assert_eq!(client.recompensa_de(&buyer), 30);
 }
+
+
+#[test]
+fn applies_discount_to_open_listing() {
+    let env = Env::default();
+    env.mock_all_auths();
+    let admin = Address::generate(&env);
+    let seller = Address::generate(&env);
+    let buyer = Address::generate(&env);
+    let fee_recipient = Address::generate(&env);
+    let sac = env.register_stellar_asset_contract_v2(admin.clone());
+    let payment_address = sac.address();
+    let token_admin = token::StellarAssetClient::new(&env, &payment_address);
+    token_admin.mint(&buyer, &10_000);
+
+    // token for the listed asset
+    let asset_sac = env.register_stellar_asset_contract_v2(admin.clone());
+    let asset_token = asset_sac.address();
+    let asset_admin = token::StellarAssetClient::new(&env, &asset_token);
+    asset_admin.mint(&seller, &100);
+
+    let contract_id = env.register(Marketplace, ());
+    let client = MarketplaceClient::new(&env, &contract_id);
+    let asset_token_client = token::Client::new(&env, &asset_token);
+    asset_token_client.approve(&seller, &contract_id, &10, &1000);
+    client.initialize(&admin, &payment_address, &fee_recipient, &100);
+    let listing = client.create_listing(&seller, &String::from_str(&env, "lst_disc"), &String::from_str(&env, "asset_001"), &asset_token, &10, &500, &EXPIRY);
+    let discounted = client.aplicar_descuento(&seller, &String::from_str(&env, "lst_disc"), &1000);
+    assert_eq!(discounted.price, 450);
+}

@@ -283,6 +283,43 @@ impl Marketplace {
             .unwrap_or(0)
     }
 
+    /// Applies a percentage discount to an open listing. Only the seller or admin
+    /// can discount; the new price must be lower than the current one.
+    pub fn aplicar_descuento(
+        env: Env,
+        caller: Address,
+        id: String,
+        discount_bps: u32,
+    ) -> Result<Listing, Error> {
+        caller.require_auth();
+        if discount_bps == 0 || discount_bps > 10_000 {
+            return Err(Error::InvalidFee);
+        }
+        let mut listing = get_listing_or_error(&env, &id)?;
+        if listing.status != ListingStatus::Open {
+            return Err(Error::ListingNotOpen);
+        }
+        if caller != listing.seller {
+            let admin: Address = env
+                .storage()
+                .instance()
+                .get(&DataKey::Admin)
+                .ok_or(Error::NotInitialized)?;
+            if caller != admin {
+                return Err(Error::Unauthorized);
+            }
+        }
+        let new_price = listing.price * (10_000 - discount_bps as i128) / 10_000;
+        if new_price <= 0 || new_price >= listing.price {
+            return Err(Error::InvalidListing);
+        }
+        listing.price = new_price;
+        env.storage()
+            .persistent()
+            .set(&DataKey::Listing(id), &listing);
+        Ok(listing)
+    }
+
     pub fn get_listing(env: Env, id: String) -> Result<Listing, Error> {
         get_listing_or_error(&env, &id)
     }
