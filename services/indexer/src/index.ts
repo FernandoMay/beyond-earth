@@ -158,3 +158,5 @@ export class InMemoryIndexerStore implements IndexerStore {
 }
 
 export { FileIndexerStore } from './file-store';
+
+export { PostgresIndexerStore } from './postgres-store';
