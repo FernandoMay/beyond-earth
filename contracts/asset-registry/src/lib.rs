@@ -401,6 +401,31 @@ impl AssetRegistry {
         suspended
     }
 
+    /// Transfers ownership of multiple assets in one transaction.
+    pub fn transferir_masivo(
+        env: Env,
+        caller: Address,
+        ids: soroban_sdk::Vec<String>,
+        new_owner: Address,
+    ) -> u32 {
+        caller.require_auth();
+        if require_admin(&env, &caller).is_err() {
+            return 0;
+        }
+        let mut transferred = 0_u32;
+        for id in ids.iter() {
+            if let Ok(mut record) = get_asset_or_error(&env, &id) {
+                if record.owner == new_owner {
+                    continue;
+                }
+                record.owner = new_owner.clone();
+                env.storage().persistent().set(&DataKey::Asset(id), &record);
+                transferred += 1;
+            }
+        }
+        transferred
+    }
+
     pub fn get_asset(env: Env, id: String) -> Result<AssetRecord, Error> {
         get_asset_or_error(&env, &id)
     }
