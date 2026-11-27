@@ -18,7 +18,9 @@ async function main() {
       },
     });
   } else {
-    store = new FileIndexerStore(process.env.STELLAR_INDEXER_CURSOR_FILE ?? '.data/indexer-cursor.json');
+    store = new FileIndexerStore(
+      process.env.STELLAR_INDEXER_CURSOR_FILE ?? '.data/indexer-cursor.json',
+    );
   }
   const indexer = new Indexer({
     store,
