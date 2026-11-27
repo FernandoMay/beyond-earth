@@ -156,3 +156,19 @@ fn non_admin_cannot_revoke_all_roles() {
     assert_eq!(result, Err(Ok(Error::Unauthorized)));
     assert!(client.has_role(&target, &Role::Issuer));
 }
+
+
+#[test]
+fn revokes_role_from_multiple_accounts() {
+    let env = Env::default();
+    let (client, owner) = setup(&env);
+    let a = Address::generate(&env);
+    let b = Address::generate(&env);
+    client.grant(&owner, &a, &Role::Operator);
+    client.grant(&owner, &b, &Role::Operator);
+    let grantees = soroban_sdk::vec![&env, a.clone(), b.clone()];
+    let revoked = client.revocar_masivo(&owner, &grantees, &Role::Operator);
+    assert_eq!(revoked, 2);
+    assert!(!client.has_role(&a, &Role::Operator));
+    assert!(!client.has_role(&b, &Role::Operator));
+}
