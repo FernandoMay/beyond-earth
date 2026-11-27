@@ -1,4 +1,4 @@
-import { Indexer, FileIndexerStore } from './index';
+import { Indexer, FileIndexerStore, type ChainEvent } from './index';
 import { fetchSorobanEvents } from './rpc';
 
 const RPC_URL = process.env.STELLAR_RPC_URL ?? 'https://soroban-testnet.stellar.org';
@@ -24,14 +24,32 @@ async function main() {
         startLedger: cursor,
       });
       if (events.length) {
-        const mapped = events.map((e) => ({
-          id: e.id,
-          contractId: e.contractId,
-          ledger: e.ledger,
-          type: 'asset.registered' as const,
-          occurredAt: new Date(e.ledgerClosedAt ?? Date.now()),
-          payload: (e.value ?? {}) as unknown as Record<string, unknown>,
-        }));
+        const mapped = events.map((e) => {
+          const topic = Array.isArray(e.topic) && e.topic.length ? String(e.topic[0]) : '';
+          const typeMap: Record<string, ChainEvent['type']> = {
+            asset_registered: 'asset.registered',
+            asset_verified: 'asset.verified',
+            asset_suspended: 'asset.suspended',
+            subscribed: 'investment.subscribed',
+            offering_settled: 'investment.settled',
+            refunded: 'investment.refunded',
+            distribution_claimed: 'distribution.claimed',
+            lease_payment: 'lease.payment',
+            lease_defaulted: 'lease.defaulted',
+            compliance_updated: 'compliance.updated',
+            oracle_updated: 'oracle.updated',
+          };
+          const type = typeMap[topic] ?? 'asset.registered';
+          return {
+            id: e.id,
+            contractId: e.contractId,
+            ledger: e.ledger,
+            type,
+            occurredAt: new Date(e.ledgerClosedAt ?? Date.now()),
+            payload: (e.value ?? {}) as unknown as Record<string, unknown>,
+            txHash: e.txHash,
+          };
+        });
         await indexer.process(mapped as never);
         const last = events[events.length - 1];
         if (last) cursor = last.ledger + 1;
