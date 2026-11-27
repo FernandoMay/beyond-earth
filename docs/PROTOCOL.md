@@ -1,6 +1,6 @@
 # Protocol
 
-Ten Soroban contracts implement the reference protocol. They use explicit storage
+Twelve Soroban contracts implement the reference protocol (including vault and withdrawals). They use explicit storage
 keys, checked arithmetic, role-gated administration and typed errors. Contracts
 do not custody legal title; they record and enforce defined economic rights.
 

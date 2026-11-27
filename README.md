@@ -17,7 +17,7 @@ Aerospace RWA is a reference implementation of an institutional-grade financial 
 | Issuer portal     | Asset onboarding, offering pipeline, capital and distribution administration                                                                  |
 | Admin portal      | Issuer reviews, verification queue, protocol health and risk                                                                                  |
 | Operations portal | Leases, maintenance, insurance, valuations and oracle freshness                                                                               |
-| Protocol          | 11 Soroban contracts in Rust covering registry, compliance, regulated token, investment, escrow, revenue, leasing, marketplace and governance |
+| Protocol          | 12 Soroban contracts in Rust covering registry, compliance, regulated token, investment, escrow, revenue, leasing, marketplace and governance |
 | Services          | API, event indexer, valuation engine, oracle adapters, document verification and notifications                                                |
 | Data              | PostgreSQL schema, migrations, seed and repository adapters                                                                                   |
 | Standards         | SEP-0057-aligned regulated token design, ERC-3643 conceptual model, Stellar assets/SAC and USDC settlement                                    |
@@ -145,7 +145,8 @@ aerospace-rwa/
 │   ├── leasing/                 # Lease schedule and rent collection
 │   ├── marketplace/             # Allowance-based secondary market
 │   ├── governance/              # Protocol proposals and voting
-│   └── withdrawals/             # Testnet withdrawal accounting
+│   ├── withdrawals/             # Testnet withdrawal accounting
+│   └── vault/                   # Ship It vault (testnet challenge)
 ├── packages/
 │   ├── shared-types/            # Domain model + demo dataset
 │   ├── design-system/           # Brand, React components and tokens
