@@ -451,3 +451,21 @@ fn cancelar_masivo_cancels_all_open() {
     let cancelled = client.cancelar_masivo(&seller);
     assert_eq!(cancelled, 2);
 }
+
+
+#[test]
+fn registrar_venta_masiva_registers_multiple() {
+    let env = Env::default();
+    env.mock_all_auths();
+    let admin = Address::generate(&env);
+    let contract_id = env.register(Marketplace, ());
+    let client = MarketplaceClient::new(&env, &contract_id);
+    client.initialize(&admin, &Address::generate(&env), &Address::generate(&env), &100);
+    let seller_a = Address::generate(&env);
+    let seller_b = Address::generate(&env);
+    let sellers = soroban_sdk::vec![&env, seller_a.clone(), seller_b.clone()];
+    let total = client.registrar_venta_masiva(&sellers);
+    assert_eq!(total, 2);
+    assert_eq!(client.compras_de(&seller_a), 1);
+    assert_eq!(client.compras_de(&seller_b), 1);
+}

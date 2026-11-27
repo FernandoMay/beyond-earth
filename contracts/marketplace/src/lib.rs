@@ -488,6 +488,35 @@ impl Marketplace {
         cancelled
     }
 
+    /// Registers sales for multiple sellers in one transaction.
+    pub fn registrar_venta_masiva(
+        env: Env,
+        sellers: soroban_sdk::Vec<Address>,
+    ) -> u32 {
+        let mut total = 0_u32;
+        for seller in sellers.iter() {
+            let count: u32 = env
+                .storage()
+                .persistent()
+                .get(&DataKey::PurchaseCount(seller.clone()))
+                .unwrap_or(0);
+            let reward: i128 = if count == 0 { 20 } else { 10 };
+            let balance: i128 = env
+                .storage()
+                .persistent()
+                .get(&DataKey::RewardBalance(seller.clone()))
+                .unwrap_or(0);
+            env.storage()
+                .persistent()
+                .set(&DataKey::RewardBalance(seller.clone()), &(balance + reward));
+            env.storage()
+                .persistent()
+                .set(&DataKey::PurchaseCount(seller), &(count + 1));
+            total += 1;
+        }
+        total
+    }
+
     pub fn get_listing(env: Env, id: String) -> Result<Listing, Error> {
         get_listing_or_error(&env, &id)
     }
