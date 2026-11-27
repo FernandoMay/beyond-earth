@@ -157,7 +157,6 @@ fn non_admin_cannot_revoke_all_roles() {
     assert!(client.has_role(&target, &Role::Issuer));
 }
 
-
 #[test]
 fn revokes_role_from_multiple_accounts() {
     let env = Env::default();

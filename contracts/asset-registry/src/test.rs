@@ -290,15 +290,28 @@ fn suspends_multiple_assets() {
     assert_eq!(suspended, 2);
 }
 
-
 #[test]
 fn transfers_multiple_assets() {
     let env = Env::default();
     let fixture = setup(&env);
-    let r1 = register(&env, &fixture);
-    fixture.client.register_asset(&fixture.issuer, &String::from_str(&env, "ast_002"), &String::from_str(&env, "ARW-002"), &Vertical::Aviation, &String::from_str(&env, "Op"), &hash(&env, 7), &1000);
+    let _r1 = register(&env, &fixture);
+    fixture.client.register_asset(
+        &fixture.issuer,
+        &String::from_str(&env, "ast_002"),
+        &String::from_str(&env, "ARW-002"),
+        &Vertical::Aviation,
+        &String::from_str(&env, "Op"),
+        &hash(&env, 7),
+        &1000,
+    );
     let new_owner = Address::generate(&env);
-    let ids = soroban_sdk::vec![&env, String::from_str(&env, "ast_eng_001"), String::from_str(&env, "ast_002")];
-    let transferred = fixture.client.transferir_masivo(&fixture.admin, &ids, &new_owner);
+    let ids = soroban_sdk::vec![
+        &env,
+        String::from_str(&env, "ast_eng_001"),
+        String::from_str(&env, "ast_002")
+    ];
+    let transferred = fixture
+        .client
+        .transferir_masivo(&fixture.admin, &ids, &new_owner);
     assert_eq!(transferred, 2);
 }

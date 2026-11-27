@@ -216,7 +216,6 @@ fn suspends_multiple_investors() {
     assert_eq!(suspended, 2);
 }
 
-
 #[test]
 fn approves_multiple_investors() {
     let env = Env::default();
@@ -224,6 +223,12 @@ fn approves_multiple_investors() {
     let alice = Address::generate(&env);
     let bob = Address::generate(&env);
     let investors = soroban_sdk::vec![&env, alice.clone(), bob.clone()];
-    let approved = fixture.client.aprobar_masivo(&fixture.officer, &investors, &2, &String::from_str(&env, "US-DE"), &(NOW + 86_400));
+    let approved = fixture.client.aprobar_masivo(
+        &fixture.officer,
+        &investors,
+        &2,
+        &String::from_str(&env, "US-DE"),
+        &(NOW + 86_400),
+    );
     assert_eq!(approved, 2);
 }

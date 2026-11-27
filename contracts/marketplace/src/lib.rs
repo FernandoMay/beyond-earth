@@ -489,10 +489,7 @@ impl Marketplace {
     }
 
     /// Registers sales for multiple sellers in one transaction.
-    pub fn registrar_venta_masiva(
-        env: Env,
-        sellers: soroban_sdk::Vec<Address>,
-    ) -> u32 {
+    pub fn registrar_venta_masiva(env: Env, sellers: soroban_sdk::Vec<Address>) -> u32 {
         let mut total = 0_u32;
         for seller in sellers.iter() {
             let count: u32 = env

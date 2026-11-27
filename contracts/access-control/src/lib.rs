@@ -224,7 +224,12 @@ impl AccessControl {
     }
 
     /// Revokes a role from multiple accounts.
-    pub fn revocar_masivo(env: Env, caller: Address, grantees: soroban_sdk::Vec<Address>, role: Role) -> u32 {
+    pub fn revocar_masivo(
+        env: Env,
+        caller: Address,
+        grantees: soroban_sdk::Vec<Address>,
+        role: Role,
+    ) -> u32 {
         caller.require_auth();
         if require_admin(&env, &caller).is_err() {
             return 0;
