@@ -1,4 +1,4 @@
-import { Indexer, FileIndexerStore, type ChainEvent } from './index';
+import { Indexer, FileIndexerStore, PostgresIndexerStore, type ChainEvent } from './index';
 import { fetchSorobanEvents } from './rpc';
 
 const RPC_URL = process.env.STELLAR_RPC_URL ?? 'https://soroban-testnet.stellar.org';
@@ -7,9 +7,19 @@ const START_LEDGER = Number(process.env.STELLAR_INDEXER_START_LEDGER ?? '1');
 const POLL_MS = Number(process.env.STELLAR_INDEXER_POLL_MS ?? '5000');
 
 async function main() {
-  const store = new FileIndexerStore(
-    process.env.STELLAR_INDEXER_CURSOR_FILE ?? '.data/indexer-cursor.json',
-  );
+  let store: FileIndexerStore | PostgresIndexerStore;
+  if (process.env.DATABASE_URL) {
+    const { Pool } = await import('pg');
+    const pool = new Pool({ connectionString: process.env.DATABASE_URL, max: 5 });
+    store = new PostgresIndexerStore({
+      async query<T>(text: string, values?: unknown[]) {
+        const result = await pool.query(text, values);
+        return { rows: result.rows as T[] };
+      },
+    });
+  } else {
+    store = new FileIndexerStore(process.env.STELLAR_INDEXER_CURSOR_FILE ?? '.data/indexer-cursor.json');
+  }
   const indexer = new Indexer({
     store,
     handler: async (event) => {
