@@ -7,7 +7,9 @@ const START_LEDGER = Number(process.env.STELLAR_INDEXER_START_LEDGER ?? '1');
 const POLL_MS = Number(process.env.STELLAR_INDEXER_POLL_MS ?? '5000');
 
 async function main() {
-  const store = new FileIndexerStore(process.env.STELLAR_INDEXER_CURSOR_FILE ?? '.data/indexer-cursor.json');
+  const store = new FileIndexerStore(
+    process.env.STELLAR_INDEXER_CURSOR_FILE ?? '.data/indexer-cursor.json',
+  );
   const indexer = new Indexer({
     store,
     handler: async (event) => {
