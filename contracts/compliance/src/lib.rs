@@ -301,6 +301,52 @@ impl Compliance {
         suspended
     }
 
+    /// Approves multiple investors in one transaction.
+    pub fn aprobar_masivo(
+        env: Env,
+        officer: Address,
+        investors: soroban_sdk::Vec<Address>,
+        tier: u32,
+        jurisdiction: String,
+        expires_at: u64,
+    ) -> u32 {
+        officer.require_auth();
+        if require_officer(&env, &officer).is_err() {
+            return 0;
+        }
+        if tier == 0 || tier > 4 {
+            return 0;
+        }
+        if expires_at <= env.ledger().timestamp() {
+            return 0;
+        }
+        if !Self::is_jurisdiction_allowed(env.clone(), jurisdiction.clone()) {
+            return 0;
+        }
+        let mut approved = 0_u32;
+        for investor in investors.iter() {
+            let record = InvestorRecord {
+                investor: investor.clone(),
+                tier,
+                jurisdiction: jurisdiction.clone(),
+                status: InvestorStatus::Approved,
+                expires_at,
+                updated_at: env.ledger().timestamp(),
+            };
+            InvestorUpdated {
+                investor: investor.clone(),
+                tier,
+                approved: true,
+            }
+            .publish(&env);
+            env.storage()
+                .persistent()
+                .set(&DataKey::Investor(investor), &record);
+            approved += 1;
+        }
+        approved
+    }
+
     pub fn get_investor(env: Env, investor: Address) -> Result<InvestorRecord, Error> {
         get_investor_or_error(&env, &investor)
     }
