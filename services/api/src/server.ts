@@ -409,6 +409,17 @@ export async function buildServer(options: ServerOptions): Promise<FastifyInstan
     };
   });
 
+
+  app.get('/v1/stellar/status', async () => {
+    const { fetchStellarAccount } = await import('@aerospace/stellar-sdk');
+    try {
+      await fetchStellarAccount('GBXM3X7CKJNCIOXQAJ5Y6MN3EWVEOPEIEI6AWOUNZWL5BHLDL625N6US');
+      return { rpc: 'ok', horizon: 'ok' };
+    } catch (error) {
+      return { rpc: 'error', horizon: 'error', message: error instanceof Error ? error.message : 'unknown' };
+    }
+  });
+
   app.setNotFoundHandler((request: FastifyRequest, reply: FastifyReply) =>
     reply.code(404).send({
       error: 'Route not found',
